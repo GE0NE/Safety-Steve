@@ -102,6 +102,7 @@ async def on_message(msg: discord.Message):                                     
                 voiceCommandList = voiceCommandList + ", " + command 
 
             embed = discord.Embed(title=name, description=desc, color=0xeee657)                                 # and make a colorful paper
+            embed.add_field(name="Prefix", value=invoker, inline=False)                      
             embed.add_field(name="Text Commands", value=textCommandList[2:], inline=False)                      # with what you just told them written on it
             embed.add_field(name='Voice Commands - These require you to be in a voice channel',                 # and remind them not to be an idiot
                 value=voiceCommandList[2:], inline=False)
@@ -121,7 +122,7 @@ async def on_message(msg: discord.Message):                                     
             await client.delete_message(msg)                                                                    # then make them take it back
             return                                                                                              # and gtfo
 
-        if message == commands[config['vc_start']]:                                                                 # if they ask you to leave
+        if message == commands[config['vc_start']] and isPlaying:                                                   # if they ask you to leave
             isPlaying = False                                                                                   # unflag isPlaying
             await voice.disconnect()                                                                            # then leave the channel
             return                                                                                              # and gtfo
