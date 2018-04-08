@@ -1,0 +1,52 @@
+{
+  "user_id": "<@430061939805257749>",
+  "mention": "@Safety-Steve#1394",
+  "description": "I keep us safe from evil words!",
+
+  "name": "Safety Steve",
+  "invoker": "^",
+
+
+  "fileformat": ".mp3",
+
+  "commands":
+  [
+  "help",
+  "say",
+  "leave",
+  "betrayed",
+  "prettygood",
+  "prettygoodvs",
+  "timetostop",
+  "stopit",
+  "what",
+  "vsauce",
+  "butwhatis",
+  "cripdep",
+  "titanic",
+  "jurassicpark"
+  ],
+
+  "vc_start": 2,
+
+  "game": "Minecraft: Safety Edition",
+
+  "sunday_game": "Minecraft: Christian Edition",
+  "monday_game": "Minecraft: Safety Edition",
+  "tuesday_game": "Nekopara",
+  "wednesday_game": "Minecraft: Safety Edition",
+  "thursday_game": "Minecraft: Extra Safe Edition (NSFW)",
+  "friday_game": "Waifu Sex Simulator",
+  "saturday_game": "Minecraft: Safety Edition",
+
+  "response": "Hey! No bad words, please. This is a Christian server!",
+  "words": 
+  [
+  "heck",
+	"frick",
+	"fick",
+	"golly",
+	"gosh",
+	"jeeper"
+  ]
+}
