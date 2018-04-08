@@ -147,11 +147,11 @@ async def on_message(msg: discord.Message):                                     
                     await client.send_message(msg.channel, 'You\'re not in a voice channel!')                   # inform the user that their an imbicel for trying to use a voice command without being in a voice channel
                 return                                                                                          # gtfo
 
-        if any([word in msg.content.lower() for word in config['words']]):                                          # if the message contains any bad words
-            await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, config['response']))     # tell them politely, yet firmly, to leave
-            return                                                                                              # then gtfo
+    elif any([word in msg.content.lower() for word in config['words']]):                                            # if the message contains any bad words
+        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, config['response']))         # tell them politely, yet firmly, to leave
+        return                                                                                                  # then gtfo
 
-    if client.user.mentioned_in(msg) and msg.mention_everyone is False:                                             # if a user yells at me
+    elif client.user.mentioned_in(msg) and msg.mention_everyone is False:                                           # if a user yells at me
         await client.send_message(msg.channel, 'Use {}{} for a list of commands'.format(invoker, commands[0]))  # fuck him, here's a hint ya idiot
         return                                                                                                  # gtfo
 
