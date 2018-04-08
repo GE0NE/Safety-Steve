@@ -1,3 +1,3 @@
 @echo off
-python SimpleModBot.py
+python SafetySteve.py
 pause
