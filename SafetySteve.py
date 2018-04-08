@@ -88,9 +88,6 @@ async def on_message(msg: discord.Message):                                     
     global isPlaying                                                                                            # and check is the music is playing
     if msg.author.bot:                                                                                          # check if the message was from drunk-me
         return                                                                                                  # if it was, gtfo
-    if any([word in msg.content.lower() for word in config['words']]):                                          # if the message contains any bad words
-        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, config['response']))         # tell them politely, yet firmly, to leave
-        return                                                                                                  # then gtfo
 
     if msg.content.startswith(invoker):                                                                         # if the message was directed at me
         message = msg.content.lower()[len(invoker):]                                                            # informalize it
@@ -146,6 +143,11 @@ async def on_message(msg: discord.Message):                                     
 
     if client.user.mentioned_in(msg) and msg.mention_everyone is False:                                             # if a user yells at me
         await client.send_message(msg.channel, 'Use {}{} for a list of commands'.format(invoker, commands[0]))  # fuck him, here's a hint ya idiot
+        return                                                                                                  # gtfo
+
+    if any([word in msg.content.lower() for word in config['words']]):                                              # if the message contains any bad words
+        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, config['response']))         # tell them politely, yet firmly, to leave
+        return                                                                                                  # then gtfo
 
 
 
