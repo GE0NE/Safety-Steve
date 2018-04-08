@@ -144,7 +144,7 @@ async def on_message(msg: discord.Message):                                     
                         await client.send_message(msg.channel, 'There was an issue playing the sound file 🙁')  # notify the client of their inability to preform simple cognition
                         pass                                                                                    # drakememe.jpg
                 else:                                                                                           # otherwise
-                    await client.send_message(msg.channel, 'You\'re not in a voice channel!')                   # inform the user that their an imbicel for trying to use a voice command without being in a voice channel
+                    await client.send_message(msg.channel, 'You\'re not in a voice channel!')                   # inform the user that they're an imbicel for trying to use a voice command without being in a voice channel
                 return                                                                                          # gtfo
 
     elif any([word in msg.content.lower() for word in config['words']]):                                            # if the message contains any bad words
