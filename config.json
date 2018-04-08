@@ -6,12 +6,14 @@
   "name": "Safety Steve",
   "invoker": "^",
 
+  "git_link": "https://github.com/GE0NE/Safety-Steve",
 
   "fileformat": ".mp3",
 
   "commands":
   [
   "help",
+  "git",
   "say",
   "leave",
   "betrayed",
@@ -27,7 +29,7 @@
   "jurassicpark"
   ],
 
-  "vc_start": 2,
+  "vc_start": 3,
 
   "game": "Minecraft: Safety Edition",
 
