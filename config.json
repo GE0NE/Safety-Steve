@@ -27,7 +27,11 @@
   "cripdep",
   "titanic",
   "jurassicpark",
-  "dododo"
+  "dododo",
+  "shutdown",
+  "startup",
+  "shutdowner",
+  "startuper"
   ],
 
   "vc_start": 3,
