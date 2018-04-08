@@ -109,7 +109,13 @@ async def on_message(msg: discord.Message):                                     
             await client.send_message(msg.channel, embed=embed)                                                 # then hand them the paper
             return                                                                                              # and gtfo
 
-        if message[:3] == commands[1] and msg.content[4:] != "":                                                    # if they ask you to repeat after them
+        if message == commands[1]:                                                                                  # if the message is asking for git
+            gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                   # make sure they're christian enough                                                                   
+            embed = discord.Embed(title="", description=config['git_link'], color=0xeee657)                     # prepare the git link
+            await client.send_message(msg.channel, gitMessage, embed=embed)                                                 # send it
+            return                                                                                              # gtfo
+
+        if message[:3] == commands[2] and msg.content[4:] != "":                                                    # if they ask you to repeat after them
             copy = msg.content[4:]                                                                              # remember what they say
             await client.send_message(msg.channel, copy)                                                        # and mock them like a parrot
             await client.delete_message(msg)                                                                    # then make them take it back
@@ -141,23 +147,23 @@ async def on_message(msg: discord.Message):                                     
                     await client.send_message(msg.channel, 'You\'re not in a voice channel!')                   # inform the user that their an imbicel for trying to use a voice command without being in a voice channel
                 return                                                                                          # gtfo
 
+        if any([word in msg.content.lower() for word in config['words']]):                                          # if the message contains any bad words
+            await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, config['response']))     # tell them politely, yet firmly, to leave
+            return                                                                                              # then gtfo
+
     if client.user.mentioned_in(msg) and msg.mention_everyone is False:                                             # if a user yells at me
         await client.send_message(msg.channel, 'Use {}{} for a list of commands'.format(invoker, commands[0]))  # fuck him, here's a hint ya idiot
         return                                                                                                  # gtfo
-
-    if any([word in msg.content.lower() for word in config['words']]):                                              # if the message contains any bad words
-        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, config['response']))         # tell them politely, yet firmly, to leave
-        return                                                                                                  # then gtfo
 
 
 
 @client.event
 async def on_ready():                                                                                               # When the bot has logged in and is ready to start receiving commands
     app_info = await client.application_info()                                                                  # get the client info
-    client.owner = app_info.Owner                                                                               # get the owner's name from the info
+    client.owner = app_info.owner                                                                               # get the owner's name from the info
     await client.change_presence(game=discord.Game(type = 0, name = config['game']))                            # set the game the bot is playing, this will only stay if the current day is not one of the 7 days of the week
-                                                                                                                # if you are reading this in the far furture when the now-imortal president Danny DeVito
-                                                                                                                # has ruled that there are actually 10 days in a week, God help you.
+#                                                                                                               # if you are reading this in the far furture when the now-imortal president Danny DeVito
+#                                                                                                               # has ruled that there are actually 10 days in a week, God help you.
 
     print('Bot: {0.name}:{0.id}'.format(client.user))                                                           # print the bot info to the console
     print('Owner: {0.name}:{0.id}'.format(client.owner))                                                        # print the owner info to the console
@@ -171,7 +177,7 @@ async def on_ready():                                                           
         opus.load_opus('libopus-0.x64.dll')                                                                     # load opus x64 Windows library
     else:                                                                                                       # otherwise
         opus.load_opus('libopus-0.x86.dll')                                                                     # load opus x32 Windows library
-                                                                                                                # fuck linux
+#                                                                                                               # fuck linux
     client.loop.create_task(status_task())                                                                      # sed a thread to periodically check what day of the week it is
 
 
