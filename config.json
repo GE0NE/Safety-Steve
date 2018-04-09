@@ -5,10 +5,12 @@
 
   "name": "Safety Steve",
   "invoker": "^",
+  "creator": "GEONE",
 
   "git_link": "https://github.com/GE0NE/Safety-Steve",
 
   "fileformat": ".mp3",
+
 
   "commands":
   [
@@ -32,6 +34,54 @@
   "startup",
   "shutdowner",
   "startuper"
+  ],
+
+  "command_descriptions":
+  [
+  "What are ya, some kind of funny guy, eh?",
+  "Sends a link to the bot's github repository",
+  "Repeats what you tell it to, and deletes your original message",
+  "Leaves the current voice channel",
+  "IT WAS ME AUSTIN!",
+  "Hey, that's pretty good",
+  "Hey, that's pretty good but it's bald science man",
+  "It's time to stop! No more!",
+  "Stop it. Get some help",
+  "What the fuck?",
+  "Micheal here",
+  "Moon Men by Jake Chudnow",
+  "I have crippling depression",
+  "My Heart Will Go On: recorder edition",
+  "Jurassic Park theme played on a Melodica",
+  "Buu buu desu wa",
+  "Windows XP shutdown sound",
+  "Windows XP startup sound",
+  "Windows XP shutdown sound: ear rape edition",
+  "Windows XP startup sound: ear rape edition"
+  ],
+
+  "command_params":
+  [
+  "(optional)<command>",
+  "",
+  "<what you want me to say>",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  ""
   ],
 
   "vc_start": 3,

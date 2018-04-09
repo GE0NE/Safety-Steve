@@ -102,13 +102,26 @@ async def on_message(msg: discord.Message):                                     
                 voiceCommandList = voiceCommandList + ", " + command 
 
             embed = discord.Embed(title=name, description=desc, color=0xeee657)                                 # and make a colorful paper
-            embed.add_field(name="Prefix", value=invoker, inline=False)                      
-            embed.add_field(name="Text Commands", value=textCommandList[2:], inline=False)                      # with what you just told them written on it
-            embed.add_field(name='Voice Commands - These require you to be in a voice channel',                 # and remind them not to be an idiot
+            embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)                      
+            embed.add_field(name="🔤 Text Commands", value=textCommandList[2:], inline=False)                   # with what you just told them written on it
+            embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel',              # and remind them not to be an idiot
                 value=voiceCommandList[2:], inline=False)
+            embed.set_footer(text="Created by {}".format(config['creator']))                                    # and slap my name on it 
 
             await client.send_message(msg.channel, embed=embed)                                                 # then hand them the paper
             return                                                                                              # and gtfo
+
+        if message[:4] == commands[0] and message[5:].strip() != "":       
+            for command in commands: 
+                if message[5:].strip() == command:                                                                   
+                    embed = discord.Embed(title="Command:", description=command, color=0xeee657) #                      
+                    embed.add_field(name="Description:", 
+                        value=config['command_descriptions'][commands.index(command)], inline=False)
+                    embed.add_field(name="Usage:", 
+                        value="```" + invoker + command + " " +
+                        config['command_params'][commands.index(command)] + "```", inline=False)
+                    await client.send_message(msg.channel, embed=embed)                                      
+                    return                                                         
 
         if message == commands[1]:                                                                                  # if the message is asking for git
             gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                   # make sure they're christian enough                                                                   
