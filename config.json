@@ -62,7 +62,7 @@
 
   "command_params":
   [
-  "(optional)<command>",
+  "[command]",
   "",
   "<what you want me to say>",
   "",
