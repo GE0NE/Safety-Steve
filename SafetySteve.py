@@ -70,13 +70,16 @@ async def status_task():                                                        
             await client.change_presence(game=discord.Game(type = 0, name = config['tuesday_game']))
         if now.weekday() == 2 and weekday != 2:
             await client.change_presence(game=discord.Game(type = 0, name = config['wednesday_game']))
-            try:
+            try:            
                 channel = client.get_channel(lobbyChannelID)
-                react = await client.send_message(channel, "Happy Wednesday, my dudes!")
-                react2 = discord.utils.get(client.messages, id=react.id)
-                await client.add_reaction(react2, "🐸")
+                async for message in client.logs_from(channel, limit=1):
+                    if message.author != client.user:
+                        react = await client.send_message(channel, "Happy Wednesday, my dudes!")
+                        react2 = discord.utils.get(client.messages, id=react.id)
+                        await client.add_reaction(react2, "🐸")
+                        break;
             except:
-                print('Could not parse code: {}'.format(mondayCode))
+                print('Channel does not exist: {}'.format(channel))
         if now.weekday() == 3 and weekday != 3:
             await client.change_presence(game=discord.Game(type = 0, name = config['thursday_game']))
         if now.weekday() == 4 and weekday != 4:
