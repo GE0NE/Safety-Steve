@@ -14,7 +14,7 @@ from discord import opus                                                        
 
 
 try:                                                                                                            # try to
-    with open('config.json') as f:                                                                              # get jason f. at the party
+    with open('config.json', encoding='utf8') as f:                                                             # get jason f. at the party
         config = json.load(f)                                                                                   
 except FileNotFoundError:                                                                                       # if he's too drunk
     with open('config.json', 'w') as f:                                                                         # fuck it, we'll find another jason, jason w.
@@ -40,6 +40,15 @@ userID = '<@430061939805257749>'
 mention = '@Safety-Steve#1394'
 name = config['name']
 commands = config['commands']
+commandDescriptions = config['command_descriptions']
+commandParams = config['command_params']
+wordBlacklist = config['words']
+badWordResponse = config['response']
+lobbyChannelID = config['lobby_channel_id']
+vcStart = config['vc_start']
+gitLink = config['git_link']
+fileExt = config['fileformat']
+weekday = 0
 
 copycat = ""                                                                                                    # and some global shit we'll use later
 voice = None
@@ -53,19 +62,26 @@ client = discord.Client(description=desc, max_messages=100)                     
 async def status_task():                                                                                            # choose what game to play based on the day of the week
     while True:
         now = datetime.datetime.now()
-        if now.weekday() == 6:
+        if now.weekday() == 6 and weekday != 6:
             await client.change_presence(game=discord.Game(type = 0, name = config['sunday_game']))
-        if now.weekday() == 0:
+        if now.weekday() == 0 and weekday != 0:
             await client.change_presence(game=discord.Game(type = 0, name = config['monday_game']))
-        if now.weekday() == 1:
+        if now.weekday() == 1 and weekday != 1:
             await client.change_presence(game=discord.Game(type = 0, name = config['tuesday_game']))
-        if now.weekday() == 2:
+        if now.weekday() == 2 and weekday != 2:
             await client.change_presence(game=discord.Game(type = 0, name = config['wednesday_game']))
-        if now.weekday() == 3:
+            try:
+                channel = client.get_channel(lobbyChannelID)
+                react = await client.send_message(channel, "Happy Wednesday, my dudes!")
+                react2 = discord.utils.get(client.messages, id=react.id)
+                await client.add_reaction(react2, "🐸")
+            except:
+                print('Could not parse code: {}'.format(mondayCode))
+        if now.weekday() == 3 and weekday != 3:
             await client.change_presence(game=discord.Game(type = 0, name = config['thursday_game']))
-        if now.weekday() == 4:
+        if now.weekday() == 4 and weekday != 4:
             await client.change_presence(game=discord.Game(type = 0, name = config['friday_game']))
-        if now.weekday() == 5:
+        if now.weekday() == 5 and weekday != 5:
             await client.change_presence(game=discord.Game(type = 0, name = config['saturday_game']))
         await asyncio.sleep(1800)                                                                               # only look at the clock every 30 minutes
 
@@ -96,9 +112,9 @@ async def on_message(msg: discord.Message):                                     
             textCommandList = ""                                                                                # take a deep breath
             voiceCommandList = ""                                                                               # _deeper_
 
-            for command in commands[:config['vc_start']]:                                                       # recite to them the constitution
+            for command in commands[:vcStart]:                                                       # recite to them the constitution
                 textCommandList = textCommandList + ", " + command
-            for command in commands[config['vc_start']:]:                                                       # and their freedom of speech laws
+            for command in commands[vcStart:]:                                                       # and their freedom of speech laws
                 voiceCommandList = voiceCommandList + ", " + command 
 
             embed = discord.Embed(title=name, description=desc, color=0xeee657)                                 # and make a colorful paper
@@ -116,17 +132,17 @@ async def on_message(msg: discord.Message):                                     
                 if message[5:].strip() == command:                                                                   
                     embed = discord.Embed(title="Command:", description=command, color=0xeee657) #                      
                     embed.add_field(name="Description:", 
-                        value=config['command_descriptions'][commands.index(command)], inline=False)
+                        value=commandDescriptions[commands.index(command)], inline=False)
                     embed.add_field(name="Usage:", 
                         value="```" + invoker + command + " " +
-                        config['command_params'][commands.index(command)] + "```", inline=False)
+                        commandParams[commands.index(command)] + "```", inline=False)
                     await client.send_message(msg.channel, embed=embed)                                      
                     return                                                         
 
         if message == commands[1]:                                                                                  # if the message is asking for git
             gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                   # make sure they're christian enough                                                                   
-            embed = discord.Embed(title="", description=config['git_link'], color=0xeee657)                     # prepare the git link
-            await client.send_message(msg.channel, gitMessage, embed=embed)                                                 # send it
+            embed = discord.Embed(title="", description=gitLink, color=0xeee657)                     # prepare the git link
+            await client.send_message(msg.channel, gitMessage, embed=embed)                                     # send it
             return                                                                                              # gtfo
 
         if message[:3] == commands[2] and msg.content[4:] != "":                                                    # if they ask you to repeat after them
@@ -135,12 +151,12 @@ async def on_message(msg: discord.Message):                                     
             await client.delete_message(msg)                                                                    # then make them take it back
             return                                                                                              # and gtfo
 
-        if message == commands[config['vc_start']] and isPlaying:                                                   # if they ask you to leave
+        if message == commands[vcStart] and isPlaying:                                                   # if they ask you to leave
             isPlaying = False                                                                                   # unflag isPlaying
             await voice.disconnect()                                                                            # then leave the channel
             return                                                                                              # and gtfo
 
-        for i in range(config['vc_start'] + 1, len(commands)):                                                      # if they ask you to play a sound
+        for i in range(vcStart + 1, len(commands)):                                                      # if they ask you to play a sound
             if isPlaying:                                                                                       # if a sound is already playing
                 await client.send_message(msg.channel, 'I\'m already playing a sound! Please wait your turn.')  # inform the user of their negligence
                 return                                                                                          # and gtfo. smh
@@ -149,7 +165,7 @@ async def on_message(msg: discord.Message):                                     
                     try:                                                                                        # try to
                         voice = await client.join_voice_channel(msg.author.voice_channel)                       # create a voice client
                         player = voice.create_ffmpeg_player(                                                    # create a ffmpeg player
-                            'sound/' + message + config['fileformat'])
+                            'sound/' + message + fileExt)
                         isPlaying = True                                                                        # flag isPlaying
                         player.start()                                                                          # start the player
                         client.loop.create_task(donePlaying(voice, player))                                     # start a thread to keep track of when the sound is finished playing
@@ -161,8 +177,8 @@ async def on_message(msg: discord.Message):                                     
                     await client.send_message(msg.channel, 'You\'re not in a voice channel!')                   # inform the user that they're an imbicel for trying to use a voice command without being in a voice channel
                 return                                                                                          # gtfo
 
-    elif any([word in msg.content.lower() for word in config['words']]):                                            # if the message contains any bad words
-        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, config['response']))         # tell them politely, yet firmly, to leave
+    elif any([word in msg.content.lower() for word in wordBlacklist]):                                            # if the message contains any bad words
+        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, badWordResponse))         # tell them politely, yet firmly, to leave
         return                                                                                                  # then gtfo
 
     elif client.user.mentioned_in(msg) and msg.mention_everyone is False:                                           # if a user yells at me
@@ -175,7 +191,7 @@ async def on_message(msg: discord.Message):                                     
 async def on_ready():                                                                                               # When the bot has logged in and is ready to start receiving commands
     app_info = await client.application_info()                                                                  # get the client info
     client.owner = app_info.owner                                                                               # get the owner's name from the info
-    await client.change_presence(game=discord.Game(type = 0, name = config['game']))                            # set the game the bot is playing, this will only stay if the current day is not one of the 7 days of the week
+    await client.change_presence(game=discord.Game(type = 0, name = config['monday_game']))                     # set the game the bot is playing, this will only stay if the current day is not one of the 7 days of the week
 #                                                                                                               # if you are reading this in the far furture when the now-imortal president Danny DeVito
 #                                                                                                               # has ruled that there are actually 10 days in a week, God help you.
 

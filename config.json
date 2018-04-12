@@ -11,6 +11,7 @@
 
   "fileformat": ".mp3",
 
+  "lobby_channel_id": "375043228216459264",
 
   "commands":
   [
@@ -33,7 +34,12 @@
   "shutdown",
   "startup",
   "shutdowner",
-  "startuper"
+  "startuper",
+  "oof",
+  "noice",
+  "exposed",
+  "wednesday",
+  "wednesdaygroove"
   ],
 
   "command_descriptions":
@@ -57,7 +63,12 @@
   "Windows XP shutdown sound",
   "Windows XP startup sound",
   "Windows XP shutdown sound: ear rape edition",
-  "Windows XP startup sound: ear rape edition"
+  "Windows XP startup sound: ear rape edition",
+  "OOF",
+  "NOICE",
+  "I'VE BEEN EXPOSED",
+  "It is Wednesday my dudes!",
+  "Wednesday Hard by ZimoNitrome"
   ],
 
   "command_params":
@@ -81,17 +92,20 @@
   "",
   "",
   "",
+  "",
+  "",
+  "",
+  "",
+  "",
   ""
   ],
 
   "vc_start": 3,
 
-  "game": "Minecraft: Safety Edition",
-
   "sunday_game": "Minecraft: Christian Edition",
   "monday_game": "Minecraft: Safety Edition",
   "tuesday_game": "Nekopara",
-  "wednesday_game": "Minecraft: Safety Edition",
+  "wednesday_game": "It is Wednesday, my dudes!",
   "thursday_game": "Minecraft: Extra Safe Edition (NSFW)",
   "friday_game": "Waifu Sex Simulator",
   "saturday_game": "Minecraft: Safety Edition",
