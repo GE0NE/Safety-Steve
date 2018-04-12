@@ -74,9 +74,7 @@ async def status_task():                                                        
                 channel = client.get_channel(lobbyChannelID)
                 async for message in client.logs_from(channel, limit=1):
                     if message.author != client.user:
-                        react = await client.send_message(channel, "Happy Wednesday, my dudes!")
-                        react2 = discord.utils.get(client.messages, id=react.id)
-                        await client.add_reaction(react2, "🐸")
+                        await client.send_message(channel, "Happy Wednesday, my dudes!")
                         break;
             except:
                 print('Channel does not exist: {}'.format(channel))
@@ -105,9 +103,10 @@ async def on_message(msg: discord.Message):                                     
     global voice                                                                                                # remember what my voice sounds like
     global player                                                                                               # and try to remember how to speak
     global isPlaying                                                                                            # and check is the music is playing
+    if 'wednesday' in msg.content.lower():
+        await client.add_reaction(msg, "🐸")
     if msg.author.bot:                                                                                          # check if the message was from drunk-me
-        return                                                                                                  # if it was, gtfo
-
+        return                                                                                                  # if it was, gtfo 
     if msg.content.startswith(invoker):                                                                         # if the message was directed at me
         message = msg.content.lower()[len(invoker):]                                                            # informalize it
         if message == commands[0]:                                                                              # if the message is asking for help
