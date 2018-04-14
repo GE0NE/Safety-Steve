@@ -1,21 +1,18 @@
 {
     "description": "I keep us safe from evil words!",
-
     "name": "Safety Steve",
     "invoker": "^",
     "creator": "GEONE",
-
     "git_link": "https://github.com/GE0NE/Safety-Steve",
-
     "fileformat": ".mp3",
-
     "lobby_channel_id": "375043228216459264",
-
     "commands":
+
     [
     "help",
     "git",
     "say",
+    "animeme",
     "leave",
     "betrayed",
     "prettygood",
@@ -47,7 +44,7 @@
     [
     "What are ya, some kind of funny guy, eh?",
     "Sends a link to the bot's github repository",
-    "Repeats what you tell it to and deletes your original message",
+    "Pulls a S P I C C Y meme from r/animemes",
     "Leaves the current voice channel",
     "IT WAS ME AUSTIN!",
     "Hey, that's pretty good",
@@ -104,10 +101,11 @@
     "",
     "",
     "",
+    "",
     ""
     ],
 
-    "vc_start": 3,
+    "vc_start": 4,
 
     "sunday_game": "Minecraft: Christian Edition",
     "monday_game": "Minecraft: Safety Edition",
@@ -118,7 +116,7 @@
     "saturday_game": "Minecraft: Safety Edition",
 
     "response": "Hey! No bad words, please. This is a Christian server!",
-    "words": 
+    "words":
     [
     "heck",
     "frick",

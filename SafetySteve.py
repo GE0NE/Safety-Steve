@@ -4,6 +4,9 @@ import datetime                                                                 
 import json                                                                                                     # some dude named jason
 import asyncio                                                                                                  # a kitchen sinkio
 import re                                                                                                       # re:re:re:re:re: meeting time
+import praw
+import random
+
 try:                                                                                                            # try to
     import discord                                                                                              # get discord in here
 except ImportError:                                                                                             # but if he's too drunk
@@ -15,7 +18,7 @@ from discord import opus                                                        
 
 try:                                                                                                            # try to
     with open('config.json', encoding='utf8') as f:                                                             # get jason f. at the party
-        config = json.load(f)                                                                                   
+        config = json.load(f)
 except FileNotFoundError:                                                                                       # if he's too drunk
     with open('config.json', 'w') as f:                                                                         # fuck it, we'll find another jason, jason w.
         config = {}
@@ -50,6 +53,10 @@ gitLink = config['git_link']
 fileExt = config['fileformat']
 weekday = 0
 
+# Reddit Config
+reddit_id = token['client_id']
+reddit_secret = token['client_secret']
+
 copycat = ""                                                                                                    # and some global shit we'll use later
 voice = None
 player = None
@@ -68,7 +75,7 @@ async def status_task():                                                        
             await client.change_presence(game=discord.Game(type = 0, name = config['tuesday_game']))
         if now.weekday() == 2 and weekday != 2:
             await client.change_presence(game=discord.Game(type = 0, name = config['wednesday_game']))
-            try:            
+            try:
                 channel = client.get_channel(lobbyChannelID)
                 async for message in client.logs_from(channel, limit=1):
                     if message.author != client.user:
@@ -150,6 +157,16 @@ async def on_message(msg: discord.Message):                                     
             await client.send_message(msg.channel, copy)                                                        # and mock them like a parrot
             await client.delete_message(msg)                                                                    # then make them take it back
             return                                                                                              # and gtfo
+
+        if message == commands[3]:                                                                              # when you need some animemes
+            reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret,
+                                 user_agent="X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*")
+            url_list = []
+            for submission in reddit.subreddit('animemes').hot(limit=100):
+                if submission.url[-3:] == "png" or submission.url[-3:] == "jpg":
+                    url_list.append(submission.url)
+            meme_index = random.randint(1, len(url_list))
+            await client.send_message(msg.channel, url_list[meme_index])
 
         if message == commands[vcStart] and isPlaying:                                                          # if they ask you to leave
             isPlaying = False                                                                                   # unflag isPlaying
