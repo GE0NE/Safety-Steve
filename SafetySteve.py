@@ -36,8 +36,8 @@ except FileNotFoundError:
 desc = config['description']                                                                                    # initialize a bunch of info from jason's wallet
 invoker = config['invoker']
 now = datetime.datetime.now()
-userID = '<@430061939805257749>'
-mention = '@Safety-Steve#1394'
+userID = token['user_id']
+mention = token['mention']
 name = config['name']
 commands = config['commands']
 commandDescriptions = config['command_descriptions']
