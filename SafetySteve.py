@@ -57,8 +57,6 @@ isPlaying = False
 
 client = discord.Client(description=desc, max_messages=100)                                                     # then create the client
 
-
-
 async def status_task():                                                                                            # choose what game to play based on the day of the week
     while True:
         now = datetime.datetime.now()
@@ -114,9 +112,9 @@ async def on_message(msg: discord.Message):                                     
             textCommandList = ""                                                                                # take a deep breath
             voiceCommandList = ""                                                                               # _deeper_
 
-            for command in commands[:vcStart]:                                                       # recite to them the constitution
+            for command in commands[:vcStart]:                                                                  # recite to them the constitution
                 textCommandList = textCommandList + ", " + command
-            for command in commands[vcStart:]:                                                       # and their freedom of speech laws
+            for command in commands[vcStart:]:                                                                  # and their freedom of speech laws
                 voiceCommandList = voiceCommandList + ", " + command 
 
             embed = discord.Embed(title=name, description=desc, color=0xeee657)                                 # and make a colorful paper
@@ -143,7 +141,7 @@ async def on_message(msg: discord.Message):                                     
 
         if message == commands[1]:                                                                                  # if the message is asking for git
             gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                   # make sure they're christian enough                                                                   
-            embed = discord.Embed(title="", description=gitLink, color=0xeee657)                     # prepare the git link
+            embed = discord.Embed(title="", description=gitLink, color=0xeee657)                                # prepare the git link
             await client.send_message(msg.channel, gitMessage, embed=embed)                                     # send it
             return                                                                                              # gtfo
 
@@ -153,12 +151,12 @@ async def on_message(msg: discord.Message):                                     
             await client.delete_message(msg)                                                                    # then make them take it back
             return                                                                                              # and gtfo
 
-        if message == commands[vcStart] and isPlaying:                                                   # if they ask you to leave
+        if message == commands[vcStart] and isPlaying:                                                          # if they ask you to leave
             isPlaying = False                                                                                   # unflag isPlaying
             await voice.disconnect()                                                                            # then leave the channel
             return                                                                                              # and gtfo
 
-        for i in range(vcStart + 1, len(commands)):                                                      # if they ask you to play a sound
+        for i in range(vcStart + 1, len(commands)):                                                             # if they ask you to play a sound
             if isPlaying:                                                                                       # if a sound is already playing
                 await client.send_message(msg.channel, 'I\'m already playing a sound! Please wait your turn.')  # inform the user of their negligence
                 return                                                                                          # and gtfo. smh
@@ -180,7 +178,7 @@ async def on_message(msg: discord.Message):                                     
                 return                                                                                          # gtfo
 
     elif any([word in msg.content.lower() for word in wordBlacklist]):                                            # if the message contains any bad words
-        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, badWordResponse))         # tell them politely, yet firmly, to leave
+        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, badWordResponse))            # tell them politely, yet firmly, to leave
         return                                                                                                  # then gtfo
 
     elif client.user.mentioned_in(msg) and msg.mention_everyone is False:                                           # if a user yells at me

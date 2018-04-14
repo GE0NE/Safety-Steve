@@ -39,7 +39,9 @@
   "noice",
   "exposed",
   "wednesday",
-  "wednesdaygroove"
+  "wednesdaygroove",
+  "ahhhh",
+  "aurora"
   ],
 
   "command_descriptions":
@@ -68,7 +70,9 @@
   "NOICE",
   "I'VE BEEN EXPOSED",
   "It is Wednesday my dudes!",
-  "Wednesday Hard by ZimoNitrome"
+  "Wednesday Hard by ZimoNitrome",
+  "WAHHHHHH!",
+  "AT THIS TIME OF YEAR, AT THIS TIME OF DAY, IN THIS PART OF THE COUNTRY?"
   ],
 
   "command_params":
@@ -76,6 +80,8 @@
   "[command]",
   "",
   "<what you want me to say>",
+  "",
+  "",
   "",
   "",
   "",
