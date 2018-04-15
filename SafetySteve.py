@@ -65,102 +65,50 @@ isPlaying = False
 
 client = discord.Client(description=desc, max_messages=100)                                                     # then create the client
 
-async def status_task():                                                                                            # choose what game to play based on the day of the week
-    while True:
-        now = datetime.datetime.now()
-        if now.weekday() == 6 and weekday != 6:
-            await client.change_presence(game=discord.Game(type = 0, name = config['sunday_game']))
-        if now.weekday() == 0 and weekday != 0:
-            await client.change_presence(game=discord.Game(type = 0, name = config['monday_game']))
-        if now.weekday() == 1 and weekday != 1:
-            await client.change_presence(game=discord.Game(type = 0, name = config['tuesday_game']))
-        if now.weekday() == 2 and weekday != 2:
-            await client.change_presence(game=discord.Game(type = 0, name = config['wednesday_game']))
-            try:
-                channel = client.get_channel(lobbyChannelID)
-                async for message in client.logs_from(channel, limit=1):
-                    if message.author != client.user:
-                        await client.send_message(channel, "Happy Wednesday, my dudes!")
-                        break;
-            except:
-                print('Channel does not exist: {}'.format(channel))
-        if now.weekday() == 3 and weekday != 3:
-            await client.change_presence(game=discord.Game(type = 0, name = config['thursday_game']))
-        if now.weekday() == 4 and weekday != 4:
-            await client.change_presence(game=discord.Game(type = 0, name = config['friday_game']))
-        if now.weekday() == 5 and weekday != 5:
-            await client.change_presence(game=discord.Game(type = 0, name = config['saturday_game']))
-        await asyncio.sleep(1800)                                                                               # only look at the clock every 30 minutes
-
-
-
-async def donePlaying(voice, player):                                                                               # look to see if the sound stopped playing
-    global isPlaying                                                                                            # try to remember if it was playing in the first place
-    while isPlaying:                                                                                            # if was is playing
-        if player.is_done():                                                                                    # and the sound's now over
-            await voice.disconnect()                                                                            # leave the house, this party's lame af
-            isPlaying = False                                                                                   # unflag isPlaying
-        await asyncio.sleep(0.5)                                                                                # only pay attention to the music every 500 milliseconds
-
-
 
 @client.event
 async def on_message(msg: discord.Message):                                                                         # When I get a message
     global voice                                                                                                # remember what my voice sounds like
     global player                                                                                               # and try to remember how to speak
     global isPlaying                                                                                            # and check is the music is playing
+
     if 'wednesday' in msg.content.lower():
-        await client.add_reaction(msg, "🐸")
-    if msg.author.bot:                                                                                          # check if the message was from drunk-me
-        return                                                                                                  # if it was, gtfo 
+        await react(msg, "🐸")
+
+    if msg.author.bot:                                                                                          # if the message was from drunk-me
+        return                                                                                                  # gtfo 
+
     if msg.content.startswith(invoker):                                                                         # if the message was directed at me
         message = msg.content.lower()[len(invoker):]                                                            # informalize it
+
         if message == commands[0]:                                                                              # if the message is asking for help
-
-            textCommandList = ""                                                                                # take a deep breath
-            voiceCommandList = ""                                                                               # _deeper_
-
-            for command in commands[:vcStart]:                                                                  # recite to them the constitution
-                textCommandList = textCommandList + ", " + command
-            for command in commands[vcStart:]:                                                                  # and their freedom of speech laws
-                voiceCommandList = voiceCommandList + ", " + command 
-
-            embed = discord.Embed(title=name, description=desc, color=0xeee657)                                 # and make a colorful paper
-            embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)                      
-            embed.add_field(name="🔤 Text Commands", value=textCommandList[2:], inline=False)                   # with what you just told them written on it
-            embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel',              # and remind them not to be an idiot
-                value=voiceCommandList[2:], inline=False)
-            embed.set_footer(text="Created by {}".format(config['creator']))                                    # and slap my name on it 
-
-            await client.send_message(msg.channel, embed=embed)                                                 # then hand them the paper
-            return                                                                                              # and gtfo
-
+            await help(msg)
+            return
+            
         if message[:4] == commands[0] and message[5:].strip() != "":       
             for command in commands: 
                 if message[5:].strip() == command:                                                                   
-                    await help(command, msg) 
+                    await helpCommand(command, msg) 
                     return                                                       
 
         if message == commands[1]:                                                                                  # if the message is asking for git
-            gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                   # make sure they're christian enough                                                                   
-            embed = discord.Embed(title="", description=gitLink, color=0xeee657)                                # prepare the git link
-            await client.send_message(msg.channel, gitMessage, embed=embed)                                     # send it
-            return                                                                                              # gtfo
+            await git(msg)
 
         if message[:3] == commands[2]:                                                                            # if they ask you to repeat after them
             if message[4:] == "":
-                await help('say', msg)
-                return
-            copy = msg.content[4:]                                                                              # remember what they say
-            await client.send_message(msg.channel, copy)                                                        # and mock them like a parrot
-            await client.delete_message(msg)                                                                    # then make them take it back
-            return                                                                                              # and gtfo
+                await helpCommand('say', msg)
+                return                                                                                          
+            await say(msg, msg.content[4:])                                            
+            await client.delete_message(msg)                                                                   
+            return                                                                                              
 
         if message == commands[3]:                                                                              # when you need some animemes
             await subreddit('animemes', msg)
+            return
 
-        if message[:6] == commands[4]:                                                                              # when you need some reddit
+        if message[:6] == commands[4]:                                                                          # when you need some reddit
             await subreddit(msg.content[8:], msg)
+            return
 
         if message == commands[vcStart] and isPlaying:                                                          # if they ask you to leave
             isPlaying = False                                                                                   # unflag isPlaying
@@ -169,7 +117,7 @@ async def on_message(msg: discord.Message):                                     
 
         for i in range(vcStart + 1, len(commands)):                                                             # if they ask you to play a sound
             if isPlaying:                                                                                       # if a sound is already playing
-                await client.send_message(msg.channel, 'I\'m already playing a sound! Please wait your turn.')  # inform the user of their negligence
+                await say(msg, 'I\'m already playing a sound! Please wait your turn.')                  # inform the user of their negligence
                 return                                                                                          # and gtfo. smh
             if message == commands[i]:                                                                          # otherwise
                 if msg.author.voice_channel:                                                                    # if the command is valid
@@ -181,25 +129,25 @@ async def on_message(msg: discord.Message):                                     
                         player.start()                                                                          # start the player
                         client.loop.create_task(donePlaying(voice, player))                                     # start a thread to keep track of when the sound is finished playing
                     except Exception as e:                                                                      # if you can't
-                        print(e)                                                                                # notify the host of their idiocy
-                        await client.send_message(msg.channel, 'There was an issue playing the sound file 🙁')  # notify the client of their inability to preform simple cognition
+                        print(e)                                                                                # notify the host that there was an issue
+                        await say(msg, 'There was an issue playing the sound file 🙁')  # notify the client that there was an issue
                         pass                                                                                    # drakememe.jpg
                 else:                                                                                           # otherwise
-                    await client.send_message(msg.channel, 'You\'re not in a voice channel!')                   # inform the user that they're an imbicel for trying to use a voice command without being in a voice channel
+                    await say(msg, 'You\'re not in a voice channel!')                   # inform the user that they're trying to use a voice command without being in a voice channel
                 return                                                                                          # gtfo
 
     elif any([word in msg.content.lower() for word in wordBlacklist]):                                            # if the message contains any bad words
-        await client.send_message(msg.channel, '{}: {}'.format(msg.author.mention, badWordResponse))            # tell them politely, yet firmly, to leave
+        await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))            # tell them politely, yet firmly, to leave
         return                                                                                                  # then gtfo
 
-    elif client.user.mentioned_in(msg) and msg.mention_everyone is False:                                           # if a user yells at me
-        await client.send_message(msg.channel, 'Use {}{} for a list of commands'.format(invoker, commands[0]))  # fuck him, here's a hint ya idiot
+    elif client.user.mentioned_in(msg) and msg.mention_everyone is False:                                           # if a user mentions me
+        await say(msg, 'Use {}{} for a list of commands'.format(invoker, commands[0]))  # birect him to the help command
         return                                                                                                  # gtfo
 
 
 async def subreddit(sub, msg):
     if msg.content[8:].strip() == "":
-        await help('reddit', msg)
+        await helpCommand('reddit', msg)
         return
     reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
     submissionList = []
@@ -214,33 +162,103 @@ async def subreddit(sub, msg):
             embed.set_image(url=submission.url)
             embed.set_footer(text=" via reddit.com/r/{}".format(str(submission.subreddit)), 
                 icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
-            await client.send_message(msg.channel, 
-                "Here's a trending post from r/{}".format(str(submission.subreddit)), 
-                embed=embed)
+            await say(msg, "Here's a trending post from r/{}".format(str(submission.subreddit)), embed)
         else:
-            await client.send_message(msg.channel, "We're out of memes!")
+            await say(msg, "We're out of memes!")
     except:
-        await client.send_message(msg.channel, 'reddit.com/r/{} couldn\'t be accessed.'.format(sub))
+        await say(msg, 'reddit.com/r/{} couldn\'t be accessed.'.format(sub))
 
+async def git(msg):
+    gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                                                                                      
+    embed = discord.Embed(title="", description=gitLink, color=0xeee657)                                
+    await say(msg, gitMessage, embed)                                     
+    return                                                                                              
 
-async def help(command, msg):
+async def say(msg, message, embed=None):
+    if embed == None:
+        await client.send_message(msg.channel, message)
+    else:
+        await client.send_message(msg.channel, message, embed=embed)
+    return
+
+async def react(msg, emote):
+    await client.add_reaction(msg, "🐸")
+    return
+
+async def help(msg):
+    textCommandList = ""                                                                                
+    voiceCommandList = ""                                                                               
+
+    for command in commands[:vcStart]:                                                                 
+        textCommandList = textCommandList + ", " + command
+    for command in commands[vcStart:]:                                                                  
+        voiceCommandList = voiceCommandList + ", " + command 
+
+    embed = discord.Embed(title=name, description=desc, color=0xeee657)                                
+    embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)                      
+    embed.add_field(name="🔤 Text Commands", value=textCommandList[2:], inline=False)                  
+    embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel', value=voiceCommandList[2:], inline=False)
+    embed.set_footer(text="Created by {}".format(config['creator']))                                    
+
+    await say(msg, "", embed)                                                 
+    return                                                                                             
+
+async def helpCommand(command, msg):
     embed = discord.Embed(title="Command:", description=command, color=0xeee657) #                      
     embed.add_field(name="Description:", 
         value=commandDescriptions[commands.index(command)], inline=False)
     embed.add_field(name="Usage:", 
         value="```" + invoker + command + " " +
         commandParams[commands.index(command)] + "```", inline=False)
-    await client.send_message(msg.channel, embed=embed)                                      
+    await say(msg, "", embed)                                      
     return
 
+async def setPlaying(name, type=0):
+    await client.change_presence(game=discord.Game(type=0, name=name))
+    return
+
+
+async def status_task():                                                                                            # choose what game to play based on the day of the week
+    while True:
+        now = datetime.datetime.now()
+        if now.weekday() == 6 and weekday != 6:
+            await setPlaying(config['sunday_game'])
+        if now.weekday() == 0 and weekday != 0:
+            await setPlaying(config['monday_game'])
+        if now.weekday() == 1 and weekday != 1:
+            await setPlaying(config['tuesday_game'])
+        if now.weekday() == 2 and weekday != 2:
+            await setPlaying(config['wednesday_game'])
+            try:
+                channel = client.get_channel(lobbyChannelID)
+                async for message in client.logs_from(channel, limit=1):
+                    if message.author != client.user:
+                        await say(channel, "Happy Wednesday, my dudes!")
+                        break;
+            except:
+                print('Channel does not exist: {}'.format(channel))
+        if now.weekday() == 3 and weekday != 3:
+            await setPlaying(config['thursday_game'])
+        if now.weekday() == 4 and weekday != 4:
+            await setPlaying(config['friday_game'])
+        if now.weekday() == 5 and weekday != 5:
+            await setPlaying(config['saturday_game'])
+        await asyncio.sleep(1800)                                                                               # only look at the clock every 30 minutes
+
+
+async def donePlaying(voice, player):                                                                               # look to see if the sound stopped playing
+    global isPlaying                                                                                            # try to remember if it was playing in the first place
+    while isPlaying:                                                                                            # if was is playing
+        if player.is_done():                                                                                    # and the sound's now over
+            await voice.disconnect()                                                                            # leave the house, this party's lame af
+            isPlaying = False                                                                                   # unflag isPlaying
+        await asyncio.sleep(0.5)                                                                                # only pay attention to the music every 500 milliseconds
 
 @client.event
 async def on_ready():                                                                                               # When the bot has logged in and is ready to start receiving commands
     app_info = await client.application_info()                                                                  # get the client info
     client.owner = app_info.owner                                                                               # get the owner's name from the info
-    await client.change_presence(game=discord.Game(type = 0, name = config['monday_game']))                     # set the game the bot is playing, this will only stay if the current day is not one of the 7 days of the week
-#                                                                                                               # if you are reading this in the far furture when the now-imortal president Danny DeVito
-#                                                                                                               # has ruled that there are actually 10 days in a week, God help you.
+    await client.change_presence(game=discord.Game(type = 0, name = config['monday_game']))                     # set the game the bot is playing                                                                         
 
     print('Bot: {0.name}:{0.id}'.format(client.user))                                                           # print the bot info to the console
     print('Owner: {0.name}:{0.id}'.format(client.owner))                                                        # print the owner info to the console
