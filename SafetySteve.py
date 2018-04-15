@@ -202,17 +202,21 @@ async def subreddit(sub, msg):
         await help('reddit', msg)
         return
     reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
-    url_list = []
+    submissionList = []
     try:
         for submission in reddit.subreddit(sub).hot(limit=100):
             if submission.url[-3:] == "png" or submission.url[-3:] == "jpg":
-                url_list.append(submission.url)
-        if len(url_list) > 0:
-            meme_index = random.randint(1, len(url_list))
-            embed = discord.Embed(title="Here's a trending post from", description="[reddit.com/r/{0}](https://reddit.com/r/{1})".format(sub, sub), color=0xeee657)
-            embed.set_image(url=url_list[meme_index])
-            await client.send_message(msg.channel, embed=embed)
-            #await client.send_message(msg.channel, url_list[meme_index])
+                submissionList.append(submission)
+        if len(submissionList) > 0:
+            submission = submissionList[random.randint(1, len(submissionList))]
+            embed = discord.Embed(title=submission.title, 
+                url="https://reddit.com{}".format(submission.permalink), color=0xeee657)
+            embed.set_image(url=submission.url)
+            embed.set_footer(text=" via reddit.com/r/{}".format(str(submission.subreddit)), 
+                icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
+            await client.send_message(msg.channel, 
+                "Here's a trending post from r/{}".format(str(submission.subreddit)), 
+                embed=embed)
         else:
             await client.send_message(msg.channel, "We're out of memes!")
     except:
