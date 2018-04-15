@@ -209,7 +209,7 @@ async def subreddit(sub, msg):
                 url_list.append(submission.url)
         if len(url_list) > 0:
             meme_index = random.randint(1, len(url_list))
-            embed = discord.Embed(title="Here's a trending post from", description='reddit.com/r/{}'.format(sub), color=0xeee657)
+            embed = discord.Embed(title="Here's a trending post from", description="[reddit.com/r/{0}](https://reddit.com/r/{1})".format(sub, sub), color=0xeee657)
             embed.set_image(url=url_list[meme_index])
             await client.send_message(msg.channel, embed=embed)
             #await client.send_message(msg.channel, url_list[meme_index])
