@@ -13,6 +13,7 @@
     "git",
     "say",
     "animeme",
+    "reddit",
     "leave",
     "betrayed",
     "prettygood",
@@ -44,7 +45,9 @@
     [
     "What are ya, some kind of funny guy, eh?",
     "Sends a link to the bot's github repository",
+    "Repeats what you tell it to, and deletes your original message",
     "Pulls a S P I C C Y meme from r/animemes",
+    "Gets a random post from the hottest 100 post of the subreddit specified",
     "Leaves the current voice channel",
     "IT WAS ME AUSTIN!",
     "Hey, that's pretty good",
@@ -78,6 +81,7 @@
     "",
     "<what you want me to say>",
     "",
+    "[subreddit]",
     "",
     "",
     "",
@@ -105,7 +109,7 @@
     ""
     ],
 
-    "vc_start": 4,
+    "vc_start": 5,
 
     "sunday_game": "Minecraft: Christian Edition",
     "monday_game": "Minecraft: Safety Edition",

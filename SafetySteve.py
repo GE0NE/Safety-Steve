@@ -56,6 +56,7 @@ weekday = 0
 # Reddit Config
 reddit_id = token['client_id']
 reddit_secret = token['client_secret']
+reddit_agent = "X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*"
 
 copycat = ""                                                                                                    # and some global shit we'll use later
 voice = None
@@ -137,14 +138,8 @@ async def on_message(msg: discord.Message):                                     
         if message[:4] == commands[0] and message[5:].strip() != "":       
             for command in commands: 
                 if message[5:].strip() == command:                                                                   
-                    embed = discord.Embed(title="Command:", description=command, color=0xeee657) #                      
-                    embed.add_field(name="Description:", 
-                        value=commandDescriptions[commands.index(command)], inline=False)
-                    embed.add_field(name="Usage:", 
-                        value="```" + invoker + command + " " +
-                        commandParams[commands.index(command)] + "```", inline=False)
-                    await client.send_message(msg.channel, embed=embed)                                      
-                    return                                                         
+                    await help(command, msg) 
+                    return                                                       
 
         if message == commands[1]:                                                                                  # if the message is asking for git
             gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                   # make sure they're christian enough                                                                   
@@ -152,21 +147,20 @@ async def on_message(msg: discord.Message):                                     
             await client.send_message(msg.channel, gitMessage, embed=embed)                                     # send it
             return                                                                                              # gtfo
 
-        if message[:3] == commands[2] and msg.content[4:] != "":                                                    # if they ask you to repeat after them
+        if message[:3] == commands[2]:                                                                            # if they ask you to repeat after them
+            if message[4:] == "":
+                await help('say', msg)
+                return
             copy = msg.content[4:]                                                                              # remember what they say
             await client.send_message(msg.channel, copy)                                                        # and mock them like a parrot
             await client.delete_message(msg)                                                                    # then make them take it back
             return                                                                                              # and gtfo
 
         if message == commands[3]:                                                                              # when you need some animemes
-            reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret,
-                                 user_agent="X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*")
-            url_list = []
-            for submission in reddit.subreddit('animemes').hot(limit=100):
-                if submission.url[-3:] == "png" or submission.url[-3:] == "jpg":
-                    url_list.append(submission.url)
-            meme_index = random.randint(1, len(url_list))
-            await client.send_message(msg.channel, url_list[meme_index])
+            await subreddit('animemes', msg)
+
+        if message[:6] == commands[4]:                                                                              # when you need some reddit
+            await subreddit(msg.content[8:], msg)
 
         if message == commands[vcStart] and isPlaying:                                                          # if they ask you to leave
             isPlaying = False                                                                                   # unflag isPlaying
@@ -202,6 +196,38 @@ async def on_message(msg: discord.Message):                                     
         await client.send_message(msg.channel, 'Use {}{} for a list of commands'.format(invoker, commands[0]))  # fuck him, here's a hint ya idiot
         return                                                                                                  # gtfo
 
+
+async def subreddit(sub, msg):
+    if msg.content[8:].strip() == "":
+        await help('reddit', msg)
+        return
+    reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
+    url_list = []
+    try:
+        for submission in reddit.subreddit(sub).hot(limit=100):
+            if submission.url[-3:] == "png" or submission.url[-3:] == "jpg":
+                url_list.append(submission.url)
+        if len(url_list) > 0:
+            meme_index = random.randint(1, len(url_list))
+            embed = discord.Embed(title="Here's a trending post from", description='reddit.com/r/{}'.format(sub), color=0xeee657)
+            embed.set_image(url=url_list[meme_index])
+            await client.send_message(msg.channel, embed=embed)
+            #await client.send_message(msg.channel, url_list[meme_index])
+        else:
+            await client.send_message(msg.channel, "We're out of memes!")
+    except:
+        await client.send_message(msg.channel, 'reddit.com/r/{} couldn\'t be accessed.'.format(sub))
+
+
+async def help(command, msg):
+    embed = discord.Embed(title="Command:", description=command, color=0xeee657) #                      
+    embed.add_field(name="Description:", 
+        value=commandDescriptions[commands.index(command)], inline=False)
+    embed.add_field(name="Usage:", 
+        value="```" + invoker + command + " " +
+        commandParams[commands.index(command)] + "```", inline=False)
+    await client.send_message(msg.channel, embed=embed)                                      
+    return
 
 
 @client.event
