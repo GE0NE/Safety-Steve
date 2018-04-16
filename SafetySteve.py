@@ -89,7 +89,11 @@ async def on_message(msg: discord.Message):                                     
             for command in commands: 
                 if message[5:].strip() == command:                                                                   
                     await helpCommand(command, msg) 
-                    return                                                       
+                    return          
+
+
+        if message[:5] == 'react':                                                                                  # test command for emoji reacting
+            await react(msg, message[6:].strip())                                             
 
         if message == commands[1]:                                                                                  # if the message is asking for git
             await git(msg)
@@ -182,7 +186,10 @@ async def say(msg, message, embed=None):
     return
 
 async def react(msg, emote):
-    await client.add_reaction(msg, emote)
+    try:
+        await client.add_reaction(msg, emote)
+    except:
+        await say(msg, "I don't know that emoji");
     return
 
 async def help(msg):
