@@ -182,7 +182,7 @@ async def say(msg, message, embed=None):
     return
 
 async def react(msg, emote):
-    await client.add_reaction(msg, "🐸")
+    await client.add_reaction(msg, emote)
     return
 
 async def help(msg):
