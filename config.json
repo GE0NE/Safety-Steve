@@ -36,10 +36,11 @@
     "exposed",
     "wednesday",
     "wednesdaygroove",
-    "ahhhh",
+    "ahhh",
     "aurora",
     "darling",
-    "ech"
+    "ech",
+	"nooo"
     ],
 
     "command_descriptions":
@@ -74,7 +75,8 @@
     "WAHHHHHH!",
     "AT THIS TIME OF YEAR, AT THIS TIME OF DAY, IN THIS PART OF THE COUNTRY?",
     "Best Girl",
-    "Jontron's mighty ECH!"
+    "Jontron's mighty ECH!",
+	"Nooooooooooooooo!"
     ],
 
     "command_params":
@@ -109,7 +111,8 @@
     "",
     "",
     "",
-    ""
+    "",
+	""
     ],
 
     "vc_start": 5,

@@ -107,7 +107,7 @@ async def on_message(msg: discord.Message):                                     
             return                                                                                              
 
         if message == commands[3]:                                                                              # when you need some animemes
-            await subreddit('animemes', msg)
+            await subreddit('animemes', msg, True)
             return
 
         if message[:6] == commands[4]:                                                                          # when you need some reddit
@@ -126,7 +126,7 @@ async def on_message(msg: discord.Message):                                     
             if message == commands[i]:                                                                          # otherwise
                 if msg.author.voice_channel:                                                                    # if the command is valid
                     try:                                                                                        # try to
-                        voice = await client.join_voice_channel(msg.author.voice_channel)                       # create a voice client
+                        voice = await client.join_voice_channel(msg.author.voice_channel)                       # create a voice clientw
                         player = voice.create_ffmpeg_player(                                                    # create a ffmpeg player
                             'sound/' + message + fileExt)
                         isPlaying = True                                                                        # flag isPlaying
@@ -149,8 +149,8 @@ async def on_message(msg: discord.Message):                                     
         return                                                                                                  # gtfo
 
 
-async def subreddit(sub, msg):
-    if msg.content[8:].strip() == "":
+async def subreddit(sub, msg, bypassErrorCheck = False):
+    if not bypassErrorCheck and msg.content[8:].strip() == "":
         await helpCommand('reddit', msg)
         return
     reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
@@ -180,9 +180,16 @@ async def git(msg):
 
 async def say(msg, message, embed=None):
     if embed == None:
-        await client.send_message(msg.channel, message)
+        await sayInChannel(msg.channel, message)
     else:
-        await client.send_message(msg.channel, message, embed=embed)
+        await sayInChannel(msg.channel, message, embed=embed)
+    return
+
+async def sayInChannel(channel, message, embed=None):
+    if embed == None:
+        await client.send_message(channel, message)
+    else:
+        await client.send_message(channel, message, embed=embed)
     return
 
 async def react(msg, emote):
@@ -240,7 +247,7 @@ async def status_task():                                                        
                 channel = client.get_channel(lobbyChannelID)
                 async for message in client.logs_from(channel, limit=1):
                     if message.author != client.user:
-                        await say(channel, "Happy Wednesday, my dudes!")
+                        await sayInChannel(channel, "Happy Wednesday, my dudes!")
                         break;
             except:
                 print('Channel does not exist: {}'.format(channel))
