@@ -202,7 +202,7 @@ async def on_message(msg: discord.Message):                                     
             await voice.disconnect()
             return
 
-        for i in range(0, len(voiceCommands)):                                                                      # handler for all voice commands
+        for i in range(1, len(voiceCommands)):                                                                      # handler for all voice commands
             if isPlaying:                                                                                               # if a sound is already playing
                 await say(msg, 'I\'m already playing a sound! Please wait your turn.')                                      # send a message informing them
                 return
