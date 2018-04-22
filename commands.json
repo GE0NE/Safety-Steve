@@ -1,0 +1,207 @@
+{
+    "text_commands":
+    [
+        {
+            "Command": "help",
+            "Help": "What are ya, some kind of funny guy, eh?",
+            "Params": "[command]"
+        },
+        
+        {
+            "Command": "git",
+            "Help": "Sends a link to the bot's github repository",
+            "Params": ""
+        },
+        
+        {
+            "Command": "say",
+            "Help": "Repeats what you tell it to, and deletes your original message",
+            "Params": "<what you want me to say>"
+        },
+        
+        {
+            "Command": "animeme",
+            "Help": "Pulls a S P I C C Y meme from r/animemes",
+            "Params": ""
+        },
+        
+        {
+            "Command": "reddit",
+            "Help": "Gets a random post from the hottest 100 post of the subreddit specified",
+            "Params": "[subreddit]"
+        },
+        
+        {
+            "Command": "ascii",
+            "Help": "Repeats what you tell it to in ascci art letters",
+            "Params": "<what you want me to say>"
+        }
+    ],
+
+
+    
+    "voice_commands":
+    [
+        {
+            "Command": "leave",
+            "Help": "Leaves the current voice channel",
+            "Params": ""
+        },
+        
+        {
+            "Command": "betrayed",
+            "Help": "IT WAS ME AUSTIN!",
+            "Params": ""
+        },
+        
+        {
+            "Command": "prettygood",
+            "Help": "Hey, that's pretty good",
+            "Params": ""
+        },
+        
+        {
+            "Command": "prettygoodvs",
+            "Help": "Hey, that's pretty good but it's bald science man",
+            "Params": ""
+        },
+        
+        {
+            "Command": "timetostop",
+            "Help": "It's time to stop! No more!",
+            "Params": ""
+        },
+        
+        {
+            "Command": "stopit",
+            "Help": "Stop it. Get some help",
+            "Params": ""
+        },
+        
+        {
+            "Command": "what",
+            "Help": "What the fuck?",
+            "Params": ""
+        },
+        
+        {
+            "Command": "vsauce",
+            "Help": "Micheal here",
+            "Params": ""
+        },
+        
+        {
+            "Command": "butwhatis",
+            "Help": "Moon Men by Jake Chudnow",
+            "Params": ""
+        },
+        
+        {
+            "Command": "cripdep",
+            "Help": "I have crippling depression",
+            "Params": ""
+        },
+        
+        {
+            "Command": "titanic",
+            "Help": "My Heart Will Go On: recorder edition",
+            "Params": ""
+        },
+        
+        {
+            "Command": "jurassicpark",
+            "Help": "Jurassic Park theme played on a Melodica",
+            "Params": ""
+        },
+        
+        {
+            "Command": "dododo",
+            "Help": "Buu buu desu wa",
+            "Params": ""
+        },
+        
+        {
+            "Command": "shutdown",
+            "Help": "Windows XP shutdown sound",
+            "Params": ""
+        },
+        
+        {
+            "Command": "startup",
+            "Help": "Windows XP startup sound",
+            "Params": ""
+        },
+        
+        {
+            "Command": "shutdowner",
+            "Help": "Windows XP shutdown sound: ear rape edition",
+            "Params": ""
+        },
+        
+        {
+            "Command": "startuper",
+            "Help": "Windows XP startup sound: ear rape edition",
+            "Params": ""
+        },
+        
+        {
+            "Command": "oof",
+            "Help": "OOF",
+            "Params": ""
+        },
+        
+        {
+            "Command": "noice",
+            "Help": "POP! NOICE",
+            "Params": ""
+        },
+        
+        {
+            "Command": "exposed",
+            "Help": "I'VE BEEN EXPOSED",
+            "Params": ""
+        },
+        
+        {
+            "Command": "wednesday",
+            "Help": "It is Wednesday my dudes!",
+            "Params": ""
+        },
+        
+        {
+            "Command": "wednesdaygroove",
+            "Help": "Wednesday Hard by ZimoNitrome",
+            "Params": ""
+        },
+        
+        {
+            "Command": "ahhh",
+            "Help": "A screem!",
+            "Params": ""
+        },
+        
+        {
+            "Command": "aurora",
+            "Help": "AT THIS TIME OF YEAR, AT THIS TIME OF DAY, IN THIS PART OF THE COUNTRY?",
+            "Params": ""
+        },
+        
+        {
+            "Command": "darling",
+            "Help": "Best Girl",
+            "Params": ""
+        },
+        
+        {
+            "Command": "ech",
+            "Help": "Jontron's mighty ECH!",
+            "Params": ""
+        },
+        
+        {
+            "Command": "nooo",
+            "Help": "Darth Vader's Nooooooooooooooo!",
+            "Params": ""
+        }
+    ]
+}

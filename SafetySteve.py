@@ -6,99 +6,171 @@ import asyncio                                                                  
 import re                                                                                                       # re:re:re:re:re: meeting time
 import praw
 import random
+import math
 
 try:                                                                                                            # try to
-    import discord                                                                                              # get discord in here
-except ImportError:                                                                                             # but if he's too drunk
-    import pip                                                                                                  # get his gf in here
-    pip.main(['install', 'discord'])                                                                            # and sober him up
-    import discord                                                                                              # then drag the fucker back here
-from discord import opus                                                                                        # and his noisy dog, too
+    import discord                                                                                                  # import discord.py
+except ImportError:                                                                                             # if discord.py isn't installed
+    import pip                                                                                                      # import pip
+    pip.main(['install', 'discord'])                                                                                # install discord.py
+    import discord                                                                                              # import discord.py
+from discord import opus                                                                                        # inport opus, the discord sound lib
 
 
-try:                                                                                                            # try to
-    with open('config.json', encoding='utf8') as f:                                                             # get jason f. at the party
+try:
+    with open('config.json', encoding='utf8') as f:                                                             
         config = json.load(f)
-except FileNotFoundError:                                                                                       # if he's too drunk
-    with open('config.json', 'w') as f:                                                                         # fuck it, we'll find another jason, jason w.
-        config = {}
-        print("config file created.")                                                                           # shout it to the mountain tops that we got a new friend
-        json.dump({'discord_token': '', 'response': '', 'words': ['']}, f)                                      # then brief him in on his former self
-
-try:                                                                                                            # rinse and repeat for the designated driver, also named jason
-    with open('discord-token.json') as f:
-        token = json.load(f)
 except FileNotFoundError:
-    with open('discord-token.json', 'w') as f:
-        token = {}
+    with open('config.json', 'w') as f:
+        config = {}
         print("config file created.")
+        json.dump({'description': '',
+                    'name': '',
+                    'invoker': '^',
+                    'creator': 'GEONE',
+                    'git_link': '',
+                    'fileformat': '.mp3',
+                    'sunday_game': '',
+                    'monday_game': '',
+                    'tuesday_game': '',
+                    'wednesday_game': '',
+                    'thursday_game': '',
+                    'friday_game': '',
+                    'saturday_game': '',
+                    'response': '',
+                    'words':['']}, f)
+
+try:
+    with open('user-info.json', encoding='utf8') as f:
+        userInfo = json.load(f)
+except FileNotFoundError:
+    with open('user-info.json', 'w') as f:
+        userInfo = {}
+        print("user info file created.")
         json.dump({'discord_token': ''}, f)
 
+try:
+    with open('commands.json', encoding='utf8') as f:
+        commandsFile = json.load(f)
+except FileNotFoundError:
+    with open('commands.json', 'w') as f:
+        commandsFile = {}
+        print("commands file created.")
+        json.dump({'text_commands': [{'Command': '', 'Help': '', 'Params': ''}],
+            'voice_commands': [{'Command': '', 'Help': '', 'Params': ''}]}, f)
+
+try:
+    with open('fonts.json', encoding='utf8') as f:
+        fonts = json.load(f, strict=False)
+except FileNotFoundError:
+    with open('font.json', 'w') as f:
+        font = {}
+        print("fonts file created.")
+        json.dump({'bubble': [''], "bubble_mask": ['']}, f)
+
+try:
+    with open('birthdays.json', encoding='utf8') as f:
+        birthday_list = json.load(f, strict=False)
+except FileNotFoundError:
+    with open('font.json', 'w') as f:
+        birthday_list = {}
+        print("birthdays file created.")
+        json.dump({'birthdays': [{"Name": "John", "Day": 31, "Month": 12, "Year": 1990}]}, f)
 
 
-desc = config['description']                                                                                    # initialize a bunch of info from jason's wallet
+# Bot info
+desc = config['description']
 invoker = config['invoker']
-now = datetime.datetime.now()
-userID = token['user_id']
-mention = token['mention']
+userID = userInfo['user_id']
+mention = userInfo['mention']
+discordToken = userInfo['discord_token']
 name = config['name']
-commands = config['commands']
-commandDescriptions = config['command_descriptions']
-commandParams = config['command_params']
+
+# Commands
+textCommands = commandsFile['text_commands']
+voiceCommands = commandsFile['voice_commands']
+textCommandList = []
+voiceCommandList = []
+
+# Command info
+textCommandHelp = []
+textCommandParams = []
+voiceCommandHelp = []
+voiceCommandParams = []
+
+# Init command info
+for command in textCommands:
+    textCommandList.append(command['Command'])
+    textCommandHelp.append(command['Help'])
+    textCommandParams.append(command['Params'])
+
+for command in voiceCommands:
+    voiceCommandList.append(command['Command'])
+    voiceCommandHelp.append(command['Help'])
+    voiceCommandParams.append(command['Params'])
+
+# List of commands
+commandList = textCommandList + voiceCommandList
+commandHelp = textCommandHelp + voiceCommandHelp
+commandParams = textCommandParams + voiceCommandParams
+
+# Bad words and the response to them
 wordBlacklist = config['words']
 badWordResponse = config['response']
-lobbyChannelID = config['lobby_channel_id']
-vcStart = config['vc_start']
-gitLink = config['git_link']
-fileExt = config['fileformat']
-weekday = 0
+
+# Channel IDs
+lobbyChannelID = userInfo['lobby_channel_id']
+generalChannelID = userInfo['general_channel_id']
+
+# Birthdays
+birthdays = birthday_list['birthdays']
 
 # Reddit Config
-reddit_id = token['client_id']
-reddit_secret = token['client_secret']
+reddit_id = userInfo['client_id']
+reddit_secret = userInfo['client_secret']
 reddit_agent = "X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*"
 
-copycat = ""                                                                                                    # and some global shit we'll use later
+# Misc info for commands
+gitLink = config['git_link']
+fileExt = config['fileformat']
+bubbleFont = fonts['bubble_letters']
+bubbleFontMask = fonts['bubble_mask']
+copycat = ""
 voice = None
 player = None
 isPlaying = False
+weekday = 0
 
-client = discord.Client(description=desc, max_messages=100)                                                     # then create the client
+# The client
+client = discord.Client(description=desc, max_messages=100)                                                     # create the client
 
 
 @client.event
-async def on_message(msg: discord.Message):                                                                         # When I get a message
-    global voice                                                                                                # remember what my voice sounds like
-    global player                                                                                               # and try to remember how to speak
-    global isPlaying                                                                                            # and check is the music is playing
+async def on_message(msg: discord.Message):                                                                     # When a message is sent to a channel
+    global voice
+    global player
+    global isPlaying
+    if 'wednesday' in msg.content.lower():                                                                      # if the message contains 'wednesday'
+        await react(msg, "🐸")                                                                                      # react with a frog emoji
 
-    if 'wednesday' in msg.content.lower():
-        await react(msg, "🐸")
+    if msg.author.bot:                                                                                          # if the message was from the bot
+        return                                                                                                      # ignore it
 
-    if msg.author.bot:                                                                                          # if the message was from drunk-me
-        return                                                                                                  # gtfo 
+    if msg.content.startswith(invoker):                                                                         # if the message starts with the invoker
+        message = msg.content.lower()[len(invoker):]                                                            
 
-    if msg.content.startswith(invoker):                                                                         # if the message was directed at me
-        message = msg.content.lower()[len(invoker):]                                                            # informalize it
-
-        if message == commands[0]:                                                                              # if the message is asking for help
+        if message == textCommands[0]['Command']:                                                                   # help command
             await help(msg)
-            return
-            
-        if message[:4] == commands[0] and message[5:].strip() != "":       
-            for command in commands: 
-                if message[5:].strip() == command:                                                                   
-                    await helpCommand(command, msg) 
-                    return          
+            return       
 
+        if message[:4] == textCommands[0]['Command']:                                                               # help [command] command
+            await helpCommand(message[5:], msg) 
+            return                                            
 
-        if message[:5] == 'react':                                                                                  # test command for emoji reacting
-            await react(msg, message[6:].strip())                                             
-
-        if message == commands[1]:                                                                                  # if the message is asking for git
+        if message == textCommands[1]['Command']:                                                                   # git command
             await git(msg)
 
-        if message[:3] == commands[2]:                                                                            # if they ask you to repeat after them
+        if message[:3] == textCommands[2]['Command']:                                                               # say <text> command
             if message[4:] == "":
                 await helpCommand('say', msg)
                 return                                                                                          
@@ -106,47 +178,58 @@ async def on_message(msg: discord.Message):                                     
             await client.delete_message(msg)                                                                   
             return                                                                                              
 
-        if message == commands[3]:                                                                              # when you need some animemes
+        if message == textCommands[3]['Command']:                                                                   # animeme command
             await subreddit('animemes', msg, True)
             return
 
-        if message[:6] == commands[4]:                                                                          # when you need some reddit
+        if message[:6] == textCommands[4]['Command']:                                                               # reddit [subreddit] command
             await subreddit(msg.content[8:], msg)
             return
 
-        if message == commands[vcStart] and isPlaying:                                                          # if they ask you to leave
-            isPlaying = False                                                                                   # unflag isPlaying
-            await voice.disconnect()                                                                            # then leave the channel
-            return                                                                                              # and gtfo
+        if message[:5] == textCommands[5]['Command']:                                                               # ascii command
+            if len(message[6:]) > 30:
+                await say(msg, "Whoah! That's too many letter! Keep it below 30 please.")
+                return
+            if len(message[6:].strip()) < 1:
+                await helpCommand('ascii', msg)
+                return
+            await sayAscii(msg, message[6:])
+            return
 
-        for i in range(vcStart + 1, len(commands)):                                                             # if they ask you to play a sound
-            if isPlaying:                                                                                       # if a sound is already playing
-                await say(msg, 'I\'m already playing a sound! Please wait your turn.')                  # inform the user of their negligence
-                return                                                                                          # and gtfo. smh
-            if message == commands[i]:                                                                          # otherwise
-                if msg.author.voice_channel:                                                                    # if the command is valid
-                    try:                                                                                        # try to
-                        voice = await client.join_voice_channel(msg.author.voice_channel)                       # create a voice clientw
-                        player = voice.create_ffmpeg_player(                                                    # create a ffmpeg player
+
+        if message == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
+            isPlaying = False
+            await voice.disconnect()
+            return
+
+        for i in range(0, len(voiceCommands)):                                                                      # handler for all voice commands
+            if isPlaying:                                                                                               # if a sound is already playing
+                await say(msg, 'I\'m already playing a sound! Please wait your turn.')                                      # send a message informing them
+                return
+            if message == voiceCommands[i]['Command']:                                                                  # otherwise
+                if msg.author.voice_channel:                                                                                # if the user is in a voice channel
+                    try:                                                                                                        # try to
+                        voice = await client.join_voice_channel(msg.author.voice_channel)                                           # create a voice clientw
+                        player = voice.create_ffmpeg_player(                                                                        # create a ffmpeg player
                             'sound/' + message + fileExt)
-                        isPlaying = True                                                                        # flag isPlaying
-                        player.start()                                                                          # start the player
-                        client.loop.create_task(donePlaying(voice, player))                                     # start a thread to keep track of when the sound is finished playing
-                    except Exception as e:                                                                      # if you can't
-                        print(e)                                                                                # notify the host that there was an issue
-                        await say(msg, 'There was an issue playing the sound file 🙁')  # notify the client that there was an issue
-                        pass                                                                                    # drakememe.jpg
-                else:                                                                                           # otherwise
-                    await say(msg, 'You\'re not in a voice channel!')                   # inform the user that they're trying to use a voice command without being in a voice channel
-                return                                                                                          # gtfo
+                        isPlaying = True                                                                                            # flag isPlaying
+                        player.start()                                                                                              # start the player
+                        client.loop.create_task(donePlaying(voice, player))                                                         # start a thread to keep track of when the sound is finished playing
+                    except Exception as e:                                                                                      # if you can't
+                        print(e)                                                                                                    # notify the host that there was an issue
+                        await say(msg, 'There was an issue playing the sound file 🙁')                                              # notify the client that there was an issue
+                        pass                                                                                                        # drakememe.jpg
+                else:                                                                                                       # otherwise
+                    await say(msg, 'You\'re not in a voice channel!')                                                           # inform the user that they're not in a voice channel
+                return
 
-    elif any([word in msg.content.lower() for word in wordBlacklist]):                                            # if the message contains any bad words
-        await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))            # tell them politely, yet firmly, to leave
-        return                                                                                                  # then gtfo
+    elif any([word in msg.content.lower() for word in wordBlacklist]):                                          # if the message does not start with the invoker but it contains bad words
+        await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))                                        # tell them politely, yet firmly, to leave
+        return
 
-    elif client.user.mentioned_in(msg) and msg.mention_everyone is False:                                           # if a user mentions me
-        await say(msg, 'Use {}{} for a list of commands'.format(invoker, commands[0]))  # birect him to the help command
-        return                                                                                                  # gtfo
+    elif client.user.mentioned_in(msg) and msg.mention_everyone is False:                                       # if a user mentions the bot
+        await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))               # send the help command
+        return
 
 
 async def subreddit(sub, msg, bypassErrorCheck = False):
@@ -200,40 +283,60 @@ async def react(msg, emote):
     return
 
 async def help(msg):
-    textCommandList = ""                                                                                
-    voiceCommandList = ""                                                                               
-
-    for command in commands[:vcStart]:                                                                 
-        textCommandList = textCommandList + ", " + command
-    for command in commands[vcStart:]:                                                                  
-        voiceCommandList = voiceCommandList + ", " + command 
 
     embed = discord.Embed(title=name, description=desc, color=0xeee657)                                
     embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)                      
-    embed.add_field(name="🔤 Text Commands", value=textCommandList[2:], inline=False)                  
-    embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel', value=voiceCommandList[2:], inline=False)
+    embed.add_field(name="🔤 Text Commands", value=", ".join(textCommandList), inline=False)                  
+    embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel', value=", ".join(voiceCommandList), inline=False)
     embed.set_footer(text="Created by {}".format(config['creator']))                                    
 
     await say(msg, "", embed)                                                 
     return                                                                                             
 
 async def helpCommand(command, msg):
+
+    command = command.strip()
+
+    if command not in commandList:
+        await say(msg, "That's not a command I know.")
+        return
+                    
     embed = discord.Embed(title="Command:", description=command, color=0xeee657) #                      
-    embed.add_field(name="Description:", 
-        value=commandDescriptions[commands.index(command)], inline=False)
-    embed.add_field(name="Usage:", 
-        value="```" + invoker + command + " " +
-        commandParams[commands.index(command)] + "```", inline=False)
+    embed.add_field(name="Description:", value=commandHelp[commandList.index(command)], inline=False)
+    embed.add_field(name="Usage:", value="```" + invoker + command + " " + commandParams[commandList.index(command)] + "```", inline=False)
     await say(msg, "", embed)                                      
     return
+
+async def sayAscii(msg, message):
+    ascii = []
+    output = ""
+    if len(message) > 6:
+        await sayAscii(msg, message[:6])
+        await sayAscii(msg, message[6:])
+        return
+    for letter in list(message):
+        if letter in bubbleFontMask:
+            ascii.append(bubbleFont[bubbleFontMask.index(letter)])
+    for i in range(0, 6):
+        for letterBlock in ascii:
+            letterBreakdown = letterBlock.splitlines()
+            for j, line in enumerate(letterBreakdown):
+                while len(line) < 5:
+                    line += " "
+                    letterBreakdown[j] += "╱"
+            output = output + letterBreakdown[i]
+        output = output + '\n'
+
+    await say(msg, output)
 
 async def setPlaying(name, type=0):
     await client.change_presence(game=discord.Game(type=0, name=name))
     return
 
 
-async def status_task():                                                                                            # choose what game to play based on the day of the week
+async def status_task():                                                                                        # choose what game to play based on the day of the week
     while True:
+        oldWeekday = weekday
         now = datetime.datetime.now()
         if now.weekday() == 6 and weekday != 6:
             await setPlaying(config['sunday_game'])
@@ -257,44 +360,70 @@ async def status_task():                                                        
             await setPlaying(config['friday_game'])
         if now.weekday() == 5 and weekday != 5:
             await setPlaying(config['saturday_game'])
+        if oldWeekday != weekday:
+            await checkBDays()
+        oldWeekday = weekday
         await asyncio.sleep(1800)                                                                               # only look at the clock every 30 minutes
 
+async def checkBDays():
+    today = datetime.datetime.today()
+    
+    for birthday in birthdays:
+        if today.day == birthday['Day'] and today.month == birthday['Month']:
+            age = today.year - birthday['Year']
+            channel = client.get_channel(generalChannelID)
+            async for message in client.logs_from(channel, limit=1):
+                    if message.author != client.user and message.content[:5] != "Happy":
+                        botmsg = await sayInChannel(channel, "Happy {} birthday, ".format(ord(age)) + birthday['Tag'] + "!")
+                        async for message in client.logs_from(channel, limit=1):
+                            msg = message
+                            break
+                        await react(msg, "🎉")
+                        await react(msg, "🎂")
+                        await react(msg, "🎊")
+                        await react(msg, "🍰")
+            return
+    return
 
-async def donePlaying(voice, player):                                                                               # look to see if the sound stopped playing
-    global isPlaying                                                                                            # try to remember if it was playing in the first place
-    while isPlaying:                                                                                            # if was is playing
-        if player.is_done():                                                                                    # and the sound's now over
-            await voice.disconnect()                                                                            # leave the house, this party's lame af
-            isPlaying = False                                                                                   # unflag isPlaying
-        await asyncio.sleep(0.5)                                                                                # only pay attention to the music every 500 milliseconds
+async def donePlaying(voice, player):                                                                           # checks if the sound stopped playing
+    global isPlaying
+    while isPlaying:                                                                                                # if the sound is playing
+        if player.is_done():                                                                                            # and the sound's now over
+            await voice.disconnect()                                                                                    # leave the channel
+            isPlaying = False                                                                                               # unflag isPlaying
+        await asyncio.sleep(0.5)                                                                                        # only check if the sound is playing every 500 milliseconds
+
+def ord(n):                                                                                                     # this adds an ordinal indicator to a number and returns it as a string
+    return "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])                                   # IE: 1st 2nd 3rd 4th
 
 @client.event
-async def on_ready():                                                                                               # When the bot has logged in and is ready to start receiving commands
-    app_info = await client.application_info()                                                                  # get the client info
-    client.owner = app_info.owner                                                                               # get the owner's name from the info
-    await client.change_presence(game=discord.Game(type = 0, name = config['monday_game']))                     # set the game the bot is playing                                                                         
+async def on_ready():                                                                                           # When the bot has logged in and is ready to start receiving commands
+    app_info = await client.application_info()                                                                      # get the client info
+    client.owner = app_info.owner                                                                                   # get the owner's name from the info
+    await client.change_presence(game=discord.Game(type = 0, name = config['monday_game']))                         # set the game the bot is playing                                                                         
 
-    print('Bot: {0.name}:{0.id}'.format(client.user))                                                           # print the bot info to the console
-    print('Owner: {0.name}:{0.id}'.format(client.owner))                                                        # print the owner info to the console
-    print('------------------')                                                                                 # a line seperator thingy
+    print('Bot: {0.name}:{0.id}'.format(client.user))                                                               # print the bot info to the console
+    print('Owner: {0.name}:{0.id}'.format(client.owner))                                                            # print the owner info to the console
+    print('------------------')                                                                                     # a line seperator thingy
     perms = discord.Permissions.none()
-    perms.administrator = True                                                                                  # this makes the bot an admin. Oh the possibilities
-    url = discord.utils.oauth_url(app_info.id, perms)                                                           #   *Note to Self: do not abuse
-    print('To invite me to a server, use this link\n{}'.format(url))                                            # print out the discord invitation url to the console
+    perms.administrator = True                                                                                      # this makes the bot an admin. Oh the possibilities
+    url = discord.utils.oauth_url(app_info.id, perms)                                                               #   *Note to Self: do not abuse
+    print('To invite me to a server, use this link\n{}'.format(url))                                                # print out the discord invitation url to the console
 
-    if sys.maxsize > 2**32:                                                                                     # if the current system is x64 bit
-        opus.load_opus('libopus-0.x64.dll')                                                                     # load opus x64 Windows library
-    else:                                                                                                       # otherwise
-        opus.load_opus('libopus-0.x86.dll')                                                                     # load opus x32 Windows library
-#                                                                                                               # fuck linux
-    client.loop.create_task(status_task())                                                                      # sed a thread to periodically check what day of the week it is
+    if sys.maxsize > 2**32:                                                                                         # if the current system is x64 bit
+        opus.load_opus('libopus-0.x64.dll')                                                                             # load opus x64 Windows library
+    else:                                                                                                           # if the current system is x32 bit
+        opus.load_opus('libopus-0.x86.dll')                                                                             # load opus x32 Windows library
+    await checkBDays()
+#                                                                                                                   # check if it's anyone's bithday today
+    client.loop.create_task(status_task())                                                                          # send a thread to periodically check what day of the week it is
 
 
 
-if __name__ == '__main__':                                                                                          # if the program has started
-    try:                                                                                                        # try to
-        client.run(token['discord_token'])                                                                      # run the client
-    except KeyError:                                                                                            # if the config file isn't filled out
-        print("config not yet filled out.")                                                                     # say that thing I just said
-    except discord.errors.LoginFailure as e:                                                                    # if the discord token is not correct
-        print("Invalid discord token.")                                                                         # hey, you're not me... stop editing my code
+if __name__ == '__main__':                                                                                      # weird preformance trick
+    try:                                                                                                            # try to
+        client.run(discordToken)                                                                                               # run the client
+    except KeyError:                                                                                                # if the config file isn't filled out
+        print("config not yet filled out.")                                                                             # print to the console
+    except discord.errors.LoginFailure as e:                                                                        # if the discord token is not correct
+        print("Invalid discord token.")                                                                                 # hey, you're not me... stop editing my code
