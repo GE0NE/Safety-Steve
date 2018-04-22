@@ -202,6 +202,36 @@
             "Command": "nooo",
             "Help": "Darth Vader's Nooooooooooooooo!",
             "Params": ""
+        },
+        
+        {
+            "Command": "ussr",
+            "Help": "National Anthem of USSR",
+            "Params": ""
+        },
+        
+        {
+            "Command": "dododofull",
+            "Help": "Buu buu desu wa but it's 1:30",
+            "Params": ""
+        },
+        
+        {
+            "Command": "ussrfull",
+            "Help": "National Anthem of USSR but it's 3:40",
+            "Params": ""
+        },
+        
+        {
+            "Command": "rushb",
+            "Help": "Сука Блять RUSH 🅱",
+            "Params": ""
+        },
+        
+        {
+            "Command": "rushbfull",
+            "Help": "RUSH 🅱 but it's 2:30",
+            "Params": ""
         }
     ]
 }
