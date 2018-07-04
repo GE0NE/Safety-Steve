@@ -94,7 +94,7 @@
             "Type": "holiday",
             "Message": "Lest we forget. It's #name today.",
             "Channel": "#lobby",
-            "React": "poppy"
+            "React": "🕯"
         }
     ]
 }
