@@ -1,6 +1,8 @@
 import os                                                                                                       # import all sorts of shit
 import sys                                                                                                      # like the OS and the System
 import datetime                                                                                                 # and time itself
+from datetime import date, time
+import time
 import json                                                                                                     # some dude named jason
 import asyncio                                                                                                  # a kitchen sinkio
 import re                                                                                                       # re:re:re:re:re: meeting time
@@ -15,67 +17,69 @@ except ImportError:                                                             
     pip.main(['install', 'discord'])                                                                                # install discord.py
     import discord                                                                                              # import discord.py
 from discord import opus                                                                                        # inport opus, the discord sound lib
-
+from discord.utils import get
 
 try:
     with open('config.json', encoding='utf8') as f:                                                             
         config = json.load(f)
 except FileNotFoundError:
-    with open('config.json', 'w') as f:
+    with open('config.json', 'w', encoding='utf8') as f:
         config = {}
         print("config file created.")
-        json.dump({'description': '',
-                    'name': '',
-                    'invoker': '^',
-                    'creator': 'GEONE',
-                    'git_link': '',
-                    'fileformat': '.mp3',
-                    'sunday_game': '',
-                    'monday_game': '',
-                    'tuesday_game': '',
-                    'wednesday_game': '',
-                    'thursday_game': '',
-                    'friday_game': '',
-                    'saturday_game': '',
-                    'response': '',
-                    'words':['']}, f)
+        json.dump({
+            "description": "I keep us safe from evil words!",
+            "name": "Safety Steve", "invoker": "^", "creator": "GEONE",
+            "git_link": "https://github.com/GE0NE/Safety-Steve",
+            "fileformat": ".mp3", "sunday_game": "Minecraft: Christian Edition",
+            "monday_game": "Minecraft: Safety Edition", "tuesday_game": "Nekopara",
+            "wednesday_game": "It is Wednesday, my dudes!",
+            "thursday_game": "Minecraft: Extra Safe Edition (NSFW)",
+            "friday_game": "Waifu Sex Simulator",
+            "saturday_game": "Minecraft: Safety Edition",
+            "response": "Hey! No bad words, please. This is a Christian server!",
+            "words": ["heck", "frick", "fick", "golly", "gosh", "jeeper", "darn", 
+            "drat"]}, f, indent = 4)
 
 try:
     with open('user-info.json', encoding='utf8') as f:
         userInfo = json.load(f)
 except FileNotFoundError:
-    with open('user-info.json', 'w') as f:
+    with open('user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
         print("user info file created.")
-        json.dump({'discord_token': ''}, f)
+        json.dump({
+            "discord_token": "", "user_id": "", "mention": "", "client_id": "", "client_secret": "",
+            "lobby_channel_id": "", "general_channel_id": "", "beta_channel_id": ""}, f, indent = 4)
 
 try:
     with open('commands.json', encoding='utf8') as f:
         commandsFile = json.load(f)
 except FileNotFoundError:
-    with open('commands.json', 'w') as f:
+    with open('commands.json', 'w', encoding='utf8') as f:
         commandsFile = {}
         print("commands file created.")
         json.dump({'text_commands': [{'Command': '', 'Help': '', 'Params': ''}],
-            'voice_commands': [{'Command': '', 'Help': '', 'Params': ''}]}, f)
+            'voice_commands': [{'Command': '', 'Help': '', 'Params': ''}]}, f, indent = 4)
 
 try:
     with open('fonts.json', encoding='utf8') as f:
         fonts = json.load(f, strict=False)
 except FileNotFoundError:
-    with open('font.json', 'w') as f:
+    with open('fonts.json', 'w', encoding='utf8') as f:
         font = {}
         print("fonts file created.")
-        json.dump({'bubble': [''], "bubble_mask": ['']}, f)
+        json.dump({'bubble': [''], "bubble_mask": ['']}, f, indent = 4)
 
 try:
-    with open('birthdays.json', encoding='utf8') as f:
-        birthday_list = json.load(f, strict=False)
+    with open('dates.json', encoding='utf8') as f:
+        date_list = json.load(f, strict=False)
 except FileNotFoundError:
-    with open('font.json', 'w') as f:
-        birthday_list = {}
-        print("birthdays file created.")
-        json.dump({'birthdays': [{"Name": "John", "Day": 31, "Month": 12, "Year": 1990}]}, f)
+    with open('dates.json', 'w', encoding='utf8') as f:
+        date_list = {}
+        print("dates file created.")
+        json.dump({'dates': [{"Name": "John", "Day": 31, "Month": 12, "Year": 1990, 
+            "Tag": "<@430061939805257749>", "Type": "birthday", "Message": "Happy #age #type, #tag!",
+            "Channel": "#lobby", "React": "🎉#🎂#🎊#🍰"}]}, f, indent = 4)
 
 
 # Bot info
@@ -121,9 +125,10 @@ badWordResponse = config['response']
 # Channel IDs
 lobbyChannelID = userInfo['lobby_channel_id']
 generalChannelID = userInfo['general_channel_id']
+betaChannelID = userInfo['beta_channel_id']
 
 # Birthdays
-birthdays = birthday_list['birthdays']
+dates = date_list['dates']
 
 # Reddit Config
 reddit_id = userInfo['client_id']
@@ -279,7 +284,11 @@ async def react(msg, emote):
     try:
         await client.add_reaction(msg, emote)
     except:
-        await say(msg, "I don't know that emoji");
+        try:
+            emote = get(client.get_all_emojis(), name=emote)
+            await client.add_reaction(msg, emote)
+        except:
+            await say(msg, "I don't know that emoji");
     return
 
 async def help(msg):
@@ -336,6 +345,7 @@ async def setPlaying(name, type=0):
 
 async def status_task():                                                                                        # choose what game to play based on the day of the week
     while True:
+        global weekday
         oldWeekday = weekday
         now = datetime.datetime.now()
         if now.weekday() == 6 and weekday != 6:
@@ -348,10 +358,8 @@ async def status_task():                                                        
             await setPlaying(config['wednesday_game'])
             try:
                 channel = client.get_channel(lobbyChannelID)
-                async for message in client.logs_from(channel, limit=1):
-                    if message.author != client.user:
-                        await sayInChannel(channel, "Happy Wednesday, my dudes!")
-                        break;
+                await sayInChannelOnce(channel, "Happy Wednesday, my dudes!")
+                break;
             except:
                 print('Channel does not exist: {}'.format(channel))
         if now.weekday() == 3 and weekday != 3:
@@ -362,28 +370,47 @@ async def status_task():                                                        
             await setPlaying(config['saturday_game'])
         if oldWeekday != weekday:
             await checkBDays()
+        weekday = now.weekday()
         oldWeekday = weekday
         await asyncio.sleep(1800)                                                                               # only look at the clock every 30 minutes
 
 async def checkBDays():
     today = datetime.datetime.today()
     
-    for birthday in birthdays:
-        if today.day == birthday['Day'] and today.month == birthday['Month']:
-            age = today.year - birthday['Year']
-            channel = client.get_channel(generalChannelID)
+    for date in dates:
+        dateDay = date['Day']
+        dateMonth = date['Month']
+        dateYear = date['Year']
+        if today.day == dateDay and today.month == dateMonth:
+            dateName = date['Name']
+            dateMessage = date['Message']
+            dateAge = today.year - dateYear
+            dateOrdAge = ord(dateAge)
+            dateTag = date['Tag']
+            dateType = date['Type']
+            dateChannel = date['Channel'].replace("#lobby", lobbyChannelID).replace("#general", generalChannelID).replace("#beta", betaChannelID)
+            reacts = date['React'].split("#")
+
+            formattedDateMessage = dateMessage.replace("#day", str(dateDay)).replace("#month", str(dateMonth)).replace("#year", str(dateYear)).replace("#name", dateName).replace("#age", dateOrdAge).replace("#tag", dateTag).replace("#type", dateType)
+            print("Found Special Date! " + formattedDateMessage + " In Channel " + dateChannel)
+            channel = client.get_channel(dateChannel)
+            reactCondition = await sayInChannelOnce(channel, formattedDateMessage)
             async for message in client.logs_from(channel, limit=1):
-                    if message.author != client.user and message.content[:5] != "Happy":
-                        botmsg = await sayInChannel(channel, "Happy {} birthday, ".format(ord(age)) + birthday['Tag'] + "!")
-                        async for message in client.logs_from(channel, limit=1):
-                            msg = message
-                            break
-                        await react(msg, "🎉")
-                        await react(msg, "🎂")
-                        await react(msg, "🎊")
-                        await react(msg, "🍰")
-            return
+                msg = message
+                break
+            if reactCondition:
+                for emojis in reacts:
+                    await react(msg, emojis)
+                return
     return
+
+async def sayInChannelOnce(channel, message, embed=None):
+    today = datetime.datetime.combine(date.today(), datetime.time())
+    async for msg in client.logs_from(channel, limit=100, after=today):
+        if msg.author == client.user and msg.content == message:
+           return False
+    await sayInChannel(channel, message, embed)
+    return True
 
 async def donePlaying(voice, player):                                                                           # checks if the sound stopped playing
     global isPlaying
@@ -418,12 +445,22 @@ async def on_ready():                                                           
 #                                                                                                                   # check if it's anyone's bithday today
     client.loop.create_task(status_task())                                                                          # send a thread to periodically check what day of the week it is
 
-
+def run_client(Client, *args, **kwargs):
+    loop = asyncio.get_event_loop()
+    while True:
+        try:
+            loop.run_until_complete(Client.start(*args, **kwargs))
+        except Exception as e:
+            print("Error", e)  # or use proper logging
+        os.system('cls')
+        print("An error occured! Restarting...")
+        time.sleep(10)
 
 if __name__ == '__main__':                                                                                      # weird preformance trick
-    try:                                                                                                            # try to
-        client.run(discordToken)                                                                                               # run the client
-    except KeyError:                                                                                                # if the config file isn't filled out
-        print("config not yet filled out.")                                                                             # print to the console
-    except discord.errors.LoginFailure as e:                                                                        # if the discord token is not correct
-        print("Invalid discord token.")                                                                                 # hey, you're not me... stop editing my code
+    while True:
+        try:                                                                                                            # try to
+            run_client(client, discordToken)                                                                                               # run the client
+        except KeyError:                                                                                                # if the config file isn't filled out
+            print("config not yet filled out.")                                                                             # print to the console
+        except discord.errors.LoginFailure as e:                                                                        # if the discord token is not correct
+            print("Invalid discord token.")                                                                                 # hey, you're not me... stop editing my code
