@@ -48,9 +48,8 @@ try:
 except FileNotFoundError:
     with open('user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
-        json.dump({
-            "discord_token": "", "user_id": "", "mention": "", "client_id": "", "client_secret": "",
-            "lobby_channel_id": "", "general_channel_id": "", "beta_channel_id": ""}, f, indent = 4)
+        json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": ""},
+            "channel_ids":{"lobby": ""}}, f, indent = 4)
         sys.exit("user info file created. "
             "Please fill out the user-info.json file and restart the bot.");
 
@@ -91,9 +90,10 @@ except FileNotFoundError:
 # Bot info
 desc = config['description']
 invoker = config['invoker']
-userID = userInfo['user_id']
-mention = userInfo['mention']
-discordToken = userInfo['discord_token']
+generalInfo = userInfo['general_info']
+userID = generalInfo['user_id']
+mention = generalInfo['mention']
+discordToken = generalInfo['discord_token']
 name = config['name']
 
 # Commands
@@ -129,16 +129,14 @@ wordBlacklist = config['words']
 badWordResponse = config['response']
 
 # Channel IDs
-lobbyChannelID = userInfo['lobby_channel_id']
-generalChannelID = userInfo['general_channel_id']
-betaChannelID = userInfo['beta_channel_id']
+channels = userInfo['channel_ids']
 
 # Birthdays
 dates = date_list['dates']
 
 # Reddit Config
-reddit_id = userInfo['client_id']
-reddit_secret = userInfo['client_secret']
+reddit_id = generalInfo['client_id']
+reddit_secret = generalInfo['client_secret']
 reddit_agent = "X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*"
 
 # Misc info for commands
@@ -363,8 +361,10 @@ async def status_task():                                                        
         if now.weekday() == 2 and weekday != 2:
             await setPlaying(config['wednesday_game'])
             try:
-                channel = client.get_channel(lobbyChannelID)
-                await sayInChannelOnce(channel, "Happy Wednesday, my dudes!")
+                wednesdayChannels = config['wednesday_channels'].replace(" ", "").split('#')
+                for wednesdayChannel in wednesdayChannels:
+                    channel = client.get_channel(userInfo['channel_ids'][wednesdayChannel])
+                    await sayInChannelOnce(channel, "Happy Wednesday, my dudes!")
                 break;
             except:
                 print('Channel does not exist: {}'.format(channel))
@@ -394,20 +394,20 @@ async def checkBDays():
             dateOrdAge = ord(dateAge)
             dateTag = date['Tag']
             dateType = date['Type']
-            dateChannel = date['Channel'].replace("#lobby", lobbyChannelID).replace("#general", generalChannelID).replace("#beta", betaChannelID)
+            dateChannels = date['Channel'].replace(" ", "").split('#')
             reacts = date['React'].split("#")
 
             formattedDateMessage = dateMessage.replace("#day", str(dateDay)).replace("#month", str(dateMonth)).replace("#year", str(dateYear)).replace("#name", dateName).replace("#age", dateOrdAge).replace("#tag", dateTag).replace("#type", dateType)
-            print("Found Special Date! " + formattedDateMessage + " In Channel " + dateChannel)
-            channel = client.get_channel(dateChannel)
-            reactCondition = await sayInChannelOnce(channel, formattedDateMessage)
-            async for message in client.logs_from(channel, limit=1):
-                msg = message
-                break
-            if reactCondition:
-                for emojis in reacts:
-                    await react(msg, emojis)
-                return
+            for dateChannel in dateChannels:
+                channel = client.get_channel(userInfo['channel_ids'][dateChannel])
+                reactCondition = await sayInChannelOnce(channel, formattedDateMessage)
+                async for message in client.logs_from(channel, limit=1):
+                    msg = message
+                    break
+                if reactCondition:
+                    for emojis in reacts:
+                        await react(msg, emojis)
+                    return
     return
 
 async def sayInChannelOnce(channel, message, embed=None):
