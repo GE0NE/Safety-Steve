@@ -25,7 +25,7 @@ try:
 except FileNotFoundError:
     with open('config.json', 'w', encoding='utf8') as f:
         config = {}
-        print("config file created.")
+        print("config file created. Please restart the bot.")
         json.dump({
             "description": "I keep us safe from evil words!",
             "name": "Safety Steve", "invoker": "^", "creator": "GEONE",
@@ -39,6 +39,8 @@ except FileNotFoundError:
             "response": "Hey! No bad words, please. This is a Christian server!",
             "words": ["heck", "frick", "fick", "golly", "gosh", "jeeper", "darn", 
             "drat"]}, f, indent = 4)
+        sys.exit("config file created. "
+            "Please fill out the config.json file and restart the bot.");
 
 try:
     with open('user-info.json', encoding='utf8') as f:
@@ -46,10 +48,11 @@ try:
 except FileNotFoundError:
     with open('user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
-        print("user info file created.")
         json.dump({
             "discord_token": "", "user_id": "", "mention": "", "client_id": "", "client_secret": "",
             "lobby_channel_id": "", "general_channel_id": "", "beta_channel_id": ""}, f, indent = 4)
+        sys.exit("user info file created. "
+            "Please fill out the user-info.json file and restart the bot.");
 
 try:
     with open('commands.json', encoding='utf8') as f:
@@ -57,9 +60,10 @@ try:
 except FileNotFoundError:
     with open('commands.json', 'w', encoding='utf8') as f:
         commandsFile = {}
-        print("commands file created.")
         json.dump({'text_commands': [{'Command': '', 'Help': '', 'Params': ''}],
             'voice_commands': [{'Command': '', 'Help': '', 'Params': ''}]}, f, indent = 4)
+        sys.exit("commands file created. "
+            "Please fill out the commands.json file and restart the bot.");
 
 try:
     with open('fonts.json', encoding='utf8') as f:
@@ -67,8 +71,9 @@ try:
 except FileNotFoundError:
     with open('fonts.json', 'w', encoding='utf8') as f:
         font = {}
-        print("fonts file created.")
         json.dump({'bubble': [''], "bubble_mask": ['']}, f, indent = 4)
+        sys.exit("fonts file created. "
+            "Please fill out the fonts.json file and restart the bot.");
 
 try:
     with open('dates.json', encoding='utf8') as f:
@@ -76,10 +81,11 @@ try:
 except FileNotFoundError:
     with open('dates.json', 'w', encoding='utf8') as f:
         date_list = {}
-        print("dates file created.")
-        json.dump({'dates': [{"Name": "John", "Day": 31, "Month": 12, "Year": 1990, 
+        json.dump({'dates': [{"Name": "John Doe", "Day": 31, "Month": 12, "Year": 1990, 
             "Tag": "<@430061939805257749>", "Type": "birthday", "Message": "Happy #age #type, #tag!",
             "Channel": "#lobby", "React": "🎉#🎂#🎊#🍰"}]}, f, indent = 4)
+        sys.exit("dates file created. "
+            "Optionally fill out the dates.json file and restart the bot.");
 
 
 # Bot info
