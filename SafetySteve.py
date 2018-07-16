@@ -347,7 +347,7 @@ async def setPlaying(name, type=0):
     return
 
 
-async def status_task():                                                                                        # choose what game to play based on the day of the week
+async def status_task(wait):                                                                                        # choose what game to play based on the day of the week
     while True:
         global weekday
         oldWeekday = weekday
@@ -378,7 +378,9 @@ async def status_task():                                                        
             await checkBDays()
         weekday = now.weekday()
         oldWeekday = weekday
-        await asyncio.sleep(1800)                                                                               # only look at the clock every 30 minutes
+        if wait != True:
+            return
+        await asyncio.sleep(900)                                                                               # only look at the clock every 30 minutes
 
 async def checkBDays():
     today = datetime.datetime.today()
@@ -433,7 +435,7 @@ def ord(n):                                                                     
 async def on_ready():                                                                                           # When the bot has logged in and is ready to start receiving commands
     app_info = await client.application_info()                                                                      # get the client info
     client.owner = app_info.owner                                                                                   # get the owner's name from the info
-    await client.change_presence(game=discord.Game(type = 0, name = config['monday_game']))                         # set the game the bot is playing                                                                         
+    await status_task(False)                                                                                         # set the game the bot is playing                                                                         
 
     print('Bot: {0.name}:{0.id}'.format(client.user))                                                               # print the bot info to the console
     print('Owner: {0.name}:{0.id}'.format(client.owner))                                                            # print the owner info to the console
@@ -449,7 +451,7 @@ async def on_ready():                                                           
         opus.load_opus('libopus-0.x86.dll')                                                                             # load opus x32 Windows library
     await checkBDays()
 #                                                                                                                   # check if it's anyone's bithday today
-    client.loop.create_task(status_task())                                                                          # send a thread to periodically check what day of the week it is
+    client.loop.create_task(status_task(True))                                                                          # send a thread to periodically check what day of the week it is
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()
@@ -458,9 +460,17 @@ def run_client(Client, *args, **kwargs):
             loop.run_until_complete(Client.start(*args, **kwargs))
         except Exception as e:
             print("Error", e)  # or use proper logging
-        os.system('cls')
-        print("An error occured! Restarting...")
-        time.sleep(10)
+            time = datetime.datetime.now()
+            log = open("log.txt","a")
+            log.write("----------------------------" + "\n")
+            log.write("----------------------------" + "\n")
+            log.write("Log: " + str(time) + "\n")
+            log.write("\n")
+            log.write(str(e))
+            log.write("\n")
+            os.system('cls')
+            print("An error occured! Restarting...")
+            time.sleep(10)
 
 if __name__ == '__main__':                                                                                      # weird preformance trick
     while True:
@@ -470,3 +480,16 @@ if __name__ == '__main__':                                                      
             print("config not yet filled out.")                                                                             # print to the console
         except discord.errors.LoginFailure as e:                                                                        # if the discord token is not correct
             print("Invalid discord token.")                                                                                 # hey, you're not me... stop editing my code
+        except Exception as e:
+            print("Error", e)  # or use proper logging
+            time = datetime.datetime.now()
+            log = open("log.txt","a")
+            log.write("----------------------------" + "\n")
+            log.write("----------------------------" + "\n")
+            log.write("Log: " + str(time) + "\n")
+            log.write("\n")
+            log.write(str(e))
+            log.write("\n")
+            os.system('cls')
+            print("An error occured! Restarting...")
+            time.sleep(10)
