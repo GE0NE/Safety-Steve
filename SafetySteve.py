@@ -205,6 +205,13 @@ async def on_message(msg: discord.Message):                                     
             await sayAscii(msg, message[6:])
             return
 
+        if message[:4] == textCommands[6]['Command']:                                                               # reddit [subreddit] command
+            if len(message[5:].strip()) < 1:
+                await status_task(False, True)
+                return
+            await setPlaying(msg.content[5:])
+            return
+
 
         if message == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
             isPlaying = False
@@ -347,18 +354,18 @@ async def setPlaying(name, type=0):
     return
 
 
-async def status_task(wait):                                                                                        # choose what game to play based on the day of the week
+async def status_task(loop, bypassCheck):                                                                                        # choose what game to play based on the day of the week
     while True:
         global weekday
         oldWeekday = weekday
         now = datetime.datetime.now()
-        if now.weekday() == 6 and weekday != 6:
+        if now.weekday() == 6 and (weekday != 6 or bypassCheck == True):
             await setPlaying(config['sunday_game'])
-        if now.weekday() == 0 and weekday != 0:
+        if now.weekday() == 0 and (weekday != 0 or bypassCheck == True):
             await setPlaying(config['monday_game'])
-        if now.weekday() == 1 and weekday != 1:
+        if now.weekday() == 1 and (weekday != 1 or bypassCheck == True):
             await setPlaying(config['tuesday_game'])
-        if now.weekday() == 2 and weekday != 2:
+        if now.weekday() == 2 and (weekday != 2 or bypassCheck == True):
             await setPlaying(config['wednesday_game'])
             try:
                 wednesdayChannels = config['wednesday_channels'].replace(" ", "").split('#')
@@ -368,17 +375,18 @@ async def status_task(wait):                                                    
                 break;
             except:
                 print('Channel does not exist: {}'.format(channel))
-        if now.weekday() == 3 and weekday != 3:
+        if now.weekday() == 3 and (weekday != 3 or bypassCheck == True):
             await setPlaying(config['thursday_game'])
-        if now.weekday() == 4 and weekday != 4:
+        if now.weekday() == 4 and (weekday != 4 or bypassCheck == True):
             await setPlaying(config['friday_game'])
-        if now.weekday() == 5 and weekday != 5:
+        if now.weekday() == 5 and (weekday != 5 or bypassCheck == True):
             await setPlaying(config['saturday_game'])
-        if oldWeekday != weekday:
-            await checkBDays()
-        weekday = now.weekday()
-        oldWeekday = weekday
-        if wait != True:
+        if bypassCheck == False:
+            if oldWeekday != weekday:
+                await checkBDays()
+            weekday = now.weekday()
+            oldWeekday = weekday
+        if loop == False:
             return
         await asyncio.sleep(900)                                                                               # only look at the clock every 30 minutes
 
@@ -435,7 +443,7 @@ def ord(n):                                                                     
 async def on_ready():                                                                                           # When the bot has logged in and is ready to start receiving commands
     app_info = await client.application_info()                                                                      # get the client info
     client.owner = app_info.owner                                                                                   # get the owner's name from the info
-    await status_task(False)                                                                                         # set the game the bot is playing                                                                         
+    await status_task(False, False)                                                                                         # set the game the bot is playing                                                                         
 
     print('Bot: {0.name}:{0.id}'.format(client.user))                                                               # print the bot info to the console
     print('Owner: {0.name}:{0.id}'.format(client.owner))                                                            # print the owner info to the console
@@ -451,7 +459,7 @@ async def on_ready():                                                           
         opus.load_opus('libopus-0.x86.dll')                                                                             # load opus x32 Windows library
     await checkBDays()
 #                                                                                                                   # check if it's anyone's bithday today
-    client.loop.create_task(status_task(True))                                                                          # send a thread to periodically check what day of the week it is
+    client.loop.create_task(status_task(True, False))                                                                          # send a thread to periodically check what day of the week it is
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()

@@ -35,6 +35,12 @@
             "Command": "ascii",
             "Help": "Repeats what you tell it to in ascci art letters",
             "Params": "<what you want me to say>"
+        },
+        
+        {
+            "Command": "game",
+            "Help": "Sets the game I'm playing. No param resets to default",
+            "Params": "[string]"
         }
     ],
 
