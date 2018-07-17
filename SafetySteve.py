@@ -478,7 +478,7 @@ def run_client(Client, *args, **kwargs):
             log.write("\n")
             os.system('cls')
             print("An error occured! Restarting...")
-            time.sleep(10)
+            asyncio.sleep(10)
 
 if __name__ == '__main__':                                                                                      # weird preformance trick
     while True:
@@ -500,4 +500,4 @@ if __name__ == '__main__':                                                      
             log.write("\n")
             os.system('cls')
             print("An error occured! Restarting...")
-            time.sleep(10)
+            asyncio.sleep(10)
