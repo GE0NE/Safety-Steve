@@ -41,6 +41,12 @@
             "Command": "game",
             "Help": "Sets the game I'm playing. No param resets to default",
             "Params": "[string]"
+        },
+        
+        {
+            "Command": "giveban",
+            "Help": "I don’t feel so good...",
+            "Params": ""
         }
     ],
 
@@ -50,193 +56,232 @@
     [
         {
             "Command": "leave",
+			"SoundFile": "leave",
             "Help": "Leaves the current voice channel",
             "Params": ""
         },
         
         {
             "Command": "betrayed",
+			"SoundFile": "betrayed",
             "Help": "IT WAS ME AUSTIN!",
             "Params": ""
         },
         
         {
             "Command": "prettygood",
+			"SoundFile": "prettygood",
             "Help": "Hey, that's pretty good",
             "Params": ""
         },
         
         {
             "Command": "prettygoodvs",
+			"SoundFile": "prettygoodvs",
             "Help": "Hey, that's pretty good but it's bald science man",
             "Params": ""
         },
         
         {
             "Command": "timetostop",
+			"SoundFile": "timetostop",
             "Help": "It's time to stop! No more!",
             "Params": ""
         },
         
         {
             "Command": "stopit",
+			"SoundFile": "stopit",
             "Help": "Stop it. Get some help",
             "Params": ""
         },
         
         {
             "Command": "what",
+			"SoundFile": "what",
             "Help": "What the fuck?",
             "Params": ""
         },
         
         {
             "Command": "vsauce",
+			"SoundFile": "vsauce",
             "Help": "Micheal here",
             "Params": ""
         },
         
         {
             "Command": "butwhatis",
+			"SoundFile": "butwhatis",
             "Help": "Moon Men by Jake Chudnow",
             "Params": ""
         },
         
         {
             "Command": "cripdep",
+			"SoundFile": "cripdep",
             "Help": "I have crippling depression",
             "Params": ""
         },
         
         {
             "Command": "titanic",
+			"SoundFile": "titanic",
             "Help": "My Heart Will Go On: recorder edition",
             "Params": ""
         },
         
         {
             "Command": "jurassicpark",
+			"SoundFile": "jurassicpark",
             "Help": "Jurassic Park theme played on a Melodica",
             "Params": ""
         },
         
         {
             "Command": "dododo",
+			"SoundFile": "dododo",
             "Help": "Buu buu desu wa",
             "Params": ""
         },
         
         {
             "Command": "shutdown",
+			"SoundFile": "shutdown",
             "Help": "Windows XP shutdown sound",
             "Params": ""
         },
         
         {
             "Command": "startup",
+			"SoundFile": "startup",
             "Help": "Windows XP startup sound",
             "Params": ""
         },
         
         {
             "Command": "shutdowner",
+			"SoundFile": "shutdowner",
             "Help": "Windows XP shutdown sound: ear rape edition",
             "Params": ""
         },
         
         {
             "Command": "startuper",
+			"SoundFile": "startuper",
             "Help": "Windows XP startup sound: ear rape edition",
             "Params": ""
         },
         
         {
             "Command": "oof",
+			"SoundFile": "oof",
             "Help": "OOF",
             "Params": ""
         },
         
         {
             "Command": "noice",
+			"SoundFile": "noice",
             "Help": "POP! NOICE",
             "Params": ""
         },
         
         {
             "Command": "exposed",
+			"SoundFile": "exposed",
             "Help": "I'VE BEEN EXPOSED",
             "Params": ""
         },
         
         {
             "Command": "wednesday",
+			"SoundFile": "wednesday",
             "Help": "It is Wednesday my dudes!",
             "Params": ""
         },
         
         {
             "Command": "wednesdaygroove",
+			"SoundFile": "wednesdaygroove",
             "Help": "Wednesday Hard by ZimoNitrome",
             "Params": ""
         },
         
         {
             "Command": "ahhh",
+			"SoundFile": "ahhh",
             "Help": "A screem!",
             "Params": ""
         },
         
         {
             "Command": "aurora",
+			"SoundFile": "aurora",
             "Help": "AT THIS TIME OF YEAR, AT THIS TIME OF DAY, IN THIS PART OF THE COUNTRY?",
             "Params": ""
         },
         
         {
             "Command": "darling",
+			"SoundFile": "darling",
             "Help": "Best Girl",
             "Params": ""
         },
         
         {
             "Command": "ech",
+			"SoundFile": "ech",
             "Help": "Jontron's mighty ECH!",
             "Params": ""
         },
         
         {
             "Command": "nooo",
+			"SoundFile": "nooo",
             "Help": "Darth Vader's Nooooooooooooooo!",
             "Params": ""
         },
         
         {
             "Command": "ussr",
+			"SoundFile": "ussr",
             "Help": "National Anthem of USSR",
             "Params": ""
         },
         
         {
             "Command": "dododofull",
+			"SoundFile": "dododofull",
             "Help": "Buu buu desu wa but it's 1:30",
             "Params": ""
         },
         
         {
             "Command": "ussrfull",
+			"SoundFile": "ussrfull",
             "Help": "National Anthem of USSR but it's 3:40",
             "Params": ""
         },
         
         {
             "Command": "rushb",
+			"SoundFile": "rushb",
             "Help": "Сука Блять RUSH 🅱",
             "Params": ""
         },
         
         {
             "Command": "rushbfull",
+			"SoundFile": "rushbfull",
             "Help": "RUSH 🅱 but it's 2:30",
+            "Params": ""
+        },
+        
+        {
+            "Command": "bearnoises",
+			"SoundFile": "bearnoises/bearnoises1#bearnoises/bearnoises2#bearnoises/bearnoises3#bearnoises/bearnoises4#bearnoises/bearnoises5#bearnoises/bearnoises6#bearnoises/bearnoises7",
+            "Help": "Rwar!",
             "Params": ""
         }
     ]
