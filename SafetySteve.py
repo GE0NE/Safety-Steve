@@ -212,6 +212,9 @@ async def on_message(msg: discord.Message):                                     
             await setPlaying(msg.content[5:])
             return
 
+        if message[:7] == textCommands[7]['Command']:
+            await say(msg, "`༼ つ ◕_ ◕ ༽つ GIVE BAN ༼ つ ◕_ ◕ ༽つ`")
+
 
         if message == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
             isPlaying = False
@@ -225,9 +228,11 @@ async def on_message(msg: discord.Message):                                     
             if message == voiceCommands[i]['Command']:                                                                  # otherwise
                 if msg.author.voice_channel:                                                                                # if the user is in a voice channel
                     try:                                                                                                        # try to
+                        sounds = voiceCommands[i]['SoundFile'].split("#")
+                        sound = random.choice(sounds)
                         voice = await client.join_voice_channel(msg.author.voice_channel)                                           # create a voice clientw
                         player = voice.create_ffmpeg_player(                                                                        # create a ffmpeg player
-                            'sound/' + message + fileExt)
+                            'sound/' + sound + fileExt)
                         isPlaying = True                                                                                            # flag isPlaying
                         player.start()                                                                                              # start the player
                         client.loop.create_task(donePlaying(voice, player))                                                         # start a thread to keep track of when the sound is finished playing
