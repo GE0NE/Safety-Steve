@@ -9,6 +9,9 @@ import re                                                                       
 import praw
 import random
 import math
+from urllib import parse
+from urllib.request import Request, urlopen
+import aiohttp
 
 try:                                                                                                            # try to
     import discord                                                                                                  # import discord.py
@@ -18,6 +21,21 @@ except ImportError:                                                             
     import discord                                                                                              # import discord.py
 from discord import opus                                                                                        # inport opus, the discord sound lib
 from discord.utils import get
+
+try:
+    import requests
+except ImportError:
+    import pip
+    pip.main(['install', 'requests'])
+    import requests 
+
+try:
+    import bs4
+except ImportError:
+    import pip
+    pip.main(['install', 'beautifulsoup4'])
+    import bs4
+from bs4 import BeautifulSoup
 
 try:
     with open('config.json', encoding='utf8') as f:                                                             
@@ -125,8 +143,12 @@ commandHelp = textCommandHelp + voiceCommandHelp
 commandParams = textCommandParams + voiceCommandParams
 
 # Bad words and the response to them
-wordBlacklist = config['words']
+wordBlacklist = config['bad_words']
+wordWhitelist = config['bad_words_exceptions']
 badWordResponse = config['response']
+
+# Word Responses
+reactionWords = config['reaction_words']
 
 # Channel IDs
 channels = userInfo['channel_ids']
@@ -144,11 +166,10 @@ gitLink = config['git_link']
 fileExt = config['fileformat']
 bubbleFont = fonts['bubble_letters']
 bubbleFontMask = fonts['bubble_mask']
-copycat = ""
 voice = None
 player = None
 isPlaying = False
-weekday = 0
+weekday = 999
 
 # The client
 client = discord.Client(description=desc, max_messages=100)                                                     # create the client
@@ -159,14 +180,28 @@ async def on_message(msg: discord.Message):                                     
     global voice
     global player
     global isPlaying
-    if 'wednesday' in msg.content.lower():                                                                      # if the message contains 'wednesday'
-        await react(msg, "🐸")                                                                                      # react with a frog emoji
+
+    rawContent = msg.content
+    content = rawContent.lower()
+
+    for entry in reactionWords:
+        if entry['word'] in content:
+            for reaction in entry['reaction'].split('#'):
+                await react(msg, reaction)
 
     if msg.author.bot:                                                                                          # if the message was from the bot
         return                                                                                                      # ignore it
 
-    if msg.content.startswith(invoker):                                                                         # if the message starts with the invoker
-        message = msg.content.lower()[len(invoker):]                                                            
+    if content.startswith(invoker):                                                                         # if the message starts with the invoker
+        message = content[len(invoker):]                                                            
+
+        if message[:5] == "react":                                                                 
+            if len(message[5:].strip()) >= 1:
+                messageFormatted = " ".join(message[5:].split())
+                emojis = messageFormatted.strip().split(" ")
+                for emoji in emojis:
+                    await react(msg, emoji)
+            return       
 
         if message == textCommands[0]['Command']:                                                                   # help command
             await help(msg)
@@ -180,10 +215,10 @@ async def on_message(msg: discord.Message):                                     
             await git(msg)
 
         if message[:3] == textCommands[2]['Command']:                                                               # say <text> command
-            if message[4:] == "":
+            if len(message[3:].strip()) < 1:
                 await helpCommand('say', msg)
-                return                                                                                          
-            await say(msg, msg.content[4:])                                            
+                return
+            await say(msg, rawContent[4:])                                            
             await client.delete_message(msg)                                                                   
             return                                                                                              
 
@@ -192,7 +227,7 @@ async def on_message(msg: discord.Message):                                     
             return
 
         if message[:6] == textCommands[4]['Command']:                                                               # reddit [subreddit] command
-            await subreddit(msg.content[8:], msg)
+            await subreddit(rawContent[8:], msg)
             return
 
         if message[:5] == textCommands[5]['Command']:                                                               # ascii command
@@ -209,12 +244,113 @@ async def on_message(msg: discord.Message):                                     
             if len(message[5:].strip()) < 1:
                 await status_task(False, True)
                 return
-            await setPlaying(msg.content[5:])
+            await setPlaying(rawContent[5:])
             return
 
         if message[:7] == textCommands[7]['Command']:
             await say(msg, "`༼ つ ◕_ ◕ ༽つ GIVE BAN ༼ つ ◕_ ◕ ༽つ`")
 
+        if message[:4] == textCommands[8]['Command']:
+            usernamesFile = open("usernames.txt", "r")
+            usernamesRaw = usernamesFile.read()
+            usernames = usernamesRaw.split('\n')
+            users = []
+            karma = []
+            nices = []
+            for x in range(0, 5):
+                users.append(random.choice(usernames))
+                karma.append(random.randint(1, 1000))
+                nices.append("nice.")
+            poorSoul = random.randint(1, 4)
+            nices[poorSoul] = "Nice"
+            karma[poorSoul] = random.randrange(-10000, 0)
+            thread = "```\n" \
+                "▲   {0} • {5} points\n" \
+                "▼   {10}" \
+                "```\n" \
+                "```\n" \
+                "|  ▲   {1} • {6} points\n" \
+                "|  ▼   {11}\n" \
+                "```\n" \
+                "```\n" \
+                "|  |  ▲   {2} • {7} points\n" \
+                "|  |  ▼   {12}\n" \
+                "```\n" \
+                "```\n" \
+                "|  |  |  ▲   {3} • {8} points\n" \
+                "|  |  |  ▼   {13}\n" \
+                "```\n" \
+                "```\n" \
+                "|  |  |  |  ▲   {4} • {9} points\n" \
+                "|  |  |  |  ▼   {14}\n" \
+                "```".format(users[0], users[1], users[2], users[3], users[4], 
+                    karma[0], karma[1], karma[2], karma[3], karma[4], nices[0], 
+                    nices[1], nices[2], nices[3], nices[4])
+            await say(msg, thread)
+
+        if message[:3] == textCommands[9]['Command']:
+            text = message[3:].strip()
+            if len(text) < 1:
+                await helpCommand(textCommands[9]['Command'], msg)
+                return
+            ipa = await textToIPA(text)
+            if len(ipa) < 1:
+                await say(msg, "I wasn't able to convert that word!")
+                return
+            await say(msg, ipa)
+
+        if message[:4] == textCommands[10]['Command']: 
+            try:                                                                  
+                if len(message[4:].strip()) < 1:
+                    await helpCommand(textCommands[10]['Command'], msg)
+                    return
+                question = rawContent[6:].split("[")[0]
+                messageFormatted = " ".join(rawContent[6:].split())
+                messageEmojis = messageFormatted.split("[")[1].split("]")[0]
+                emojis = messageEmojis.strip().split(" ")
+                await say(msg, question)
+                poll = None
+                async for sentMessage in client.logs_from(msg.channel, limit=1):
+                    poll = sentMessage
+                    break
+                for emoji in emojis:
+                    await react(poll, emoji)
+                return
+            except:
+                await helpCommand(textCommands[10]['Command'], msg)
+                return
+
+        if message[:11] == textCommands[11]['Command']:
+            if len(message[11:].strip()) < 1:
+                await helpCommand(textCommands[10]['Command'], msg)
+                return
+            await defineUrban(msg, message[11:])
+            return
+
+        if message[:6] == textCommands[12]['Command']:
+            if len(message[6:].strip()) < 1:
+                await helpCommand(textCommands[10]['Command'], msg)
+                return
+            await defineGoogle(msg, message[6:])
+            return
+
+        if message[:4] == textCommands[13]['Command']:
+            await mock(msg, text=message[4:].strip())
+            return
+
+        if message[:9] == textCommands[14]['Command']:
+            scores = await readScores(msg.server.id)
+            embed = discord.Embed(title="Scores:", description="_ _")
+            for scoreEntry in scores:
+                user = await client.get_user_info(scoreEntry[1])
+                score = scoreEntry[2]
+                displayName = user.display_name
+                nick = msg.server.get_member(user.id).nick
+                nick = displayName if nick is None else nick
+                displayName = "_AKA {}_\n".format(displayName) if nick != displayName else ""
+                embed.add_field(name=nick, value="{}{}".format(displayName, score), inline = True)
+            await say(msg, "", embed=embed)
+            return
 
         if message == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
             isPlaying = False
@@ -244,24 +380,47 @@ async def on_message(msg: discord.Message):                                     
                     await say(msg, 'You\'re not in a voice channel!')                                                           # inform the user that they're not in a voice channel
                 return
 
-    elif any([word in msg.content.lower() for word in wordBlacklist]):                                          # if the message does not start with the invoker but it contains bad words
-        await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))                                        # tell them politely, yet firmly, to leave
-        return
+    elif any([badword in content for badword in wordBlacklist]):                                          # if the message does not start with the invoker but it contains bad words
+        for word in content.split():
+            if word in wordWhitelist:
+                continue
+            for badword in wordBlacklist:
+                if badword in word:
+                    await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))                                        # tell them politely, yet firmly, to leave
+                    return
 
-    elif client.user.mentioned_in(msg) and msg.mention_everyone is False:                                       # if a user mentions the bot
+    elif content == "good bot" or content == "bad bot":
+        try:
+            invokerMessage = None
+            async for invokerMessageTemp in client.logs_from(msg.channel, limit=2):
+                invokerMessage = invokerMessageTemp
+            if invokerMessage is not None:
+                author = invokerMessage.author
+                server = invokerMessage.server
+                if author == msg.author:
+                    await say(msg, "You can't vote for yourself!")
+                    return
+                await writeScore(server.id, author.id, 1 if 'good' in content else -1)
+                await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, await readScores(guild=server.id, userID=author.id)))
+        except:
+            return
+        
+
+    elif client.user.mentioned_in(msg) and not msg.mention_everyone:                                       # if a user mentions the bot
         await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))               # send the help command
         return
 
 
-async def subreddit(sub, msg, bypassErrorCheck = False):
+async def subreddit(sub, msg, bypassErrorCheck=False):
     if not bypassErrorCheck and msg.content[8:].strip() == "":
         await helpCommand('reddit', msg)
         return
     reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
     submissionList = []
     try:
-        for submission in reddit.subreddit(sub).hot(limit=100):
-            if submission.url[-3:] == "png" or submission.url[-3:] == "jpg":
+        for submission in reddit.subreddit(sub).hot(limit=50):
+            extensions = ["png","jpg","jpeg","gif"]
+            if any([ext in submission.url[-len(ext):] for ext in extensions]):
                 submissionList.append(submission)
         if len(submissionList) > 0:
             submission = submissionList[random.randint(1, len(submissionList))]
@@ -283,28 +442,40 @@ async def git(msg):
     return                                                                                              
 
 async def say(msg, message, embed=None):
+    if message is None:
+        return
+    sentMessage = None
     if embed == None:
-        await sayInChannel(msg.channel, message)
+        sentMessage = await sayInChannel(msg.channel, message)
     else:
-        await sayInChannel(msg.channel, message, embed=embed)
-    return
+        sentMessage = await sayInChannel(msg.channel, message, embed=embed)
+    return sentMessage
 
 async def sayInChannel(channel, message, embed=None):
+    if message is None:
+        return
+    sentMessage = None
     if embed == None:
-        await client.send_message(channel, message)
+        sentMessage = await client.send_message(channel, message)
     else:
-        await client.send_message(channel, message, embed=embed)
-    return
+        sentMessage = await client.send_message(channel, message, embed=embed)
+    return sentMessage
 
 async def react(msg, emote):
     try:
         await client.add_reaction(msg, emote)
     except:
         try:
-            emote = get(client.get_all_emojis(), name=emote)
-            await client.add_reaction(msg, emote)
+            reaction = get(client.get_all_emojis(), name=emote)
+            await client.add_reaction(msg, reaction)
         except:
-            await say(msg, "I don't know that emoji");
+            try:
+                reaction = emote.replace("<:", "")
+                reaction = ':'.join(reaction.split(':')[:-1])
+                reaction = get(client.get_all_emojis(), name=reaction)
+                await client.add_reaction(msg, reaction)
+            except:
+                await say(msg, "I don't know that emoji: " + "`" + str(reaction) + "`")
     return
 
 async def help(msg):
@@ -358,51 +529,256 @@ async def setPlaying(name, type=0):
     await client.change_presence(game=discord.Game(type=0, name=name))
     return
 
+async def textToIPA(text):
+    try:
+        with requests. Session() as c: 
+            url = 'https://tophonetics.com/'
+            c.get(url)
+            data = dict(text_to_transcribe=text, output_dialect='am') 
+            page = c.post(url, data=data, headers={"Referer": "https://tophonetics.com/"})
+            soup = BeautifulSoup(page.text, 'html.parser')
+            results = soup.find_all('span', attrs={'class':'transcribed_word'})
+            resultStringList = (result.text for result in results)
+            resultStringConcat = ' '.join(resultStringList)
+            return resultStringConcat
+    except:
+        return ""
+
+async def defineUrban(msg, message, num=1, edit=None):
+    async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
+        number = num
+        term = message.strip()
+        if " | " in term:
+            term, number = term.rsplit(" | ", 1)
+        search = "\""+term+"\""
+        async with session.get("http://api.urbandictionary.com/v0/define", params={"term": search}) as resp:
+            result = await resp.json()
+        if not result["list"]:
+            await say(msg, "{} couldn't be found on Urban Dictionary.".format(term))
+        else:
+            try:
+                top_result = result["list"][int(number) - 1]
+                result_definition = top_result["definition"][:800] + "..." if len(top_result["definition"]) > 800 else top_result["definition"]
+                example = top_result["example"][:800] + "..." if len(top_result["example"]) > 800 else top_result["example"]
+                embed = discord.Embed(title=top_result["word"], description=result_definition, url=top_result["permalink"])
+                if top_result["example"]:
+                    embed.add_field(name="Example:", value=example)
+                embed.set_author(name="Submitted by " + top_result["author"],
+                                 icon_url="https://lh5.ggpht.com/oJ67p2f1o35dzQQ9fVMdGRtA7jKQdxUFSQ7vYstyqTp-Xh-H5BAN4T5_abmev3kz55GH=w300")
+                number = str(int(number) + 1)
+                embed.set_footer(text="{} results were found. To see a different result, use {}define {} | {}.".format( 
+                    len(result["list"]), invoker, term, number))
+                definition = edit
+                if definition is not None:
+                    await client.edit_message(definition, embed=embed)
+                else:
+                    definition = await say(msg, "", embed=embed)
+                if num > 1:
+                    await react(definition, "⬅")
+                if num < len(result["list"]):
+                    await react(definition, "➡")
+                res = await client.wait_for_reaction(["⬅","➡"], message=definition, timeout=20.0, user=msg.author)
+                if num > 1:
+                    await client.remove_reaction(definition, "⬅", msg.author)
+                    await client.remove_reaction(definition, "⬅", definition.author)
+                if num < len(result["list"]):
+                    await client.remove_reaction(definition, "➡", msg.author)
+                    await client.remove_reaction(definition, "➡", definition.author)
+                if res is None:
+                    return
+                await define(msg, term, num=(num + ( 1 if res.reaction.emoji == "➡" else -1)), edit=definition)
+
+            except IndexError:
+                await say(msg, "That result doesn't exist! Try {}define {}.".format(invoker, term))
+
+            except:
+                return
+        return 
+
+async def defineGoogle(msg, message):
+    async with aiohttp.ClientSession() as session:
+        term = message.strip()
+        search = term.split(" ")[0]
+        async with session.get("https://googledictionaryapi.eu-gb.mybluemix.net/", params={"define": search}) as resp:
+            try:
+                payload = await resp.json()
+            except ValueError:
+                await say(msg, "I couldn't define {}.".format(term))
+                return
+        try:
+            embed=discord.Embed(color=0xeee657)
+            embed.set_thumbnail(url="http://icons.iconarchive.com/icons/osullivanluke/orb-os-x/48/Dictionary-icon.png")
+            values = list(payload.values())
+
+            word = values[0]
+            ipa = values[2][0][0]
+
+            embed.add_field(name="{}".format(word), value="/{}/".format(ipa), inline=False)
+            for pos in list(values[3].keys())[:3]:
+                #embed.add_field(name="{}".format(pos), value="\a", inline=False)
+                postxt = pos
+                definitionCount = 1
+                definitions = ""
+                for entry in values[3][pos][:2]:
+
+                    definition = ""
+                    if 'definition' in entry:
+                        definition = entry['definition']
+                        #definition += "\n"
+                        #embed.add_field(name="\a", value="{}".format("1. {}".format(definition)), inline=False)
+
+                    example = ""
+                    if 'example' in entry:
+                        example = entry['example']
+                        #example += "\n"
+                        #embed.add_field(name="example:", value="{}".format(example), inline=False)
+
+                    synonyms = ""
+                    if 'synonyms' in entry:
+                        synonyms = entry['synonyms'][:4]
+                        synonyms = ', '.join(synonyms)
+                        
+                        #embed.add_field(name="synonyms:", value="{}".format(synonyms), inline=False)
+                    seperator = "_ _\n" if definitionCount == 1 else ""
+                    definitions += str(definitionCount) + ". " + definition + "\n"
+                    definitionCount += 1
+                    #embed.add_field(name=("synonyms" if not example else "example"), value=("{}" + (" " if not synonyms else "\n___synonyms: "+synonyms+"___")).format("_" + example + "_"), inline=True)
+                    
+                embed.add_field(name="{}".format(postxt), value="{}".format(definitions), inline=False)
+                postxt = u'\u200b'
+            embed.set_footer(text="Powered by googledictionaryapi.eu-gb.mybluemix.net")
+            await say(msg, "", embed=embed)
+                
+        except:
+            return
+        return 
+
+async def mock(msg, *, text=""):
+            #check for string or message id
+        if text.isdigit():
+            async for message in client.logs_from(msg.channel, limit=100):
+                if text == str(message.id):
+                    text = message.content
+        elif text == "":
+            async for message in client.logs_from(msg.channel, limit=2):
+                text = message.content
+
+            #randomize
+        fakeresult = ""
+        for char in text:
+            value = random.choice([True, False])
+            if value == True:
+                fakeresult += char.upper()
+            if value == False:
+                fakeresult += char.lower()
+
+            #ensure random isn't too random™
+        caps = ""
+        for char in fakeresult:
+            if char.isupper():
+                caps += "1"
+            else:
+                caps += "0"
+        while "000" in caps or "111" in caps:
+            caps = caps.replace("111", "101").replace("000", "010")
+        result = ""
+        for idx, char in enumerate(fakeresult):
+            if caps[idx] == "0":
+                result += char.lower()
+            else:
+                result += char.upper()
+
+        if result == "":
+            await say(msg, "Yo, dude! I can't dispatch a blank message! This can happen if you try to mock an embeded message.")
+        else:
+            await say(msg, result)
+
+async def writeScore(guild, user, score):
+    userObj = "GUILD={} USER={} SCORE={}".format(guild, user, str(score))
+    try:
+        existingScores = await readScores()
+        for existingScore in existingScores:
+            if existingScore[0] == guild and existingScore[1] == user:
+                oldUserObj = userObj
+                newScore = str(int(existingScore[2]) + int(score))
+                userObj = "GUILD={} USER={} SCORE={}".format(guild, user, newScore)
+                oldScores = await getScores()
+                oldScores = oldScores.split("\n")[:-1]
+                with open("botScores.txt","w") as scores:
+                    for oldScore in oldScores:
+                        if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
+                            if newScore != '0':
+                                scores.write(userObj + "\n")
+                        else:
+                            scores.write(oldScore + "\n")
+                    scores.close()
+                    return
+    except:
+        with open("botScores.txt","w") as writer:
+            writer.close()
+    with open("botScores.txt","a") as scores:
+        scores.write(userObj + "\n")
+        scores.close()
+    return
+
+async def readScores(guild=None, userID=None):
+    data = await getScores()
+    entries = data.split("\n")[:-1]
+    guildEntries = []
+    for i in range(0, len(entries)):
+        entries[i] = entries[i].split(' ')
+        for j in range(0, len(entries[i])):
+            entries[i][j] = entries[i][j].split('=')[1]
+        if guild is not None and entries[i][0] == guild:
+            guildEntries.append(entries[i])
+    if guild is not None:
+        if userID is not None:
+            found = None
+            for entry in guildEntries:
+                if entry[1] == userID:
+                    found = entry
+                    break
+            if found is not None:
+                return found[2]
+            else:
+                return 0
+        else:
+            return guildEntries
+    return sorted(entries, key=lambda x: x[0])
+
+async def getScores(guild=None):
+    with open("botScores.txt","r") as scores:
+        data = scores.read()
+        scores.close()
+        return data
 
 async def status_task(loop, bypassCheck):                                                                                        # choose what game to play based on the day of the week
     while True:
         global weekday
         oldWeekday = weekday
         now = datetime.datetime.now()
-        if now.weekday() == 6 and (weekday != 6 or bypassCheck == True):
-            await setPlaying(config['sunday_game'])
-        if now.weekday() == 0 and (weekday != 0 or bypassCheck == True):
-            await setPlaying(config['monday_game'])
-        if now.weekday() == 1 and (weekday != 1 or bypassCheck == True):
-            await setPlaying(config['tuesday_game'])
-        if now.weekday() == 2 and (weekday != 2 or bypassCheck == True):
-            await setPlaying(config['wednesday_game'])
-            try:
-                wednesdayChannels = config['wednesday_channels'].replace(" ", "").split('#')
-                for wednesdayChannel in wednesdayChannels:
-                    channel = client.get_channel(userInfo['channel_ids'][wednesdayChannel])
-                    await sayInChannelOnce(channel, "Happy Wednesday, my dudes!")
-                break;
-            except:
-                print('Channel does not exist: {}'.format(channel))
-        if now.weekday() == 3 and (weekday != 3 or bypassCheck == True):
-            await setPlaying(config['thursday_game'])
-        if now.weekday() == 4 and (weekday != 4 or bypassCheck == True):
-            await setPlaying(config['friday_game'])
-        if now.weekday() == 5 and (weekday != 5 or bypassCheck == True):
-            await setPlaying(config['saturday_game'])
-        if bypassCheck == False:
+        if weekday != now.weekday() or bypassCheck:
+            await setPlaying(config['{}_game'.format(now.strftime("%A").lower())])
+        if not bypassCheck:
+            weekday = now.weekday()
             if oldWeekday != weekday:
                 await checkBDays()
             weekday = now.weekday()
             oldWeekday = weekday
-        if loop == False:
+        if not loop:
             return
-        await asyncio.sleep(900)                                                                               # only look at the clock every 30 minutes
+        await asyncio.sleep(300)                                                                               # only look at the clock every 5 minutes
 
 async def checkBDays():
     today = datetime.datetime.today()
+    weekday = today.weekday()
     
     for date in dates:
         dateDay = date['Day']
         dateMonth = date['Month']
         dateYear = date['Year']
-        if today.day == dateDay and today.month == dateMonth:
+        dateType = date['Type']
+        if (today.day == dateDay and today.month == dateMonth) or (dateType == 'weekday' and weekday == dateDay):
             dateName = date['Name']
             dateMessage = date['Message']
             dateAge = today.year - dateYear
@@ -415,7 +791,7 @@ async def checkBDays():
             formattedDateMessage = dateMessage.replace("#day", str(dateDay)).replace("#month", str(dateMonth)).replace("#year", str(dateYear)).replace("#name", dateName).replace("#age", dateOrdAge).replace("#tag", dateTag).replace("#type", dateType)
             for dateChannel in dateChannels:
                 channel = client.get_channel(userInfo['channel_ids'][dateChannel])
-                reactCondition = await sayInChannelOnce(channel, formattedDateMessage)
+                reactCondition = await sayInChannelOnce(channel, formattedDateMessage) and reacts
                 async for message in client.logs_from(channel, limit=1):
                     msg = message
                     break
@@ -457,7 +833,6 @@ async def on_ready():                                                           
     perms.administrator = True                                                                                      # this makes the bot an admin. Oh the possibilities
     url = discord.utils.oauth_url(app_info.id, perms)                                                               #   *Note to Self: do not abuse
     print('To invite me to a server, use this link\n{}'.format(url))                                                # print out the discord invitation url to the console
-
     if sys.maxsize > 2**32:                                                                                         # if the current system is x64 bit
         opus.load_opus('libopus-0.x64.dll')                                                                             # load opus x64 Windows library
     else:                                                                                                           # if the current system is x32 bit
@@ -468,22 +843,7 @@ async def on_ready():                                                           
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()
-    while True:
-        try:
-            loop.run_until_complete(Client.start(*args, **kwargs))
-        except Exception as e:
-            print("Error", e)  # or use proper logging
-            time = datetime.datetime.now()
-            log = open("log.txt","a")
-            log.write("----------------------------" + "\n")
-            log.write("----------------------------" + "\n")
-            log.write("Log: " + str(time) + "\n")
-            log.write("\n")
-            log.write(str(e))
-            log.write("\n")
-            os.system('cls')
-            print("An error occured! Restarting...")
-            asyncio.sleep(10)
+    loop.run_until_complete(Client.start(*args, **kwargs))
 
 if __name__ == '__main__':                                                                                      # weird preformance trick
     while True:
@@ -495,14 +855,17 @@ if __name__ == '__main__':                                                      
             print("Invalid discord token.")                                                                                 # hey, you're not me... stop editing my code
         except Exception as e:
             print("Error", e)  # or use proper logging
-            time = datetime.datetime.now()
+            logTime = datetime.datetime.now()
             log = open("log.txt","a")
             log.write("----------------------------" + "\n")
             log.write("----------------------------" + "\n")
-            log.write("Log: " + str(time) + "\n")
+            log.write("Log: " + str(logTime) + "\n")
             log.write("\n")
             log.write(str(e))
             log.write("\n")
+            log.close()
             os.system('cls')
             print("An error occured! Restarting...")
-            asyncio.sleep(10)
+            time.sleep(10)
+Client.logout()
+Client.close()

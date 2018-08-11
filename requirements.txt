@@ -1,4 +1,7 @@
-discord
+discord.py
 pynacl
-asyncio
 praw
+urllib
+aiohttp
+ffmpeg (included)
+libopus (included)

@@ -13,19 +13,46 @@
     "thursday_game": "Minecraft: Extra Safe Edition (NSFW)",
     "friday_game": "Waifu Sex Simulator",
     "saturday_game": "Minecraft: Safety Edition",
-	
-	"wednesday_channels": "lobby",
 
     "response": "Hey! No bad words, please. This is a Christian server!",
-    "words":
+    "bad_words":
     [
-    "heck",
-    "frick",
-    "fick",
-    "golly",
-    "gosh",
-    "jeeper",
-    "darn",
-    "drat"
-    ]
+		"heck",
+		"frick",
+		"fick",
+		"golly",
+		"gosh",
+		"jeeper",
+		"darn",
+		"drat"
+    ],
+	"bad_words_exceptions":
+    [
+		"check",
+		"checks",
+		"checking",
+		"checked",
+		"fickle",
+		"quadratic",
+		"hydrate",
+		"hydration",
+		"hydrating",
+		"hydrated"
+    ],
+	
+	"reaction_words":
+	[
+		{
+			"word": "wednesday",
+			"reaction": "🐸"
+		},
+		{
+			"word": "skeltal",
+			"reaction": "💀#🎺"
+		},
+		{
+			"word": "doot",
+			"reaction": "🎺"
+		}
+	]
 }
