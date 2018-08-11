@@ -27,8 +27,8 @@
         
         {
             "Command": "reddit",
-            "Help": "Gets a random post from the hottest 100 post of the subreddit specified",
-            "Params": "[subreddit]"
+            "Help": "Gets a random post from the hottest 50 post of the subreddit specified",
+            "Params": "<subreddit>"
         },
         
         {
@@ -46,6 +46,48 @@
         {
             "Command": "giveban",
             "Help": "I don’t feel so good...",
+            "Params": ""
+        },
+        
+        {
+            "Command": "nice",
+            "Help": "nice.",
+            "Params": ""
+        },
+        
+        {
+            "Command": "ipa",
+            "Help": "Converts your text into IPA",
+            "Params": "<what you want converted to IPA>"
+        },
+        
+        {
+            "Command": "poll",
+            "Help": "Creates a poll for voting using the provided enojis as reactions",
+            "Params": "[question] [space-seperated emojis inside square brackets]"
+        },
+        
+        {
+            "Command": "urbandefine",
+            "Help": "Searches Urban Dictionary for the term",
+            "Params": "<term> | [result number. eg: 3]"
+        },
+		
+		{
+            "Command": "define",
+            "Help": "Searches Google Dictionary for the term",
+            "Params": "<single word term>"
+        },
+		
+		{
+            "Command": "mock",
+            "Help": "Randomize capitalization on a message or string. No params mocks last message",
+            "Params": "[string or message id]"
+        },
+		
+		{
+            "Command": "botscores",
+            "Help": "displays bot/user scores from using the good bot/bad bot command",
             "Params": ""
         }
     ],
@@ -279,9 +321,23 @@
         },
         
         {
+            "Command": "thicc",
+			"SoundFile": "thicc",
+            "Help": "Damn, boi!",
+            "Params": ""
+        },
+        
+        {
             "Command": "bearnoises",
 			"SoundFile": "bearnoises/bearnoises1#bearnoises/bearnoises2#bearnoises/bearnoises3#bearnoises/bearnoises4#bearnoises/bearnoises5#bearnoises/bearnoises6#bearnoises/bearnoises7",
             "Help": "Rwar!",
+            "Params": ""
+        },
+        
+        {
+            "Command": "tuskenraider",
+			"SoundFile": "tuskenraider/tuskenraider1#tuskenraider/tuskenraider2#tuskenraider/tuskenraider3#tuskenraider/tuskenraider4#tuskenraider/tuskenraider5#tuskenraider/tuskenraider6",
+            "Help": "Too accurate for Sand People",
             "Params": ""
         }
     ]

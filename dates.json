@@ -1,6 +1,18 @@
 {
     "dates":
     [
+		{
+			"Name": "Wednesday",
+            "Day": 2,
+            "Month": -1,
+            "Year": -1,
+            "Tag": "",
+            "Type": "weekday",
+            "Message": "Happy #name, my dudes!",
+            "Channel": "lobby",
+            "React": "🐸"
+		},
+		
         {
             "Name": "Safety Steve",
             "Day": 1,
@@ -9,7 +21,7 @@
             "Tag": "<@430061939805257749>",
             "Type": "birthday",
             "Message": "Happy #age #type, #tag!",
-            "Channel": "#lobby",
+            "Channel": "lobby",
             "React": "🎉#🎂#🎊#🍰"
         },
 
@@ -21,7 +33,7 @@
             "Tag": "",
             "Type": "holiday",
             "Message": "Happy #name, my dudes!",
-            "Channel": "#lobby",
+            "Channel": "lobby",
             "React": "🍁"
         },
 
@@ -33,7 +45,7 @@
             "Tag": "",
             "Type": "holiday",
             "Message": "Happy #name, my dudes!",
-            "Channel": "#lobby",
+            "Channel": "lobby",
             "React": "🇺🇸"
         },
 
@@ -45,7 +57,7 @@
             "Tag": "",
             "Type": "holiday",
             "Message": "Merry #name, my dudes!",
-            "Channel": "#lobby",
+            "Channel": "lobby",
             "React": "🎅"
         },
 
@@ -57,7 +69,7 @@
             "Tag": "",
             "Type": "holiday",
             "Message": "Spooky #name, my dudes!",
-            "Channel": "#lobby",
+            "Channel": "lobby",
             "React": "🎃"
         },
 
@@ -69,7 +81,7 @@
             "Tag": "",
             "Type": "holiday",
             "Message": "Happy #age #name, my dudes!",
-            "Channel": "#lobby",
+            "Channel": "lobby",
             "React": "🎆#🎉#🍾#🎊#🎇"
         },
 
@@ -81,7 +93,7 @@
             "Tag": "",
             "Type": "holiday",
             "Message": "Happy #name, my dudes!",
-            "Channel": "#lobby",
+            "Channel": "lobby",
             "React": "🍀#🍻#💚#🌈#☘#🍺"
         },
 
@@ -93,8 +105,8 @@
             "Tag": "",
             "Type": "holiday",
             "Message": "Lest we forget. It's #name today.",
-            "Channel": "#lobby",
-            "React": "🕯"
+            "Channel": "lobby",
+            "React": "🌹"
         }
     ]
 }
