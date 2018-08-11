@@ -55,8 +55,7 @@ except FileNotFoundError:
             "friday_game": "Waifu Sex Simulator",
             "saturday_game": "Minecraft: Safety Edition",
             "response": "Hey! No bad words, please. This is a Christian server!",
-            "words": ["heck", "frick", "fick", "golly", "gosh", "jeeper", "darn", 
-            "drat"]}, f, indent = 4)
+            "bad_words": ["heck"], "bad_word_exceptions": ["check", "checked", "checking", "checks"]}, f, indent = 4)
         sys.exit("config file created. "
             "Please fill out the config.json file and restart the bot.");
 
@@ -98,9 +97,9 @@ try:
 except FileNotFoundError:
     with open('dates.json', 'w', encoding='utf8') as f:
         date_list = {}
-        json.dump({'dates': [{"Name": "John Doe", "Day": 31, "Month": 12, "Year": 1990, 
+        json.dump({'dates': [{"Name": "Safety Steve", "Day": 1, "Month": 4, "Year": 2018, 
             "Tag": "<@430061939805257749>", "Type": "birthday", "Message": "Happy #age #type, #tag!",
-            "Channel": "#lobby", "React": "🎉#🎂#🎊#🍰"}]}, f, indent = 4)
+            "Channel": "lobby", "React": "🎉#🎂#🎊#🍰"}]}, f, indent = 4)
         sys.exit("dates file created. "
             "Optionally fill out the dates.json file and restart the bot.");
 
