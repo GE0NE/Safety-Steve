@@ -89,6 +89,18 @@
             "Command": "botscores",
             "Help": "displays bot/user scores from using the good bot/bad bot command",
             "Params": ""
+        },
+		
+		{
+            "Command": "gild",
+            "Help": "gilds a user. No params gilds last message",
+            "Params": "[user mention]"
+        },
+		
+		{
+            "Command": "usergildings",
+            "Help": "displays specified user's gild. No params displays your gilding",
+            "Params": "[user mention]"
         }
     ],
 
@@ -335,9 +347,23 @@
         },
         
         {
-            "Command": "tuskenraider",
-			"SoundFile": "tuskenraider/tuskenraider1#tuskenraider/tuskenraider2#tuskenraider/tuskenraider3#tuskenraider/tuskenraider4#tuskenraider/tuskenraider5#tuskenraider/tuskenraider6",
-            "Help": "Too accurate for Sand People",
+            "Command": "tuturu",
+			"SoundFile": "tuturu",
+            "Help": "Ohaio Okarnin!",
+            "Params": ""
+        },
+        
+        {
+            "Command": "dadadarling",
+			"SoundFile": "dadadarling",
+            "Help": "Darling remix",
+            "Params": ""
+        },
+        
+        {
+            "Command": "dadadarlingfull",
+			"SoundFile": "dadadarling",
+            "Help": "Darling remix but it's 0:27",
             "Params": ""
         }
     ]

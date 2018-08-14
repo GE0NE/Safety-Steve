@@ -54,8 +54,13 @@ except FileNotFoundError:
             "thursday_game": "Minecraft: Extra Safe Edition (NSFW)",
             "friday_game": "Waifu Sex Simulator",
             "saturday_game": "Minecraft: Safety Edition",
+            "vote_limit": 3,
+            "gild_limit": 1,
+            "embed_color": "0xeee657",
             "response": "Hey! No bad words, please. This is a Christian server!",
-            "bad_words": ["heck"], "bad_word_exceptions": ["check", "checked", "checking", "checks"]}, f, indent = 4)
+            "bad_words": ["heck"], "bad_word_exceptions": ["check", "checked", "checking", "checks"],
+            "reaction_words": [{"word": "wednesday", "reaction": "🐸"}, {"word": "skeltal", "reaction": "💀#🎺"},
+            {"word": "doot", "reaction": "🎺"}]}, f, indent = 4)
         sys.exit("config file created. "
             "Please fill out the config.json file and restart the bot.");
 
@@ -149,6 +154,13 @@ badWordResponse = config['response']
 # Word Responses
 reactionWords = config['reaction_words']
 
+# Restrictions
+voteLimit = config['vote_limit']
+gildLimit = config['gild_limit']
+
+# Formatting
+embedColor = int(config['embed_color'], 0)
+
 # Channel IDs
 channels = userInfo['channel_ids']
 
@@ -193,6 +205,7 @@ async def on_message(msg: discord.Message):                                     
 
     if content.startswith(invoker):                                                                         # if the message starts with the invoker
         message = content[len(invoker):]                                                            
+        rawMessage = rawContent[len(invoker):]
 
         if message[:5] == "react":                                                                 
             if len(message[5:].strip()) >= 1:
@@ -217,7 +230,7 @@ async def on_message(msg: discord.Message):                                     
             if len(message[3:].strip()) < 1:
                 await helpCommand('say', msg)
                 return
-            await say(msg, rawContent[4:])                                            
+            await say(msg, rawMessage[4:])                                            
             await client.delete_message(msg)                                                                   
             return                                                                                              
 
@@ -346,10 +359,69 @@ async def on_message(msg: discord.Message):                                     
                 displayName = user.display_name
                 nick = msg.server.get_member(user.id).nick
                 nick = displayName if nick is None else nick
-                displayName = "_AKA {}_\n".format(displayName) if nick != displayName else ""
-                embed.add_field(name=nick, value="{}{}".format(displayName, score), inline = True)
+                displayName = "_AKA {}_\n".format(displayName) if nick != displayName else ''
+                embed.add_field(name=nick, value="{}{}".format(displayName, score), inline=True)
             await say(msg, "", embed=embed)
             return
+
+        if message[:4] == textCommands[15]['Command']:
+            server = msg.server
+            invokerMessage = None
+            author = None
+            invokerScores = await readScores(guild=server.id, userID=msg.author.id)
+
+            if invokerScores is not None and int(invokerScores[5]) >= gildLimit:
+                await say(msg, "You have already gilded someone {}today!".format((str(gildLimit) + ' times ') if gildLimit != 1 else ''))
+                return
+
+            if len(message[4:].strip()) < 1:
+                async for invokerMessageTemp in client.logs_from(msg.channel, limit=2):
+                    invokerMessage = invokerMessageTemp
+                if invokerMessage is not None:
+                    author = invokerMessage.author
+            else:
+                author = msg.mentions[0] if msg.mentions is not None else msg.author
+
+            if author == msg.author:
+                await say(msg, "You can't gild yourself!")
+                return
+
+            await writeScore(server.id, author.id, gilding=1)
+            await writeScore(server.id, msg.author.id, gilded=1)
+            if invokerMessage is not None:
+                await react(invokerMessage, "🔶")
+            targetScores = await readScores(guild=server.id, userID=author.id)
+            embed = discord.Embed(title="_{} times_".format(targetScores[3]), description="**You've beed gilded!**", color=0xFFDF00)
+            embed.set_thumbnail(url="https://i.imgur.com/UWWoFxe.png")
+            await say(msg, "{}".format(author.mention), embed=embed)
+
+        if message[:12] == textCommands[16]['Command']:
+            target = None
+            nick = None
+
+            gradient = [0xA8A8A8, 0xB0B097, 0xCACA64, 0xD9D950, 0xE4E448, 0xFFFF00]
+
+            if msg.mentions:
+                target = msg.mentions[0] 
+            else:
+                target = msg.author
+            displayName = target.display_name
+            nick = target.nick
+            nick = displayName if nick is None else nick
+
+            scores = await readScores(guild=msg.server.id, userID=target.id)
+            gilded = '0' if scores is None else scores[3]
+            embed = discord.Embed(title="{} been gilded:".format("You have" if target == msg.author else nick + " has"), 
+                description="_{} time{}_".format(gilded, 's' if int(gilded) != 1 else ''), color=gradient[int(gilded) if int(gilded) < 6 else 5])
+            embed.set_thumbnail(url="https://i.imgur.com/kD6NhBG.png")
+            await say(msg, "", embed=embed)
+
+            
+            return
+
+        if message[:5] == 'clear':
+            await clearDailyRestrictions()
+            await say(msg, "Cleared daily restrictions!")
 
         if message == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
             isPlaying = False
@@ -390,17 +462,28 @@ async def on_message(msg: discord.Message):                                     
 
     elif content == "good bot" or content == "bad bot":
         try:
-            invokerMessage = None
-            async for invokerMessageTemp in client.logs_from(msg.channel, limit=2):
-                invokerMessage = invokerMessageTemp
-            if invokerMessage is not None:
-                author = invokerMessage.author
-                server = invokerMessage.server
-                if author == msg.author:
-                    await say(msg, "You can't vote for yourself!")
+            targetMessage = None
+            server = msg.server
+            invokerScores = await readScores(guild=server.id, userID=msg.author.id)
+
+            async for targetMessageTemp in client.logs_from(msg.channel, limit=2):
+                targetMessage = targetMessageTemp
+
+            if targetMessage is not None:
+                author = targetMessage.author
+                server = targetMessage.server
+                if author == msg.author and 'good' in content:
+                    await say(msg, "You can't vote positively for yourself!")
                     return
-                await writeScore(server.id, author.id, 1 if 'good' in content else -1)
-                await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, await readScores(guild=server.id, userID=author.id)))
+
+                if invokerScores is not None and int(invokerScores[4]) >= voteLimit:
+                    await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
+                    return
+
+                await writeScore(server.id, author.id, score=1 if 'good' in content else -1)
+                await writeScore(server.id, msg.author.id, voted=1)
+                targetScores = await readScores(guild=server.id, userID=author.id)
+                await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
         except:
             return
         
@@ -424,7 +507,7 @@ async def subreddit(sub, msg, bypassErrorCheck=False):
         if len(submissionList) > 0:
             submission = submissionList[random.randint(1, len(submissionList))]
             embed = discord.Embed(title=submission.title, 
-                url="https://reddit.com{}".format(submission.permalink), color=0xeee657)
+                url="https://reddit.com{}".format(submission.permalink), color=embedColor)
             embed.set_image(url=submission.url)
             embed.set_footer(text=" via reddit.com/r/{}".format(str(submission.subreddit)), 
                 icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
@@ -436,7 +519,7 @@ async def subreddit(sub, msg, bypassErrorCheck=False):
 
 async def git(msg):
     gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                                                                                      
-    embed = discord.Embed(title="", description=gitLink, color=0xeee657)                                
+    embed = discord.Embed(title="", description=gitLink, color=embedColor)                                
     await say(msg, gitMessage, embed)                                     
     return                                                                                              
 
@@ -479,7 +562,7 @@ async def react(msg, emote):
 
 async def help(msg):
 
-    embed = discord.Embed(title=name, description=desc, color=0xeee657)                                
+    embed = discord.Embed(title=name, description=desc, color=embedColor)                                
     embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)                      
     embed.add_field(name="🔤 Text Commands", value=", ".join(textCommandList), inline=False)                  
     embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel', value=", ".join(voiceCommandList), inline=False)
@@ -496,7 +579,7 @@ async def helpCommand(command, msg):
         await say(msg, "That's not a command I know.")
         return
                     
-    embed = discord.Embed(title="Command:", description=command, color=0xeee657) #                      
+    embed = discord.Embed(title="Command:", description=command, color=embedColor) #                      
     embed.add_field(name="Description:", value=commandHelp[commandList.index(command)], inline=False)
     embed.add_field(name="Usage:", value="```" + invoker + command + " " + commandParams[commandList.index(command)] + "```", inline=False)
     await say(msg, "", embed)                                      
@@ -605,7 +688,7 @@ async def defineGoogle(msg, message):
                 await say(msg, "I couldn't define {}.".format(term))
                 return
         try:
-            embed=discord.Embed(color=0xeee657)
+            embed=discord.Embed(color=embedColor)
             embed.set_thumbnail(url="http://icons.iconarchive.com/icons/osullivanluke/orb-os-x/48/Dictionary-icon.png")
             values = list(payload.values())
 
@@ -692,21 +775,26 @@ async def mock(msg, *, text=""):
         else:
             await say(msg, result)
 
-async def writeScore(guild, user, score):
-    userObj = "GUILD={} USER={} SCORE={}".format(guild, user, str(score))
+async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0):
+    userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={}".format(guild, user, str(score), str(gilding), 
+        str(voted), str(gilded))
     try:
         existingScores = await readScores()
         for existingScore in existingScores:
             if existingScore[0] == guild and existingScore[1] == user:
                 oldUserObj = userObj
-                newScore = str(int(existingScore[2]) + int(score))
-                userObj = "GUILD={} USER={} SCORE={}".format(guild, user, newScore)
+                newScore = str(int(existingScore[2]) + score)
+                newGilding = str(int(existingScore[3]) + gilding) if (int(existingScore[3]) + gilding) > 0 else '0'
+                newVoted = str(int(existingScore[4]) + voted) if (int(existingScore[4]) + voted) > 0 else '0'
+                newGilded = str(int(existingScore[5]) + gilded) if (int(existingScore[5]) + gilded) > 0 else '0'
+                userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={}".format(guild, user, newScore, newGilding,
+                    newVoted, newGilded)
                 oldScores = await getScores()
                 oldScores = oldScores.split("\n")[:-1]
                 with open("botScores.txt","w") as scores:
                     for oldScore in oldScores:
                         if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
-                            if newScore != '0':
+                            if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0'):
                                 scores.write(userObj + "\n")
                         else:
                             scores.write(oldScore + "\n")
@@ -738,9 +826,9 @@ async def readScores(guild=None, userID=None):
                     found = entry
                     break
             if found is not None:
-                return found[2]
+                return found
             else:
-                return 0
+                return None
         else:
             return guildEntries
     return sorted(entries, key=lambda x: x[0])
@@ -751,6 +839,15 @@ async def getScores(guild=None):
         scores.close()
         return data
 
+async def clearDailyRestrictions():
+    scores = await readScores()
+    for entry in scores:
+        await writeScore(entry[0], entry[1], voted=-100, gilded=-100)
+
+async def onNewDay():
+    await checkBDays()
+    await clearDailyRestrictions()
+
 async def status_task(loop, bypassCheck):                                                                                        # choose what game to play based on the day of the week
     while True:
         global weekday
@@ -760,8 +857,10 @@ async def status_task(loop, bypassCheck):                                       
             await setPlaying(config['{}_game'.format(now.strftime("%A").lower())])
         if not bypassCheck:
             weekday = now.weekday()
+            
             if oldWeekday != weekday:
-                await checkBDays()
+                await onNewDay()
+            
             weekday = now.weekday()
             oldWeekday = weekday
         if not loop:
