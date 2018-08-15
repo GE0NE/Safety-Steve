@@ -356,11 +356,12 @@ async def on_message(msg: discord.Message):                                     
             for scoreEntry in scores:
                 user = await client.get_user_info(scoreEntry[1])
                 score = scoreEntry[2]
-                displayName = user.display_name
-                nick = msg.server.get_member(user.id).nick
-                nick = displayName if nick is None else nick
-                displayName = "_AKA {}_\n".format(displayName) if nick != displayName else ''
-                embed.add_field(name=nick, value="{}{}".format(displayName, score), inline=True)
+                if score != '0':
+                    displayName = user.display_name
+                    nick = msg.server.get_member(user.id).nick
+                    nick = displayName if nick is None else nick
+                    displayName = "_AKA {}_\n".format(displayName) if nick != displayName else ''
+                    embed.add_field(name=nick, value="{}{}".format(displayName, score), inline=True)
             await say(msg, "", embed=embed)
             return
 
@@ -391,7 +392,8 @@ async def on_message(msg: discord.Message):                                     
             if invokerMessage is not None:
                 await react(invokerMessage, "🔶")
             targetScores = await readScores(guild=server.id, userID=author.id)
-            embed = discord.Embed(title="_{} times_".format(targetScores[3]), description="**You've beed gilded!**", color=0xFFDF00)
+            embed = discord.Embed(title="_{} time{}_".format(targetScores[3], '' if targetScores[3] == 1 else 's'), 
+                description="**You've beed gilded!**", color=0xFFDF00)
             embed.set_thumbnail(url="https://i.imgur.com/UWWoFxe.png")
             await say(msg, "{}".format(author.mention), embed=embed)
 
@@ -412,7 +414,8 @@ async def on_message(msg: discord.Message):                                     
             scores = await readScores(guild=msg.server.id, userID=target.id)
             gilded = '0' if scores is None else scores[3]
             embed = discord.Embed(title="{} been gilded:".format("You have" if target == msg.author else nick + " has"), 
-                description="_{} time{}_".format(gilded, 's' if int(gilded) != 1 else ''), color=gradient[int(gilded) if int(gilded) < 6 else 5])
+                description="_{} time{}_".format(gilded, 's' if int(gilded) != 1 else ''), 
+                color=gradient[int(gilded) if int(gilded) < 6 else 5])
             embed.set_thumbnail(url="https://i.imgur.com/kD6NhBG.png")
             await say(msg, "", embed=embed)
 
@@ -668,7 +671,7 @@ async def defineUrban(msg, message, num=1, edit=None):
                     await client.remove_reaction(definition, "➡", definition.author)
                 if res is None:
                     return
-                await define(msg, term, num=(num + ( 1 if res.reaction.emoji == "➡" else -1)), edit=definition)
+                await defineUrban(msg, term, num=(num + ( 1 if res.reaction.emoji == "➡" else -1)), edit=definition)
 
             except IndexError:
                 await say(msg, "That result doesn't exist! Try {}define {}.".format(invoker, term))
