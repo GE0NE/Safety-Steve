@@ -13,6 +13,11 @@
     "thursday_game": "Minecraft: Extra Safe Edition (NSFW)",
     "friday_game": "Waifu Sex Simulator",
     "saturday_game": "Minecraft: Safety Edition",
+	
+	"vote_limit": 3,
+	"gild_limit": 1,
+	
+	"embed_color": "0xeee657",
 
     "response": "Hey! No bad words, please. This is a Christian server!",
     "bad_words":
