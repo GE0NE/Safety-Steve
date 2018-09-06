@@ -3,104 +3,146 @@
     [
         {
             "Command": "help",
+			"Alias": "h#whatis",
             "Help": "What are ya, some kind of funny guy, eh?",
-            "Params": "[command]"
+            "Params": "[command]",
+			"Examples": "help#help git"
         },
         
         {
             "Command": "git",
+			"Alias": "hub",
             "Help": "Sends a link to the bot's github repository",
-            "Params": ""
+            "Params": "",
+			"Examples": "git"
         },
         
         {
             "Command": "say",
+			"Alias": "s",
             "Help": "Repeats what you tell it to, and deletes your original message",
-            "Params": "<what you want me to say>"
+            "Params": "<what you want me to say>",
+			"Examples": "say hello, I'm speaking!"
         },
         
         {
             "Command": "animeme",
+			"Alias": "",
             "Help": "Pulls a S P I C C Y meme from r/animemes",
-            "Params": ""
+            "Params": "",
+			"Examples": "animeme"
         },
         
         {
             "Command": "reddit",
+			"Alias": "trending",
             "Help": "Gets a random post from the hottest 50 post of the subreddit specified",
-            "Params": "<subreddit>"
+            "Params": "<subreddit>",
+			"Examples": "reddit pics#reddit me_irl"
         },
         
         {
             "Command": "ascii",
+			"Alias": "bigtext#big",
             "Help": "Repeats what you tell it to in ascci art letters",
-            "Params": "<what you want me to say>"
+            "Params": "<what you want me to say>",
+			"Examples": "ascii mega text#ascii no u"
         },
         
         {
             "Command": "game",
+			"Alias": "playing#setplaying",
             "Help": "Sets the game I'm playing. No param resets to default",
-            "Params": "[string]"
+            "Params": "[string]",
+			"Examples": "game#game Tekkit"
         },
         
         {
             "Command": "giveban",
+			"Alias": "",
             "Help": "I don’t feel so good...",
-            "Params": ""
+            "Params": "",
+			"Examples": "giveban"
         },
         
         {
             "Command": "nice",
+			"Alias": "nice.",
             "Help": "nice.",
-            "Params": ""
+            "Params": "",
+			"Examples": "nice"
         },
         
         {
             "Command": "ipa",
+			"Alias": "pronounce",
             "Help": "Converts your text into IPA",
-            "Params": "<what you want converted to IPA>"
+            "Params": "<what you want converted to IPA>",
+			"Examples": "ipa hello#ipa avarice"
         },
         
         {
             "Command": "poll",
+			"Alias": "vote",
             "Help": "Creates a poll for voting using the provided enojis as reactions",
-            "Params": "[question] [space-seperated emojis inside square brackets]"
+            "Params": "[question] [space-seperated emojis inside square brackets]",
+			"Examples": "poll Was the movie good? [:thumbsup: :thumbsdown:]"
         },
         
         {
             "Command": "urbandefine",
+			"Alias": "ud#udefine#urban",
             "Help": "Searches Urban Dictionary for the term",
-            "Params": "<term> | [result number. eg: 3]"
+            "Params": "<term> | [result number. eg: 3]",
+			"Examples": "urbandefine pebkac#urbandefine foobar | 2"
         },
 		
 		{
             "Command": "define",
+			"Alias": "d",
             "Help": "Searches Google Dictionary for the term",
-            "Params": "<single word term>"
+            "Params": "<single word term>",
+			"Examples": "define empathy"
         },
 		
 		{
             "Command": "mock",
+			"Alias": "spongebob",
             "Help": "Randomize capitalization on a message or string. No params mocks last message",
-            "Params": "[string or message id]"
+            "Params": "[string or message id]",
+			"Examples": "mock#mock just do it#mock 487005454266793985"
         },
 		
 		{
             "Command": "botscores",
+			"Alias": "scores",
             "Help": "displays bot/user scores from using the good bot/bad bot command",
-            "Params": ""
+            "Params": "",
+			"Examples": "botscores"
         },
 		
 		{
             "Command": "gild",
+			"Alias": "gold#redditgold#redditsilver",
             "Help": "gilds a user. No params gilds last message",
-            "Params": "[user mention]"
+            "Params": "[user mention]",
+			"Examples": "gild#gild @Safety-Steve"
         },
 		
 		{
             "Command": "usergildings",
+			"Alias": "gildings#gilds",
             "Help": "displays specified user's gild. No params displays your gilding",
-            "Params": "[user mention]"
+            "Params": "[user mention]",
+			"Examples": "usergildings#usergildings @Safety-Steve"
+        },
+		
+		{
+            "Command": "mal",
+			"Alias": "myanimelist#anime",
+            "Help": "displays the best matching MyAnimeList entry it can find for a given anime",
+            "Params": "<anime title>",
+			"Examples": "mal steins gate#mal pokemon"
         }
     ],
 
@@ -110,6 +152,7 @@
     [
         {
             "Command": "leave",
+			"Alias": "stop#shutup",
 			"SoundFile": "leave",
             "Help": "Leaves the current voice channel",
             "Params": ""
@@ -117,6 +160,7 @@
         
         {
             "Command": "betrayed",
+			"Alias": "itwasme",
 			"SoundFile": "betrayed",
             "Help": "IT WAS ME AUSTIN!",
             "Params": ""
@@ -124,6 +168,7 @@
         
         {
             "Command": "prettygood",
+			"Alias": "pg",
 			"SoundFile": "prettygood",
             "Help": "Hey, that's pretty good",
             "Params": ""
@@ -131,6 +176,7 @@
         
         {
             "Command": "prettygoodvs",
+			"Alias": "vsauceprettygood#prettygoodvsauce#pgvs",
 			"SoundFile": "prettygoodvs",
             "Help": "Hey, that's pretty good but it's bald science man",
             "Params": ""
@@ -138,6 +184,7 @@
         
         {
             "Command": "timetostop",
+			"Alias": "frank",
 			"SoundFile": "timetostop",
             "Help": "It's time to stop! No more!",
             "Params": ""
@@ -145,6 +192,7 @@
         
         {
             "Command": "stopit",
+			"Alias": "jordan#gethelp",
 			"SoundFile": "stopit",
             "Help": "Stop it. Get some help",
             "Params": ""
@@ -152,6 +200,7 @@
         
         {
             "Command": "what",
+			"Alias": "wtf#wat",
 			"SoundFile": "what",
             "Help": "What the fuck?",
             "Params": ""
@@ -159,6 +208,7 @@
         
         {
             "Command": "vsauce",
+			"Alias": "vs",
 			"SoundFile": "vsauce",
             "Help": "Micheal here",
             "Params": ""
@@ -166,6 +216,7 @@
         
         {
             "Command": "butwhatis",
+			"Alias": "vsaucemusic#vsmusic",
 			"SoundFile": "butwhatis",
             "Help": "Moon Men by Jake Chudnow",
             "Params": ""
@@ -173,6 +224,7 @@
         
         {
             "Command": "cripdep",
+			"Alias": "cripplingdepression",
 			"SoundFile": "cripdep",
             "Help": "I have crippling depression",
             "Params": ""
@@ -180,6 +232,7 @@
         
         {
             "Command": "titanic",
+			"Alias": "titenic",
 			"SoundFile": "titanic",
             "Help": "My Heart Will Go On: recorder edition",
             "Params": ""
@@ -187,6 +240,7 @@
         
         {
             "Command": "jurassicpark",
+			"Alias": "jp",
 			"SoundFile": "jurassicpark",
             "Help": "Jurassic Park theme played on a Melodica",
             "Params": ""
@@ -194,6 +248,7 @@
         
         {
             "Command": "dododo",
+			"Alias": "do",
 			"SoundFile": "dododo",
             "Help": "Buu buu desu wa",
             "Params": ""
@@ -201,6 +256,7 @@
         
         {
             "Command": "shutdown",
+			"Alias": "bye#shut",
 			"SoundFile": "shutdown",
             "Help": "Windows XP shutdown sound",
             "Params": ""
@@ -208,6 +264,7 @@
         
         {
             "Command": "startup",
+			"Alias": "winxp#windows#start",
 			"SoundFile": "startup",
             "Help": "Windows XP startup sound",
             "Params": ""
@@ -215,6 +272,7 @@
         
         {
             "Command": "shutdowner",
+			"Alias": "shutdownearrape",
 			"SoundFile": "shutdowner",
             "Help": "Windows XP shutdown sound: ear rape edition",
             "Params": ""
@@ -222,6 +280,7 @@
         
         {
             "Command": "startuper",
+			"Alias": "startupearrape",
 			"SoundFile": "startuper",
             "Help": "Windows XP startup sound: ear rape edition",
             "Params": ""
@@ -229,6 +288,7 @@
         
         {
             "Command": "oof",
+			"Alias": "ooof#roblox",
 			"SoundFile": "oof",
             "Help": "OOF",
             "Params": ""
@@ -236,6 +296,7 @@
         
         {
             "Command": "noice",
+			"Alias": "pop",
 			"SoundFile": "noice",
             "Help": "POP! NOICE",
             "Params": ""
@@ -243,6 +304,7 @@
         
         {
             "Command": "exposed",
+			"Alias": "pianoman",
 			"SoundFile": "exposed",
             "Help": "I'VE BEEN EXPOSED",
             "Params": ""
@@ -250,6 +312,7 @@
         
         {
             "Command": "wednesday",
+			"Alias": "wed#frog",
 			"SoundFile": "wednesday",
             "Help": "It is Wednesday my dudes!",
             "Params": ""
@@ -257,6 +320,7 @@
         
         {
             "Command": "wednesdaygroove",
+			"Alias": "wedg#wedgroove",
 			"SoundFile": "wednesdaygroove",
             "Help": "Wednesday Hard by ZimoNitrome",
             "Params": ""
@@ -264,6 +328,7 @@
         
         {
             "Command": "ahhh",
+			"Alias": "ah#ahh#ahhhh",
 			"SoundFile": "ahhh",
             "Help": "A screem!",
             "Params": ""
@@ -271,6 +336,7 @@
         
         {
             "Command": "aurora",
+			"Alias": "steamedhams",
 			"SoundFile": "aurora",
             "Help": "AT THIS TIME OF YEAR, AT THIS TIME OF DAY, IN THIS PART OF THE COUNTRY?",
             "Params": ""
@@ -278,6 +344,7 @@
         
         {
             "Command": "darling",
+			"Alias": "da",
 			"SoundFile": "darling",
             "Help": "Best Girl",
             "Params": ""
@@ -285,6 +352,7 @@
         
         {
             "Command": "ech",
+			"Alias": "ekh#ecch#jontronnoises",
 			"SoundFile": "ech",
             "Help": "Jontron's mighty ECH!",
             "Params": ""
@@ -292,6 +360,7 @@
         
         {
             "Command": "nooo",
+			"Alias": "no#noo#noooo",
 			"SoundFile": "nooo",
             "Help": "Darth Vader's Nooooooooooooooo!",
             "Params": ""
@@ -299,6 +368,7 @@
         
         {
             "Command": "ussr",
+			"Alias": "",
 			"SoundFile": "ussr",
             "Help": "National Anthem of USSR",
             "Params": ""
@@ -306,6 +376,7 @@
         
         {
             "Command": "dododofull",
+			"Alias": "dof#dododof",
 			"SoundFile": "dododofull",
             "Help": "Buu buu desu wa but it's 1:30",
             "Params": ""
@@ -313,6 +384,7 @@
         
         {
             "Command": "ussrfull",
+			"Alias": "ussrf",
 			"SoundFile": "ussrfull",
             "Help": "National Anthem of USSR but it's 3:40",
             "Params": ""
@@ -320,6 +392,7 @@
         
         {
             "Command": "rushb",
+			"Alias": "b",
 			"SoundFile": "rushb",
             "Help": "Сука Блять RUSH 🅱",
             "Params": ""
@@ -327,6 +400,7 @@
         
         {
             "Command": "rushbfull",
+			"Alias": "bf",
 			"SoundFile": "rushbfull",
             "Help": "RUSH 🅱 but it's 2:30",
             "Params": ""
@@ -334,6 +408,7 @@
         
         {
             "Command": "thicc",
+			"Alias": "thic",
 			"SoundFile": "thicc",
             "Help": "Damn, boi!",
             "Params": ""
@@ -341,6 +416,7 @@
         
         {
             "Command": "bearnoises",
+			"Alias": "rawr",
 			"SoundFile": "bearnoises/bearnoises1#bearnoises/bearnoises2#bearnoises/bearnoises3#bearnoises/bearnoises4#bearnoises/bearnoises5#bearnoises/bearnoises6#bearnoises/bearnoises7",
             "Help": "Rwar!",
             "Params": ""
@@ -348,6 +424,7 @@
         
         {
             "Command": "tuturu",
+			"Alias": "tu",
 			"SoundFile": "tuturu",
             "Help": "Ohaio Okarnin!",
             "Params": ""
@@ -355,6 +432,7 @@
         
         {
             "Command": "dadadarling",
+			"Alias": "dadarling",
 			"SoundFile": "dadadarling",
             "Help": "Darling remix",
             "Params": ""
@@ -362,8 +440,17 @@
         
         {
             "Command": "dadadarlingfull",
-			"SoundFile": "dadadarling",
+			"Alias": "dadarlingf",
+			"SoundFile": "dadadarlingfull",
             "Help": "Darling remix but it's 0:27",
+            "Params": ""
+        },
+        
+        {
+            "Command": "alert",
+			"Alias": "!",
+			"SoundFile": "alert",
+            "Help": "MGS alert sound",
             "Params": ""
         }
     ]

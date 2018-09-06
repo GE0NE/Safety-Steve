@@ -9,6 +9,7 @@ import re                                                                       
 import praw
 import random
 import math
+import html
 from urllib import parse
 from urllib.request import Request, urlopen
 import aiohttp
@@ -127,24 +128,31 @@ voiceCommandList = []
 # Command info
 textCommandHelp = []
 textCommandParams = []
+textCommandAlias = []
+textCommandExample = []
 voiceCommandHelp = []
 voiceCommandParams = []
+voiceCommandAlias  = []
 
 # Init command info
 for command in textCommands:
     textCommandList.append(command['Command'])
     textCommandHelp.append(command['Help'])
     textCommandParams.append(command['Params'])
+    textCommandAlias.append(command['Alias'].split('#'))
+    textCommandExample.append(command['Examples'].split('#'))
 
 for command in voiceCommands:
     voiceCommandList.append(command['Command'])
     voiceCommandHelp.append(command['Help'])
     voiceCommandParams.append(command['Params'])
+    voiceCommandAlias.append(command['Alias'].split('#'))
 
 # List of commands
 commandList = textCommandList + voiceCommandList
 commandHelp = textCommandHelp + voiceCommandHelp
 commandParams = textCommandParams + voiceCommandParams
+commandAlias = textCommandAlias + voiceCommandAlias
 
 # Bad words and the response to them
 wordBlacklist = config['bad_words']
@@ -204,65 +212,69 @@ async def on_message(msg: discord.Message):                                     
         return                                                                                                      # ignore it
 
     if content.startswith(invoker):                                                                         # if the message starts with the invoker
-        message = content[len(invoker):]                                                            
         rawMessage = rawContent[len(invoker):]
+        message = rawMessage.lower()
+        breakdown = message.split(" ")
+        rawBreakdown = rawMessage.split(" ")
+        command = breakdown[0]
+        args = ' '.join(rawBreakdown[1:]) if len(breakdown) > 1 else ''
 
-        if message[:5] == "react":                                                                 
-            if len(message[5:].strip()) >= 1:
-                messageFormatted = " ".join(message[5:].split())
+        if command == "react":                                                                 
+            if len(args.strip()) >= 1:
+                messageFormatted = " ".join(args.split())
                 emojis = messageFormatted.strip().split(" ")
                 for emoji in emojis:
                     await react(msg, emoji)
             return       
 
-        if message == textCommands[0]['Command']:                                                                   # help command
-            await help(msg)
-            return       
+        if command == textCommands[0]['Command'] or command in textCommands[0]['Alias'].split('#'):                # help command
+            if not args:
+                await help(msg)
+                return                                                                     # help [command] command
+            else:
+                await helpCommand(args, msg) 
+                return                                            
 
-        if message[:4] == textCommands[0]['Command']:                                                               # help [command] command
-            await helpCommand(message[5:], msg) 
-            return                                            
-
-        if message == textCommands[1]['Command']:                                                                   # git command
+        if command == textCommands[1]['Command'] or command in textCommands[1]['Alias'].split('#'):              # git command
             await git(msg)
 
-        if message[:3] == textCommands[2]['Command']:                                                               # say <text> command
-            if len(message[3:].strip()) < 1:
-                await helpCommand('say', msg)
+        if command == textCommands[2]['Command'] or command in textCommands[2]['Alias'].split('#'):                                                               # say <text> command
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[2]['Command'], msg)
                 return
-            await say(msg, rawMessage[4:])                                            
+            await say(msg, args)                                            
             await client.delete_message(msg)                                                                   
             return                                                                                              
 
-        if message == textCommands[3]['Command']:                                                                   # animeme command
+        if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):                                                                   # animeme command
             await subreddit('animemes', msg, True)
             return
 
-        if message[:6] == textCommands[4]['Command']:                                                               # reddit [subreddit] command
-            await subreddit(rawContent[8:], msg)
+        if command == textCommands[4]['Command'] or command in textCommands[4]['Alias'].split('#'):                                                               # reddit [subreddit] command
+            await subreddit(args, msg)
             return
 
-        if message[:5] == textCommands[5]['Command']:                                                               # ascii command
-            if len(message[6:]) > 30:
+        if command == textCommands[5]['Command'] or command in textCommands[5]['Alias'].split('#'):                                                               # ascii command
+            if len(args) > 30:
                 await say(msg, "Whoah! That's too many letter! Keep it below 30 please.")
                 return
-            if len(message[6:].strip()) < 1:
-                await helpCommand('ascii', msg)
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[5]['Command'], msg)
                 return
-            await sayAscii(msg, message[6:])
+            await sayAscii(msg, args)
             return
 
-        if message[:4] == textCommands[6]['Command']:                                                               # reddit [subreddit] command
-            if len(message[5:].strip()) < 1:
+        if command == textCommands[6]['Command'] or command in textCommands[6]['Alias'].split('#'):                                                               # reddit [subreddit] command
+            if len(args.strip()) < 1:
                 await status_task(False, True)
                 return
-            await setPlaying(rawContent[5:])
+            await setPlaying(args)
             return
 
-        if message[:7] == textCommands[7]['Command']:
+        if command == textCommands[7]['Command'] or command in textCommands[7]['Alias'].split('#'):
             await say(msg, "`༼ つ ◕_ ◕ ༽つ GIVE BAN ༼ つ ◕_ ◕ ༽つ`")
 
-        if message[:4] == textCommands[8]['Command']:
+        if command == textCommands[8]['Command'] or command in textCommands[8]['Alias'].split('#'):
             usernamesFile = open("usernames.txt", "r")
             usernamesRaw = usernamesFile.read()
             usernames = usernamesRaw.split('\n')
@@ -300,8 +312,8 @@ async def on_message(msg: discord.Message):                                     
                     nices[1], nices[2], nices[3], nices[4])
             await say(msg, thread)
 
-        if message[:3] == textCommands[9]['Command']:
-            text = message[3:].strip()
+        if command == textCommands[9]['Command'] or command in textCommands[9]['Alias'].split('#'):
+            text = args.strip()
             if len(text) < 1:
                 await helpCommand(textCommands[9]['Command'], msg)
                 return
@@ -311,13 +323,13 @@ async def on_message(msg: discord.Message):                                     
                 return
             await say(msg, ipa)
 
-        if message[:4] == textCommands[10]['Command']: 
+        if command == textCommands[10]['Command'] or command in textCommands[10]['Alias'].split('#'): 
             try:                                                                  
-                if len(message[4:].strip()) < 1:
+                if len(args.strip()) < 1:
                     await helpCommand(textCommands[10]['Command'], msg)
                     return
-                question = rawContent[6:].split("[")[0]
-                messageFormatted = " ".join(rawContent[6:].split())
+                question = args.split("[")[0]
+                messageFormatted = " ".join(args.split())
                 messageEmojis = messageFormatted.split("[")[1].split("]")[0]
                 emojis = messageEmojis.strip().split(" ")
                 await say(msg, question)
@@ -332,25 +344,25 @@ async def on_message(msg: discord.Message):                                     
                 await helpCommand(textCommands[10]['Command'], msg)
                 return
 
-        if message[:11] == textCommands[11]['Command']:
-            if len(message[11:].strip()) < 1:
-                await helpCommand(textCommands[10]['Command'], msg)
+        if command == textCommands[11]['Command'] or command in textCommands[11]['Alias'].split('#'):
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[11]['Command'], msg)
                 return
-            await defineUrban(msg, message[11:])
+            await defineUrban(msg, args)
             return
 
-        if message[:6] == textCommands[12]['Command']:
-            if len(message[6:].strip()) < 1:
-                await helpCommand(textCommands[10]['Command'], msg)
+        if command == textCommands[12]['Command'] or command in textCommands[12]['Alias'].split('#'):
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[12]['Command'], msg)
                 return
-            await defineGoogle(msg, message[6:])
+            await defineGoogle(msg, args)
             return
 
-        if message[:4] == textCommands[13]['Command']:
-            await mock(msg, text=message[4:].strip())
+        if command == textCommands[13]['Command'] or command in textCommands[13]['Alias'].split('#'):
+            await mock(msg, text=args.strip())
             return
 
-        if message[:9] == textCommands[14]['Command']:
+        if command == textCommands[14]['Command'] or command in textCommands[14]['Alias'].split('#'):
             scores = await readScores(msg.server.id)
             embed = discord.Embed(title="Scores:", description="_ _")
             for scoreEntry in scores:
@@ -365,7 +377,7 @@ async def on_message(msg: discord.Message):                                     
             await say(msg, "", embed=embed)
             return
 
-        if message[:4] == textCommands[15]['Command']:
+        if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
             server = msg.server
             invokerMessage = None
             author = None
@@ -375,7 +387,7 @@ async def on_message(msg: discord.Message):                                     
                 await say(msg, "You have already gilded someone {}today!".format((str(gildLimit) + ' times ') if gildLimit != 1 else ''))
                 return
 
-            if len(message[4:].strip()) < 1:
+            if len(args.strip()) < 1:
                 async for invokerMessageTemp in client.logs_from(msg.channel, limit=2):
                     invokerMessage = invokerMessageTemp
                 if invokerMessage is not None:
@@ -392,12 +404,12 @@ async def on_message(msg: discord.Message):                                     
             if invokerMessage is not None:
                 await react(invokerMessage, "🔶")
             targetScores = await readScores(guild=server.id, userID=author.id)
-            embed = discord.Embed(title="_{} time{}_".format(targetScores[3], '' if targetScores[3] == 1 else 's'), 
-                description="**You've beed gilded!**", color=0xFFDF00)
+            embed = discord.Embed(title="_{} time{}_".format(targetScores[3], '' if targetScores[3] == '1' else 's'), 
+                description="**You've been gilded!**", color=0xFFDF00)
             embed.set_thumbnail(url="https://i.imgur.com/UWWoFxe.png")
             await say(msg, "{}".format(author.mention), embed=embed)
 
-        if message[:12] == textCommands[16]['Command']:
+        if command == textCommands[16]['Command'] or command in textCommands[16]['Alias'].split('#'):
             target = None
             nick = None
 
@@ -418,15 +430,16 @@ async def on_message(msg: discord.Message):                                     
                 color=gradient[int(gilded) if int(gilded) < 6 else 5])
             embed.set_thumbnail(url="https://i.imgur.com/kD6NhBG.png")
             await say(msg, "", embed=embed)
-
-            
             return
 
-        if message[:5] == 'clear':
-            await clearDailyRestrictions()
-            await say(msg, "Cleared daily restrictions!")
+        if command == textCommands[17]['Command'] or command in textCommands[17]['Alias'].split('#'):
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[17]['Command'], msg)
+                return
+            await mal(msg, args.strip())
+            return
 
-        if message == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
+        if command == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
             isPlaying = False
             await voice.disconnect()
             return
@@ -435,7 +448,7 @@ async def on_message(msg: discord.Message):                                     
             if isPlaying:                                                                                               # if a sound is already playing
                 await say(msg, 'I\'m already playing a sound! Please wait your turn.')                                      # send a message informing them
                 return
-            if message == voiceCommands[i]['Command']:                                                                  # otherwise
+            if message == voiceCommands[i]['Command'] or command in voiceCommands[i]['Alias'].split('#'):                                                                  # otherwise
                 if msg.author.voice_channel:                                                                                # if the user is in a voice channel
                     try:                                                                                                        # try to
                         sounds = voiceCommands[i]['SoundFile'].split("#")
@@ -497,7 +510,7 @@ async def on_message(msg: discord.Message):                                     
 
 
 async def subreddit(sub, msg, bypassErrorCheck=False):
-    if not bypassErrorCheck and msg.content[8:].strip() == "":
+    if not bypassErrorCheck and sub.strip() == "":
         await helpCommand('reddit', msg)
         return
     reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
@@ -560,7 +573,7 @@ async def react(msg, emote):
                 reaction = get(client.get_all_emojis(), name=reaction)
                 await client.add_reaction(msg, reaction)
             except:
-                await say(msg, "I don't know that emoji: " + "`" + str(reaction) + "`")
+                await say(msg, "I don't know that emoji: " + "`" + str(emote) + "`")
     return
 
 async def help(msg):
@@ -576,33 +589,47 @@ async def help(msg):
 
 async def helpCommand(command, msg):
 
-    command = command.strip()
+    args = command.strip().split(" ")[1:] if len(command.strip().split(" ")) > 1 else ''
+    
+    command = command.strip().split(" ")[0]
 
-    if command not in commandList:
-        await say(msg, "That's not a command I know.")
+    if command not in commandList and command not in commandAlias:
+        await say(msg, "That's not a command I know or it is an alias.")
         return
                     
     embed = discord.Embed(title="Command:", description=command, color=embedColor) #                      
     embed.add_field(name="Description:", value=commandHelp[commandList.index(command)], inline=False)
     embed.add_field(name="Usage:", value="```" + invoker + command + " " + commandParams[commandList.index(command)] + "```", inline=False)
+    if ('-e' in args or 'examples' in args or 'example' in args or 'all' in args) and command in textCommandList:
+        examples = []
+        for example in textCommandExample[commandList.index(command)]:
+            examples.append(invoker + example)
+        embed.add_field(name="Examples:", value="```\n" + '\n'.join(examples) + "```", inline=False)
+    if '-a' in args or 'aliases' in args or 'alias' in args or 'all' in args:
+        aliases = []
+        for alias in commandAlias[commandList.index(command)]:
+            aliases.append(invoker + alias)
+        embed.add_field(name="Alias:", value=', '.join(aliases), inline=False)
     await say(msg, "", embed)                                      
     return
 
 async def sayAscii(msg, message):
     ascii = []
+    message = message.lower()
     output = ""
-    if len(message) > 6:
-        await sayAscii(msg, message[:6])
-        await sayAscii(msg, message[6:])
+    limit = 6
+    if len(message) > limit:
+        await sayAscii(msg, message[:limit])
+        await sayAscii(msg, message[limit:])
         return
     for letter in list(message):
         if letter in bubbleFontMask:
             ascii.append(bubbleFont[bubbleFontMask.index(letter)])
-    for i in range(0, 6):
+    for i in range(0, limit):
         for letterBlock in ascii:
             letterBreakdown = letterBlock.splitlines()
             for j, line in enumerate(letterBreakdown):
-                while len(line) < 5:
+                while len(line) < limit-1:
                     line += " "
                     letterBreakdown[j] += "╱"
             output = output + letterBreakdown[i]
@@ -842,6 +869,93 @@ async def getScores(guild=None):
         scores.close()
         return data
 
+async def mal(msg, name, mediaType="anime", displayFormat="tv"):
+    name = parse.quote_plus(name)
+    async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
+        async with session.get("https://api.jikan.moe/search/{0}?q={1}&type={2}&page=1".format(mediaType, name, displayFormat)) as resp:
+            result = await resp.json()
+            results = None
+            try:
+                results = result["result"]
+            except:
+                pass
+        try:
+            if result["error"]:
+                await throwError(msg, result["error"])
+                return
+        except:
+            pass
+        if not results:
+            await throwError(msg, "{} couldn't be found on MyAnimeList.".format(name), custom=True)
+            return
+        else:
+            try:
+                top_result = results[0]
+                result_id = top_result["mal_id"]
+                result_image = top_result["image_url"]                
+                
+                async with session.get("https://api.jikan.moe/{0}/{1}".format(mediaType, result_id)) as resp:
+                    result = await resp.json()
+                try:
+                    if result["error"]:
+                        await throwError(msg, result["error"])
+                        return
+                except:
+                    pass
+                try:
+                    result_name = html.unescape(result["title"])
+                    result_name_english = result["title_english"]
+                    result_url = 'https://myanimelist.net/{0}/{1}'.format(mediaType, result_id)
+                    result_type = result["type"]
+                    result_score = str(result["score"])
+                    result_episodes = str(result["episodes"])
+                    result_rank = str(result["rank"])
+                    result_status = result["status"]
+                    result_air_time = result["aired_string"]
+                    result_synopsis = html.unescape(result["synopsis"])
+                    
+                    
+                    embed = discord.Embed(description=result_url, colour=embedColor)
+                    if result_name_english:
+                        result_name_english = html.unescape(result_name_english)
+                    else:
+                        result_name_english = result_name
+                    embed.add_field(name='English Title', value=result_name_english)
+                    embed.add_field(name='Rank', value='#' + result_rank)
+                    embed.add_field(name='Type', value=result_type)
+                    episodes = 'Unknown' if result_episodes == '0' else result_episodes
+                    embed.add_field(name='Episodes', value=episodes)
+                    score = '?' if result_score == 0 else str(result_score) + '/10'
+                    embed.add_field(name='Score', value=score)
+                    embed.add_field(name='Status', value=result_status)
+                    try:
+                        synop = result_synopsis[:400].split('.')
+                        text = ''
+                        for i in range(0, len(synop)-1):
+                            text += synop[i] + '.'
+                    except:
+                        text = result_synopsis
+                    embed.add_field(name='Synopsis', value=text + '..   [More »]({})'.format(result_url))
+                    embed.add_field(name='Airing Time:', value=result_air_time.replace('?', 'Unknown'))
+                    embed.set_thumbnail(url=result_image)
+                    embed.set_author(name=result_name,
+                                  icon_url='https://myanimelist.cdn-dena.com/img/sp/icon/apple-touch-icon-256.png')
+                    embed.set_footer(text='Powered by api.jikan.moe')
+                    await say(msg, "", embed=embed)
+
+                except IndexError:
+                    await throwError(msg, "That result doesn't exist!", custom=True)
+                except:
+                    return
+            except IndexError:
+                await throwError(msg, "That result doesn't exist!", custom=True)
+            except Exception:
+                return
+        return 
+
+async def throwError(msg, error, custom=False):
+    pass#await say(msg, "Woah! Something bad happened! `{}`".format(error) if not custom else error)
+
 async def clearDailyRestrictions():
     scores = await readScores()
     for entry in scores:
@@ -899,7 +1013,6 @@ async def checkBDays():
                 if reactCondition:
                     for emojis in reacts:
                         await react(msg, emojis)
-                    return
     return
 
 async def sayInChannelOnce(channel, message, embed=None):
