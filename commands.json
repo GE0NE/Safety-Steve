@@ -5,8 +5,8 @@
             "Command": "help",
 			"Alias": "h#whatis",
             "Help": "What are ya, some kind of funny guy, eh?",
-            "Params": "[command]",
-			"Examples": "help#help git"
+            "Params": "[[command] [-a | alias] [-e | example] [all]]",
+			"Examples": "help#help git#help ascii -a#help game all"
         },
         
         {
@@ -85,7 +85,7 @@
             "Command": "poll",
 			"Alias": "vote",
             "Help": "Creates a poll for voting using the provided enojis as reactions",
-            "Params": "[question] [space-seperated emojis inside square brackets]",
+            "Params": "[question] [[space-seperated emojis]]",
 			"Examples": "poll Was the movie good? [:thumbsup: :thumbsdown:]"
         },
         
@@ -93,8 +93,8 @@
             "Command": "urbandefine",
 			"Alias": "ud#udefine#urban",
             "Help": "Searches Urban Dictionary for the term",
-            "Params": "<term> | [result number. eg: 3]",
-			"Examples": "urbandefine pebkac#urbandefine foobar | 2"
+            "Params": "<term> [-p number]",
+			"Examples": "urbandefine pebkac#urbandefine foobar -p 2"
         },
 		
 		{
@@ -143,6 +143,14 @@
             "Help": "displays the best matching MyAnimeList entry it can find for a given anime",
             "Params": "<anime title>",
 			"Examples": "mal steins gate#mal pokemon"
+        },
+		
+		{
+            "Command": "scp",
+			"Alias": "",
+            "Help": "displays the given scp from scp-wiki.net",
+            "Params": "<scp number>",
+			"Examples": "scp 682#scp 420-j"
         }
     ],
 

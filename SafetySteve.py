@@ -139,14 +139,16 @@ for command in textCommands:
     textCommandList.append(command['Command'])
     textCommandHelp.append(command['Help'])
     textCommandParams.append(command['Params'])
-    textCommandAlias.append(command['Alias'].split('#'))
+    if command['Alias']:
+        textCommandAlias.append(command['Alias'].split('#'))
     textCommandExample.append(command['Examples'].split('#'))
 
 for command in voiceCommands:
     voiceCommandList.append(command['Command'])
     voiceCommandHelp.append(command['Help'])
     voiceCommandParams.append(command['Params'])
-    voiceCommandAlias.append(command['Alias'].split('#'))
+    if command['Alias']:
+        voiceCommandAlias.append(command['Alias'].split('#'))
 
 # List of commands
 commandList = textCommandList + voiceCommandList
@@ -212,12 +214,15 @@ async def on_message(msg: discord.Message):                                     
         return                                                                                                      # ignore it
 
     if content.startswith(invoker):                                                                         # if the message starts with the invoker
-        rawMessage = rawContent[len(invoker):]
+        rawMessage = rawContent[len(invoker):].strip()
         message = rawMessage.lower()
         breakdown = message.split(" ")
         rawBreakdown = rawMessage.split(" ")
         command = breakdown[0]
         args = ' '.join(rawBreakdown[1:]) if len(breakdown) > 1 else ''
+
+        if command == '':
+            return
 
         if command == "react":                                                                 
             if len(args.strip()) >= 1:
@@ -600,12 +605,12 @@ async def helpCommand(command, msg):
     embed = discord.Embed(title="Command:", description=command, color=embedColor) #                      
     embed.add_field(name="Description:", value=commandHelp[commandList.index(command)], inline=False)
     embed.add_field(name="Usage:", value="```" + invoker + command + " " + commandParams[commandList.index(command)] + "```", inline=False)
-    if ('-e' in args or 'examples' in args or 'example' in args or 'all' in args) and command in textCommandList:
+    if ('-e' in args or 'example' in args or 'all' in args) and command in textCommandList:
         examples = []
         for example in textCommandExample[commandList.index(command)]:
             examples.append(invoker + example)
         embed.add_field(name="Examples:", value="```\n" + '\n'.join(examples) + "```", inline=False)
-    if '-a' in args or 'aliases' in args or 'alias' in args or 'all' in args:
+    if '-a' in args or 'alias' in args or 'all' in args:
         aliases = []
         for alias in commandAlias[commandList.index(command)]:
             aliases.append(invoker + alias)
@@ -660,8 +665,10 @@ async def defineUrban(msg, message, num=1, edit=None):
     async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
         number = num
         term = message.strip()
-        if " | " in term:
-            term, number = term.rsplit(" | ", 1)
+        regexResult = list(filter(None, re.compile(r'page ([1-9]{1,3})$|-p ([1-9]{1,3})$').split(term)))
+        if len(regexResult) > 1:
+            number = regexResult[1]
+            term = regexResult[0]
         search = "\""+term+"\""
         async with session.get("http://api.urbandictionary.com/v0/define", params={"term": search}) as resp:
             result = await resp.json()
@@ -678,8 +685,8 @@ async def defineUrban(msg, message, num=1, edit=None):
                 embed.set_author(name="Submitted by " + top_result["author"],
                                  icon_url="https://lh5.ggpht.com/oJ67p2f1o35dzQQ9fVMdGRtA7jKQdxUFSQ7vYstyqTp-Xh-H5BAN4T5_abmev3kz55GH=w300")
                 number = str(int(number) + 1)
-                embed.set_footer(text="{} results were found. To see a different result, use {}define {} | {}.".format( 
-                    len(result["list"]), invoker, term, number))
+                embed.set_footer(text="{} results were found. To see a different result, use {}{} {} -p {}.".format( 
+                    len(result["list"]), invoker, textCommands[11]['Command'], term, number))
                 definition = edit
                 if definition is not None:
                     await client.edit_message(definition, embed=embed)
@@ -701,10 +708,10 @@ async def defineUrban(msg, message, num=1, edit=None):
                 await defineUrban(msg, term, num=(num + ( 1 if res.reaction.emoji == "➡" else -1)), edit=definition)
 
             except IndexError:
-                await say(msg, "That result doesn't exist! Try {}define {}.".format(invoker, term))
+                await say(msg, "That result doesn't exist! Try {}{} {}.".format(invoker, textCommands[11]['Command'], term))
 
-            except:
-                return
+            except Exception as e:
+                print(e)
         return 
 
 async def defineGoogle(msg, message):
