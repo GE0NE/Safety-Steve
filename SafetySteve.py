@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 import os                                                                                                       # import all sorts of shit
 import sys                                                                                                      # like the OS and the System
 import datetime                                                                                                 # and time itself
