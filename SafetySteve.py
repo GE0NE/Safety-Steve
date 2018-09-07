@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*- 
 import os                                                                                                       # import all sorts of shit
+import platform
 import sys                                                                                                      # like the OS and the System
 import datetime                                                                                                 # and time itself
 from datetime import date, time
@@ -1056,10 +1057,16 @@ async def on_ready():                                                           
     perms.administrator = True                                                                                      # this makes the bot an admin. Oh the possibilities
     url = discord.utils.oauth_url(app_info.id, perms)                                                               #   *Note to Self: do not abuse
     print('To invite me to a server, use this link\n{}'.format(url))                                                # print out the discord invitation url to the console
-    if sys.maxsize > 2**32:                                                                                         # if the current system is x64 bit
-        opus.load_opus('libopus-0.x64.dll')                                                                             # load opus x64 Windows library
-    else:                                                                                                           # if the current system is x32 bit
-        opus.load_opus('libopus-0.x86.dll')                                                                             # load opus x32 Windows library
+    if platform.system() == 'Windows':
+        if sys.maxsize > 2**32:                                                                                         # if the current system is x64 bit
+            opus.load_opus('libopus-0.x64.dll')                                                                             # load opus x64 Windows library
+        else:                                                                                                           # if the current system is x32 bit
+            opus.load_opus('libopus-0.x86.dll')                                                                             # load opus x32 Windows library
+    elif platform.system() == 'Linux':
+        opus.load_opus(find_library('opus'))
+    else:
+        print('Your OS is not supported.')
+        sys.exit("OS not supported")
     await checkBDays()
 #                                                                                                                   # check if it's anyone's bithday today
     client.loop.create_task(status_task(True, False))                                                                          # send a thread to periodically check what day of the week it is
