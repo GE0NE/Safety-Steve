@@ -1,6 +1,7 @@
 discord.py
 pynacl
 praw
+beautifulsoup4
 urllib
 aiohttp
 ffmpeg (included)
