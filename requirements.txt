@@ -4,5 +4,5 @@ praw
 beautifulsoup4
 urllib
 aiohttp
-ffmpeg (included)
-libopus (included)
+ffmpeg (included for Windows)
+libopus (included for Windows)

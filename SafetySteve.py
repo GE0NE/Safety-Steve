@@ -16,6 +16,8 @@ import html
 from urllib import parse
 from urllib.request import Request, urlopen
 import aiohttp
+import ctypes
+from ctypes.util import find_library
 
 try:                                                                                                            # try to
     import discord                                                                                                  # import discord.py
