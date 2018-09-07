@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*- 
 import os                                                                                                       # import all sorts of shit
 import sys                                                                                                      # like the OS and the System
