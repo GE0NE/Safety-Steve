@@ -144,16 +144,14 @@ for command in textCommands:
     textCommandList.append(command['Command'])
     textCommandHelp.append(command['Help'])
     textCommandParams.append(command['Params'])
-    if command['Alias']:
-        textCommandAlias.append(command['Alias'].split('#'))
+    textCommandAlias.append(command['Alias'].split('#'))
     textCommandExample.append(command['Examples'].split('#'))
 
 for command in voiceCommands:
     voiceCommandList.append(command['Command'])
     voiceCommandHelp.append(command['Help'])
     voiceCommandParams.append(command['Params'])
-    if command['Alias']:
-        voiceCommandAlias.append(command['Alias'].split('#'))
+    voiceCommandAlias.append(command['Alias'].split('#'))
 
 # List of commands
 commandList = textCommandList + voiceCommandList
@@ -618,7 +616,8 @@ async def helpCommand(command, msg):
     if '-a' in args or 'alias' in args or 'all' in args:
         aliases = []
         for alias in commandAlias[commandList.index(command)]:
-            aliases.append(invoker + alias)
+            if alias:
+                aliases.append(invoker + alias)
         embed.add_field(name="Alias:", value=', '.join(aliases), inline=False)
     await say(msg, "", embed)                                      
     return
