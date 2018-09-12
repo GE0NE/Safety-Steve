@@ -510,6 +510,18 @@ async def on_message(msg: discord.Message):                                     
                 await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
         except:
             return
+
+    elif content in ['what','what?','wat','wat?','wut','wut?','nani','nani?','huh?']:
+            try:
+                targetMessage = None
+
+                async for targetMessageTemp in client.logs_from(msg.channel, limit=2):
+                    targetMessage = targetMessageTemp
+
+                if targetMessage is not None:
+                    await say(msg, "**{}**".format(targetMessage.content.replace("**","").upper()))
+            except:
+                return
         
 
     elif client.user.mentioned_in(msg) and not msg.mention_everyone:                                       # if a user mentions the bot
