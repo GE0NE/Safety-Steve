@@ -52,7 +52,7 @@
         {
             "Command": "game",
 			"Alias": "playing#setplaying",
-            "Help": "Sets the game I'm playing. No param resets to default",
+            "Help": "Sets the game I'm playing. No params resets to default game",
             "Params": "[string]",
 			"Examples": "game#game Tekkit"
         },
@@ -84,9 +84,9 @@
         {
             "Command": "poll",
 			"Alias": "vote",
-            "Help": "Creates a poll for voting using the provided enojis as reactions",
-            "Params": "[question] [[space-seperated emojis]]",
-			"Examples": "poll Was the movie good? [:thumbsup: :thumbsdown:]"
+            "Help": "Creates a poll for voting using the provided enojis as reactions (Defaults to :thumbsup and :thumbsdown:).",
+            "Params": "<question> [[space-seperated emojis]]",
+			"Examples": "poll Horses or Snakes? [:horse: :snake:]#poll Was the movie good?"
         },
         
         {

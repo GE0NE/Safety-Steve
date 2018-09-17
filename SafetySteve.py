@@ -332,13 +332,17 @@ async def on_message(msg: discord.Message):                                     
             await say(msg, ipa)
 
         if command == textCommands[10]['Command'] or command in textCommands[10]['Alias'].split('#'): 
-            try:                                                                  
+            try:
                 if len(args.strip()) < 1:
                     await helpCommand(textCommands[10]['Command'], msg)
                     return
                 question = args.split("[")[0]
                 messageFormatted = " ".join(args.split())
-                messageEmojis = messageFormatted.split("[")[1].split("]")[0]
+                messageEmojis = None
+                if '[' in messageFormatted and ']' in messageFormatted:
+                    messageEmojis = messageFormatted.split("[")[1].split("]")[0]
+                else:
+                    messageEmojis = '👍 👎'
                 emojis = messageEmojis.strip().split(" ")
                 await say(msg, question)
                 poll = None
