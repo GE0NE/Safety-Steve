@@ -460,7 +460,7 @@
 			"SoundFile": "alert",
             "Help": "MGS alert sound",
             "Params": ""
-        }
+        },
 		
         {
             "Command": "yee",
@@ -468,7 +468,7 @@
 			"SoundFile": "yee",
             "Help": "Yeeee",
             "Params": ""
-        }
+        },
 
         {
             "Command": "awoo",
@@ -476,7 +476,7 @@
 			"SoundFile": "awoo",
             "Help": "Awooooo!",
             "Params": ""
-        }
+        },
 		
         {
             "Command": "wolfnoises",
@@ -484,7 +484,7 @@
 			"SoundFile": "wolfnoises",
             "Help": "Grrrr!",
             "Params": ""
-        }
+        },
 		
         {
             "Command": "spiderscream",
@@ -492,7 +492,7 @@
 			"SoundFile": "spiderscream",
             "Help": "Spoopy spooder surprised",
             "Params": ""
-        }
+        },
 		
         {
             "Command": "spiderchitter",
@@ -500,7 +500,7 @@
 			"SoundFile": "spiderchitter",
             "Help": "Chitter chitter",
             "Params": ""
-        }
+        },
 		
         {
             "Command": "baa",
@@ -508,7 +508,7 @@
 			"SoundFile": "baa",
             "Help": "Aggressive baaing",
             "Params": ""
-        }
+        },
 		
         {
             "Command": "reee",
@@ -516,7 +516,7 @@
 			"SoundFile": "reee",
             "Help": "Reeeeeeeee!",
             "Params": ""
-        }
+        },
 		
         {
             "Command": "crickets",
