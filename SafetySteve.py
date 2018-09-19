@@ -163,6 +163,16 @@ commandAlias = textCommandAlias + voiceCommandAlias
 wordBlacklist = config['bad_words']
 wordWhitelist = config['bad_words_exceptions']
 badWordResponse = config['response']
+punctuation = ['.',',','!','?','...','-','_','\'','"',
+               ':',';','|','/','\\','+','=','@','#','$',
+               '%','&','*','(',')','[',']','{','}','<','>']
+wordWhitelistTemp = []
+for word in wordWhitelist:
+    wordWhitelistTemp.append(word)
+    for char in punctuation:
+        wordWhitelistTemp.append(word+char)
+        wordWhitelistTemp.append(char+word)
+wordWhitelist = wordWhitelistTemp
 
 # Word Responses
 reactionWords = config['reaction_words']
@@ -867,6 +877,8 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0):
 
 async def readScores(guild=None, userID=None):
     data = await getScores()
+    if not data:
+        return []
     entries = data.split("\n")[:-1]
     guildEntries = []
     for i in range(0, len(entries)):
@@ -890,11 +902,19 @@ async def readScores(guild=None, userID=None):
             return guildEntries
     return sorted(entries, key=lambda x: x[0])
 
-async def getScores(guild=None):
-    with open("botScores.txt","r") as scores:
-        data = scores.read()
-        scores.close()
-        return data
+async def getScores(guild=None, iter=0):
+    try:
+        with open("botScores.txt","r") as scores:
+            data = scores.read()
+            scores.close()
+            return data
+    except FileNotFoundError as e:
+        if iter <= 1:
+            with open("botScores.txt","w+") as scores:
+                scores.close()
+                await getScores(iter=iter+1)
+        else:
+            print(str(e))
 
 async def mal(msg, name, mediaType="anime", displayFormat="tv"):
     name = parse.quote_plus(name)
