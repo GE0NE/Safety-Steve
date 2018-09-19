@@ -538,7 +538,7 @@
             "Command": "mulanfull",
 			"Alias": "mulanf",
 			"SoundFile": "mulanfull",
-            "Help": "Let's get down to business \ To defeat \ The Huns",
+            "Help": "Let's get down to business\nTo defeat\nThe Huns",
             "Params": ""
         }
     ]
