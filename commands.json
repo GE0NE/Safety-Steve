@@ -524,6 +524,22 @@
 			"SoundFile": "crickets",
             "Help": "...",
             "Params": ""
-        }		
+        },
+		
+        {
+            "Command": "mulan",
+			"Alias": "",
+			"SoundFile": "mulan",
+            "Help": "Let's get down to business!",
+            "Params": ""
+        },
+		
+		{
+            "Command": "mulanfull",
+			"Alias": "mulanf",
+			"SoundFile": "mulanfull",
+            "Help": "Let's get down to business \ To defeat \ The Huns",
+            "Params": ""
+        }
     ]
 }
