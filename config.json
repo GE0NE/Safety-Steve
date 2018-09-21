@@ -34,15 +34,9 @@
 	"bad_words_exceptions":
     [
 		"check",
-		"checks",
-		"checking",
-		"checked",
 		"fickle",
 		"quadratic",
-		"hydrate",
-		"hydration",
-		"hydrating",
-		"hydrated"
+		"hydrat"
     ],
 	
 	"reaction_words":

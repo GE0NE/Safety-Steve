@@ -163,16 +163,6 @@ commandAlias = textCommandAlias + voiceCommandAlias
 wordBlacklist = config['bad_words']
 wordWhitelist = config['bad_words_exceptions']
 badWordResponse = config['response']
-punctuation = ['.',',','!','?','...','-','_','\'','"',
-               ':',';','|','/','\\','+','=','@','#','$',
-               '%','&','*','(',')','[',']','{','}','<','>']
-wordWhitelistTemp = []
-for word in wordWhitelist:
-    wordWhitelistTemp.append(word)
-    for char in punctuation:
-        wordWhitelistTemp.append(word+char)
-        wordWhitelistTemp.append(char+word)
-wordWhitelist = wordWhitelistTemp
 
 # Word Responses
 reactionWords = config['reaction_words']
@@ -491,12 +481,16 @@ async def on_message(msg: discord.Message):                                     
 
     elif any([badword in content for badword in wordBlacklist]):                                          # if the message does not start with the invoker but it contains bad words
         for word in content.split():
-            if word in wordWhitelist:
+            try:
+                for goodword in wordWhitelist:
+                    if goodword in word:
+                        raise Exception()
+                for badword in wordBlacklist:
+                    if badword in word:
+                        await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))                                        # tell them politely, yet firmly, to leave
+                        return
+            except:
                 continue
-            for badword in wordBlacklist:
-                if badword in word:
-                    await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))                                        # tell them politely, yet firmly, to leave
-                    return
 
     elif content == "good bot" or content == "bad bot":
         try:
@@ -514,9 +508,10 @@ async def on_message(msg: discord.Message):                                     
                     await say(msg, "You can't vote positively for yourself!")
                     return
 
-                if invokerScores is not None and int(invokerScores[4]) >= voteLimit:
-                    await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
-                    return
+                if invokerScores is not None:
+                    if len(invokerScores) >= 4 and int(invokerScores[4]) >= voteLimit:
+                        await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
+                        return
 
                 await writeScore(server.id, author.id, score=1 if 'good' in content else -1)
                 await writeScore(server.id, msg.author.id, voted=1)
