@@ -1073,6 +1073,14 @@ async def donePlaying(voice, player):                                           
             isPlaying = False                                                                                               # unflag isPlaying
         await asyncio.sleep(0.5)                                                                                        # only check if the sound is playing every 500 milliseconds
 
+def clearTerminal():
+    if platform.system() == 'Windows':
+        os.system('cls')
+    elif platform.system() == 'Linux':
+        os.system('clear')
+    else:
+        os.system("clear && printf \'\\e[3J\'")
+
 def ord(n):                                                                                                     # this adds an ordinal indicator to a number and returns it as a string
     return "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])                                   # IE: 1st 2nd 3rd 4th
 
@@ -1126,7 +1134,7 @@ if __name__ == '__main__':                                                      
             log.write(str(e))
             log.write("\n")
             log.close()
-            os.system('cls')
+            clearTerminal()
             print("An error occured! Restarting...")
             time.sleep(10)
 Client.logout()
