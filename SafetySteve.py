@@ -384,7 +384,8 @@ async def on_message(msg: discord.Message):                                     
                     displayName = user.display_name
                     nick = msg.server.get_member(user.id).nick
                     nick = displayName if nick is None else nick
-                    displayName = "_AKA {}_\n".format(displayName) if nick != displayName else ''
+                    sanitizedDisplayName = displayName.replace('_','\_')
+                    displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else sanitizedDisplayName
                     embed.add_field(name=nick, value="{}{}".format(displayName, score), inline=True)
             await say(msg, "", embed=embed)
             return
