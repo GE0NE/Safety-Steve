@@ -1005,7 +1005,7 @@ async def clearDailyRestrictions():
         await writeScore(entry[0], entry[1], voted=-100, gilded=-100)
 
 async def onNewDay():
-    await checkBDays()
+    await checkDailyEvents()
     await clearDailyRestrictions()
 
 async def status_task(loop, bypassCheck):                                                                                        # choose what game to play based on the day of the week
@@ -1027,7 +1027,7 @@ async def status_task(loop, bypassCheck):                                       
             return
         await asyncio.sleep(300)                                                                               # only look at the clock every 5 minutes
 
-async def checkBDays():
+async def checkDailyEvents():
     today = datetime.datetime.today()
     weekday = today.weekday()
     
@@ -1108,7 +1108,7 @@ async def on_ready():                                                           
     else:
         print('Your OS is not supported.')
         sys.exit("OS not supported")
-    await checkBDays()
+    await checkDailyEvents()
 #                                                                                                                   # check if it's anyone's bithday today
     client.loop.create_task(status_task(True, False))                                                                          # send a thread to periodically check what day of the week it is
 
