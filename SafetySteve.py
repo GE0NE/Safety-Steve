@@ -521,6 +521,14 @@ async def on_message(msg: discord.Message):                                     
         except:
             return
 
+    elif "git " in content:
+        gitCommand = re.split(r'^git\s|\sgit\s', content, flags=re.I)
+        if len(gitCommand) > 1:
+            gitArg = gitCommand[1].split(' ', 1)[0]
+            output = "`>  git: '{}' is not a git command. See 'git --help'.`".format(gitArg)
+            await say(msg, output)
+
+
     elif content in ['what','what?','wat','wat?','wut','wut?','nani','nani?','huh?']:
             try:
                 targetMessage = None
@@ -1034,6 +1042,10 @@ async def getClock():
         clock.close()
     return date
 
+async def setDailyGame():
+    now = datetime.datetime.now()
+    await setPlaying(config['{}_game'.format(now.strftime("%A").lower())])
+
 async def status_task(loop, bypassCheck):                                                                                        # choose what game to play based on the day of the week
     while True:
 
@@ -1047,7 +1059,7 @@ async def status_task(loop, bypassCheck):                                       
         oldDate = await getClock()
         
         if currentDate != date or bypassCheck:
-            await setPlaying(config['{}_game'.format(now.strftime("%A").lower())])
+            await setDailyGame()
         if not bypassCheck:
             currentDate = date
             
@@ -1128,6 +1140,8 @@ def ord(n):                                                                     
 async def on_ready():                                                                                           # When the bot has logged in and is ready to start receiving commands
     app_info = await client.application_info()                                                                      # get the client info
     client.owner = app_info.owner                                                                                   # get the owner's name from the info
+
+    await setDailyGame()
     global currentDate
     try:
         currentDate = await getClock()
