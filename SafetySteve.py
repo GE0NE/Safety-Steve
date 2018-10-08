@@ -193,7 +193,7 @@ bubbleFontMask = fonts['bubble_mask']
 voice = None
 player = None
 isPlaying = False
-weekday = 999
+currentDate = 999
 
 # The client
 client = discord.Client(description=desc, max_messages=100)                                                     # create the client
@@ -912,6 +912,16 @@ async def getScores(guild=None, iter=0):
         else:
             print(str(e))
 
+async def botScoreDecay():
+    scores = await readScores()
+    for entry in scores:
+        if int(entry[2]) == 0:
+            continue
+        elif int(entry[2]) > 0:
+            await writeScore(entry[0], entry[1], score=-1)
+        else:
+            await writeScore(entry[0], entry[1], score=1)
+
 async def mal(msg, name, mediaType="anime", displayFormat="tv"):
     name = parse.quote_plus(name)
     async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
@@ -1008,34 +1018,63 @@ async def onNewDay():
     await checkDailyEvents()
     await clearDailyRestrictions()
 
+async def tickClock():
+    now = datetime.datetime.now()
+    with open("clock.txt","w") as clock:
+        day = str(now.day)
+        month = str(now.month)
+        year = str(now.year)
+        clock.write("{}-{}-{}".format(day, month, year))
+        clock.close()
+
+async def getClock():
+    date = "0-0-0"
+    with open("clock.txt","r") as clock:
+        date = clock.read()
+        clock.close()
+    return date
+
 async def status_task(loop, bypassCheck):                                                                                        # choose what game to play based on the day of the week
     while True:
-        global weekday
-        oldWeekday = weekday
+
         now = datetime.datetime.now()
-        if weekday != now.weekday() or bypassCheck:
+        day = str(now.day)
+        month = str(now.month)
+        year = str(now.year)
+        date = "{}-{}-{}".format(day, month, year)
+
+        global currentDate
+        oldDate = await getClock()
+        
+        if currentDate != date or bypassCheck:
             await setPlaying(config['{}_game'.format(now.strftime("%A").lower())])
         if not bypassCheck:
-            weekday = now.weekday()
+            currentDate = date
             
-            if oldWeekday != weekday:
+            await tickClock()
+
+            if oldDate != currentDate:
                 await onNewDay()
             
-            weekday = now.weekday()
-            oldWeekday = weekday
+            currentDate = date
+            oldDate = currentDate
         if not loop:
             return
-        await asyncio.sleep(300)                                                                               # only look at the clock every 5 minutes
+        await asyncio.sleep(10)                                                                               # only look at the clock every 5 minutes
 
 async def checkDailyEvents():
     today = datetime.datetime.today()
     weekday = today.weekday()
+
+    if weekday == 6:
+        await botScoreDecay()
     
     for date in dates:
         dateDay = date['Day']
         dateMonth = date['Month']
         dateYear = date['Year']
         dateType = date['Type']
+
         if (today.day == dateDay and today.month == dateMonth) or (dateType == 'weekday' and weekday == dateDay):
             dateName = date['Name']
             dateMessage = date['Message']
@@ -1089,6 +1128,11 @@ def ord(n):                                                                     
 async def on_ready():                                                                                           # When the bot has logged in and is ready to start receiving commands
     app_info = await client.application_info()                                                                      # get the client info
     client.owner = app_info.owner                                                                                   # get the owner's name from the info
+    global currentDate
+    try:
+        currentDate = await getClock()
+    except IOError:
+        await tickClock()
     await status_task(False, False)                                                                                         # set the game the bot is playing                                                                         
 
     print('Bot: {0.name}:{0.id}'.format(client.user))                                                               # print the bot info to the console
@@ -1108,7 +1152,7 @@ async def on_ready():                                                           
     else:
         print('Your OS is not supported.')
         sys.exit("OS not supported")
-    await checkDailyEvents()
+    #await checkDailyEvents()
 #                                                                                                                   # check if it's anyone's bithday today
     client.loop.create_task(status_task(True, False))                                                                          # send a thread to periodically check what day of the week it is
 
