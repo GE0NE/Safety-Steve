@@ -18,6 +18,7 @@ from urllib.request import Request, urlopen
 import aiohttp
 import ctypes
 from ctypes.util import find_library
+import traceback
 
 try:                                                                                                            # try to
     import discord                                                                                                  # import discord.py
@@ -518,7 +519,8 @@ async def on_message(msg: discord.Message):                                     
                 await writeScore(server.id, msg.author.id, voted=1)
                 targetScores = await readScores(guild=server.id, userID=author.id)
                 await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
-        except:
+        except Exception as e:
+            throwError(msg, e, sayTraceback=True, printTraceback=True)
             return
 
     elif "git " in content:
@@ -1014,8 +1016,13 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                 return
         return 
 
-async def throwError(msg, error, custom=False):
-    pass#await say(msg, "Woah! Something bad happened! `{}`".format(error) if not custom else error)
+async def throwError(msg, error, custom=False, sayTraceback=False, printTraceback=False):
+    await say(msg, "Woah! Something bad happened! `{}`".format(error) if not custom else error)
+    if sayTraceback:
+        await say(msg, ''.join(traceback.format_stack()))
+    if printTraceback:
+        traceback.print_exc()
+    return
 
 async def clearDailyRestrictions():
     scores = await readScores()
