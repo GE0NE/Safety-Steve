@@ -1017,7 +1017,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
         return 
 
 async def throwError(msg, error, custom=False, sayTraceback=False, printTraceback=False):
-    await say(msg, "Woah! Something bad happened! `{}`".format(error) if not custom else error)
+    await say(msg, "Woah! Something bad happened! ```\n{}\n```".format(error) if not custom else error)
     if sayTraceback:
         await say(msg, ''.join(traceback.format_stack()))
     if printTraceback:
