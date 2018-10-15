@@ -520,7 +520,7 @@ async def on_message(msg: discord.Message):                                     
                 targetScores = await readScores(guild=server.id, userID=author.id)
                 await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
         except Exception as e:
-            throwError(msg, e, sayTraceback=True, printTraceback=True)
+            await throwError(msg, e, sayTraceback=True, printTraceback=True)
             return
 
     elif "git " in content:
