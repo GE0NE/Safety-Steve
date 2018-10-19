@@ -494,7 +494,7 @@ async def on_message(msg: discord.Message):                                     
             except:
                 continue
 
-    elif content == "good bot" or content == "bad bot":
+    elif content == "good bot" or content == "bad bot" or content == "medium bot":
         try:
             targetMessage = None
             server = msg.server
@@ -514,6 +514,10 @@ async def on_message(msg: discord.Message):                                     
                     if len(invokerScores) >= 4 and int(invokerScores[4]) >= voteLimit:
                         await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
                         return
+
+                if content =="medium bot":
+                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
+                    return
 
                 await writeScore(server.id, author.id, score=1 if 'good' in content else -1)
                 await writeScore(server.id, msg.author.id, voted=1)
