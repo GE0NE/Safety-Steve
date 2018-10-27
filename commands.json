@@ -464,7 +464,7 @@
 		
         {
             "Command": "yee",
-			"Alias": "yeee",
+			"Alias": "yeee#yeee",
 			"SoundFile": "yee",
             "Help": "Yeeee",
             "Params": ""
@@ -488,7 +488,7 @@
 		
         {
             "Command": "baa",
-			"Alias": "sheep",
+			"Alias": "sheep#baaa#baaaa",
 			"SoundFile": "baa",
             "Help": "Aggressive baaing",
             "Params": ""
@@ -572,6 +572,22 @@
 			"SoundFile": "victoryscreech/victoryscreech1#victoryscreech/victoryscreech2#victoryscreech/victoryscreech3#victoryscreech/victoryscreech4",
             "Help": "REEEEEEEE!",
             "Params": ""
+        },
+		
+		{
+            "Command": "waa",
+			"Alias": "waaa#waaaa",
+			"SoundFile": "waa",
+            "Help": "Waluigi!",
+            "Params": ""
+        },
+
+		{
+            "Command": "commercialbreak",
+			"Alias": "commercial#infomercial#infomercialmusic",
+			"SoundFile": "commercialbreak/commercialbreak1#commercialbreak/commercialbreak2",
+            "Help": "We'll be back in just a few minutes, stay tuned!",
+            "Params": ""
         }
-    ]
+	]
 }
