@@ -511,14 +511,6 @@
         },
 		
         {
-            "Command": "reee",
-			"Alias": "ree",
-			"SoundFile": "reee",
-            "Help": "Reeeeeeeee!",
-            "Params": ""
-        },
-		
-        {
             "Command": "crickets",
 			"Alias": "cricket",
 			"SoundFile": "crickets",
