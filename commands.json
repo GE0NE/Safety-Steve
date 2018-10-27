@@ -548,6 +548,54 @@
 			"SoundFile": "dootdoot",
             "Help": "Thank Mr. Skeltal!\nUpdoot in 1.5 seconds or commit die.",
             "Params": ""
+        },
+		
+		{
+            "Command": "disappointed",
+			"Alias": "mydayisruined#reviewbruh#diappointment",
+			"SoundFile": "disappointed",
+            "Help": "My disappointment is immeasurable, and my day is ruined.",
+            "Params": ""
+        },
+		
+		{
+            "Command": "danger",
+			"Alias": "isthereanydanger",
+			"SoundFile": "danger",
+            "Help": "Is there any danger? No, no not really.",
+            "Params": ""
+        },
+		
+		{
+            "Command": "gameover",
+			"Alias": "snake#snaake#snaaake",
+			"SoundFile": "gameover",
+            "Help": "SNAAAAKE!",
+            "Params": ""
+        },
+		
+		{
+            "Command": "missionfailed",
+			"Alias": "",
+			"SoundFile": "missionfailed",
+            "Help": "We'll get 'em next time.",
+            "Params": ""
+        },
+		
+		{
+            "Command": "ree",
+			"Alias": "reee#reeee",
+			"SoundFile": "ree/ree#ree/normieree#ree/colorree",
+            "Help": "REEEEEEEE!",
+            "Params": ""
+        },
+		
+		{
+            "Command": "victoryscreech",
+			"Alias": "",
+			"SoundFile": "victoryscreech/victoryscreech1#victoryscreech/victoryscreech2#victoryscreech/victoryscreech3#victoryscreech/victoryscreech4",
+            "Help": "REEEEEEEE!",
+            "Params": ""
         }
     ]
 }
