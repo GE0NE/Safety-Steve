@@ -487,22 +487,6 @@
         },
 		
         {
-            "Command": "spiderscream",
-			"Alias": "",
-			"SoundFile": "spiderscream",
-            "Help": "Spoopy spooder surprised",
-            "Params": ""
-        },
-		
-        {
-            "Command": "spiderchitter",
-			"Alias": "",
-			"SoundFile": "spiderchitter",
-            "Help": "Chitter chitter",
-            "Params": ""
-        },
-		
-        {
             "Command": "baa",
 			"Alias": "sheep",
 			"SoundFile": "baa",
