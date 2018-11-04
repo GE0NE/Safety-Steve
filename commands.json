@@ -115,7 +115,7 @@
 		
 		{
             "Command": "botscores",
-			"Alias": "scores",
+			"Alias": "scores#scoreboard",
             "Help": "displays bot/user scores from using the good bot/bad bot command",
             "Params": "",
 			"Examples": "botscores"
@@ -587,6 +587,14 @@
 			"Alias": "commercial#infomercial#infomercialmusic",
 			"SoundFile": "commercialbreak/commercialbreak1#commercialbreak/commercialbreak2",
             "Help": "We'll be back in just a few minutes, stay tuned!",
+            "Params": ""
+        },
+		
+		{
+            "Command": "silence",
+			"Alias": "433#4'33\"#johncage",
+			"SoundFile": "silence",
+            "Help": "John Cage's 4'33\" has never sounded better!",
             "Params": ""
         }
 	]
