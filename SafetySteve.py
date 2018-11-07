@@ -536,17 +536,35 @@ async def on_message(msg: discord.Message):                                     
 
 
     elif content in ['what','what?','wat','wat?','wut','wut?','nani','nani?','huh?']:
-            try:
-                targetMessage = None
+		try:
+			targetMessage = None
 
-                async for targetMessageTemp in client.logs_from(msg.channel, limit=2):
-                    targetMessage = targetMessageTemp
+			async for targetMessageTemp in client.logs_from(msg.channel, limit=2):
+				targetMessage = targetMessageTemp
 
-                if targetMessage is not None:
-                    await say(msg, "**{}**".format(targetMessage.content.replace("**","").upper()))
-            except:
-                return
-        
+			if targetMessage is not None:
+				await say(msg, "**{}**".format(targetMessage.content.replace("**","").upper()))
+		except:
+			return
+
+
+	elif content == "time?" or content == "time":
+		now = datetime.datetime.now()
+		hour = now.hour
+		minute = now.minute
+
+		if hour == 0:
+			hour = "00"
+
+		if minute == 0:
+			minute = "00"
+		elif minute < 10:
+			minuteTemp = str(minute)
+			minute = "0"
+			minute += minuteTemp
+
+		await say(msg, "It is currently {}:{}, my dude!".format(hour, minute))
+
 
     elif client.user.mentioned_in(msg) and not msg.mention_everyone:                                       # if a user mentions the bot
         await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))               # send the help command
