@@ -599,17 +599,17 @@
         },
 		
 		{
-            "Command": "kakaaa",
-			"Alias": "kaka#kakaaa",
-			"SoundFile": "kakaaa",
+            "Command": "cacawww",
+			"Alias": "cacaw#cacaww#cacawww#cacawwww#cacawwwww#cacawwwwww#cacawwwwwww#cacawwwwwwww#cacawwwwwwwww",
+			"SoundFile": "cacaw",
             "Help": "Emergency!",
             "Params": ""
         },
 		
 		{
             "Command": "ricolaaa",
-			"Alias": "ricola#ricolaaa",
-			"SoundFile": "ricolaaa",
+			"Alias": "ricola#ricolaa#ricolaaa#ricolaaaa#ricolaaaaa#ricolaaaaaa#ricolaaaaaaa#ricolaaaaaaaa#ricolaaaaaaaaa",
+			"SoundFile": "ricola",
             "Help": "Emergency!",
             "Params": ""
         }
