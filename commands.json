@@ -596,6 +596,14 @@
 			"SoundFile": "silence",
             "Help": "John Cage's 4'33\" has never sounded better!",
             "Params": ""
+        },
+		
+		{
+            "Command": "kakaaa",
+			"Alias": "kaka#kakaaa",
+			"SoundFile": "kakaaa",
+            "Help": "Emergency!",
+            "Params": ""
         }
 	]
 }
