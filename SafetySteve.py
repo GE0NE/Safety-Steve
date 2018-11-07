@@ -540,7 +540,7 @@ async def on_message(msg: discord.Message):                                     
             targetMessage = None
 
             async for targetMessageTemp in client.logs_from(msg.channel, limit=2):
-            targetMessage = targetMessageTemp
+                targetMessage = targetMessageTemp
 
             if targetMessage is not None:
                 await say(msg, "**{}**".format(targetMessage.content.replace("**","").upper()))
