@@ -604,6 +604,14 @@
 			"SoundFile": "kakaaa",
             "Help": "Emergency!",
             "Params": ""
+        },
+		
+		{
+            "Command": "ricolaaa",
+			"Alias": "ricola#ricolaaa",
+			"SoundFile": "ricolaaa",
+            "Help": "Emergency!",
+            "Params": ""
         }
 	]
 }
