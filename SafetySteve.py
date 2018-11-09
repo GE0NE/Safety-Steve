@@ -128,8 +128,10 @@ name = config['name']
 # Commands
 textCommands = commandsFile['text_commands']
 voiceCommands = commandsFile['voice_commands']
+nsfwCommands = commandsFile['nsfw_commands']
 textCommandList = []
 voiceCommandList = []
+nsfwCommandList = []
 
 # Command info
 textCommandHelp = []
@@ -139,6 +141,10 @@ textCommandExample = []
 voiceCommandHelp = []
 voiceCommandParams = []
 voiceCommandAlias  = []
+nsfwCommandHelp = []
+nsfwCommandParams = []
+nsfwCommandAlias  = []
+nsfwCommandExample = []
 
 # Init command info
 for command in textCommands:
@@ -154,11 +160,18 @@ for command in voiceCommands:
     voiceCommandParams.append(command['Params'])
     voiceCommandAlias.append(command['Alias'].split('#'))
 
+for command in nsfwCommands:
+    nsfwCommandList.append(command['Command'])
+    nsfwCommandHelp.append(command['Help'])
+    nsfwCommandParams.append(command['Params'])
+    nsfwCommandAlias.append(command['Alias'].split('#'))
+    nsfwCommandExample.append(command['Examples'].split('#'))
+
 # List of commands
-commandList = textCommandList + voiceCommandList
-commandHelp = textCommandHelp + voiceCommandHelp
-commandParams = textCommandParams + voiceCommandParams
-commandAlias = textCommandAlias + voiceCommandAlias
+commandList = textCommandList + voiceCommandList + nsfwCommandList
+commandHelp = textCommandHelp + voiceCommandHelp + nsfwCommandHelp
+commandParams = textCommandParams + voiceCommandParams + nsfwCommandParams
+commandAlias = textCommandAlias + voiceCommandAlias + nsfwCommandAlias
 
 # Bad words and the response to them
 wordBlacklist = config['bad_words']
@@ -252,7 +265,7 @@ async def on_message(msg: discord.Message):                                     
                 await helpCommand(textCommands[2]['Command'], msg)
                 return
             await say(msg, args)                                            
-            await client.delete_message(msg)                                                                   
+            await msg.delete()                                                                   
             return                                                                                              
 
         if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):                                                                   # animeme command
@@ -347,7 +360,7 @@ async def on_message(msg: discord.Message):                                     
                 emojis = messageEmojis.strip().split(" ")
                 await say(msg, question)
                 poll = None
-                async for sentMessage in client.logs_from(msg.channel, limit=1):
+                async for sentMessage in msg.channel.history(limit=1):
                     poll = sentMessage
                     break
                 for emoji in emojis:
@@ -376,14 +389,14 @@ async def on_message(msg: discord.Message):                                     
             return
 
         if command == textCommands[14]['Command'] or command in textCommands[14]['Alias'].split('#'):
-            scores = await readScores(msg.server.id)
+            scores = await readScores(msg.guild.id)
             embed = discord.Embed(title="Scores:", description="_ _")
             for scoreEntry in scores:
                 user = await client.get_user_info(scoreEntry[1])
                 score = scoreEntry[2]
                 if score != '0':
                     displayName = user.display_name
-                    nick = msg.server.get_member(user.id).nick
+                    nick = msg.guild.get_member(user.id).nick
                     nick = displayName if nick is None else nick
                     sanitizedDisplayName = displayName.replace('_','\_')
                     displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
@@ -392,7 +405,7 @@ async def on_message(msg: discord.Message):                                     
             return
 
         if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
-            server = msg.server
+            server = msg.guild
             invokerMessage = None
             author = None
             invokerScores = await readScores(guild=server.id, userID=msg.author.id)
@@ -402,7 +415,7 @@ async def on_message(msg: discord.Message):                                     
                 return
 
             if len(args.strip()) < 1:
-                async for invokerMessageTemp in client.logs_from(msg.channel, limit=2):
+                async for invokerMessageTemp in msg.channel.history(limit=2):
                     invokerMessage = invokerMessageTemp
                 if invokerMessage is not None:
                     author = invokerMessage.author
@@ -437,7 +450,7 @@ async def on_message(msg: discord.Message):                                     
             nick = target.nick
             nick = displayName if nick is None else nick
 
-            scores = await readScores(guild=msg.server.id, userID=target.id)
+            scores = await readScores(guild=msg.guild.id, userID=target.id)
             gilded = '0' if scores is None else scores[3]
             embed = discord.Embed(title="{} been gilded:".format("You have" if target == msg.author else nick + " has"), 
                 description="_{} time{}_".format(gilded, 's' if int(gilded) != 1 else ''), 
@@ -453,8 +466,9 @@ async def on_message(msg: discord.Message):                                     
             await mal(msg, args.strip())
             return
 
-        if command == textCommands[18]['Command'] or command in textCommands[18]['Alias'].split('#'):
-            await subreddit('zerotwo', msg, True)
+        if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
+            if await checkNSFW(msg):
+                await subreddit('zerotwo', msg, True)
             return
 
         if command == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
@@ -467,15 +481,13 @@ async def on_message(msg: discord.Message):                                     
                 await say(msg, 'I\'m already playing a sound! Please wait your turn.')                                      # send a message informing them
                 return
             if message == voiceCommands[i]['Command'] or command in voiceCommands[i]['Alias'].split('#'):                                                                  # otherwise
-                if msg.author.voice_channel:                                                                                # if the user is in a voice channel
+                if msg.author.voice.channel:                                                                                # if the user is in a voice channel
                     try:                                                                                                        # try to
                         sounds = voiceCommands[i]['SoundFile'].split("#")
                         sound = random.choice(sounds)
-                        voice = await client.join_voice_channel(msg.author.voice_channel)                                           # create a voice clientw
-                        player = voice.create_ffmpeg_player(                                                                        # create a ffmpeg player
-                            'sound/' + sound + fileExt)
-                        isPlaying = True                                                                                            # flag isPlaying
-                        player.start()                                                                                              # start the player
+                        voice = await msg.author.voice.channel.connect()                                           # create a voice client
+                        voice.play(discord.FFmpegPCMAudio('sound/' + sound + fileExt))
+                        isPlaying = True                                                                                                  # start the player
                         client.loop.create_task(donePlaying(voice, player))                                                         # start a thread to keep track of when the sound is finished playing
                     except Exception as e:                                                                                      # if you can't
                         print(e)                                                                                                    # notify the host that there was an issue
@@ -501,15 +513,15 @@ async def on_message(msg: discord.Message):                                     
     elif content == "good bot" or content == "bad bot" or content == "medium bot":
         try:
             targetMessage = None
-            server = msg.server
+            server = msg.guild
             invokerScores = await readScores(guild=server.id, userID=msg.author.id)
 
-            async for targetMessageTemp in client.logs_from(msg.channel, limit=2):
+            async for targetMessageTemp in msg.channel.history(limit=2):
                 targetMessage = targetMessageTemp
 
             if targetMessage is not None:
                 author = targetMessage.author
-                server = targetMessage.server
+                server = targetMessage.guild
                 if author == msg.author and 'good' in content:
                     await say(msg, "You can't vote positively for yourself!")
                     return
@@ -543,7 +555,7 @@ async def on_message(msg: discord.Message):                                     
         try:
             targetMessage = None
 
-            async for targetMessageTemp in client.logs_from(msg.channel, limit=2):
+            async for targetMessageTemp in msg.channel.history(limit=2):
                 targetMessage = targetMessageTemp
 
             if targetMessage is not None:
@@ -620,27 +632,34 @@ async def sayInChannel(channel, message, embed=None):
         return
     sentMessage = None
     if embed == None:
-        sentMessage = await client.send_message(channel, message)
+        sentMessage = await channel.send(message)
     else:
-        sentMessage = await client.send_message(channel, message, embed=embed)
+        sentMessage = await channel.send(message, embed=embed)
     return sentMessage
 
 async def react(msg, emote):
     try:
-        await client.add_reaction(msg, emote)
+        await msg.add_reaction(emote)
     except:
         try:
-            reaction = get(client.get_all_emojis(), name=emote)
-            await client.add_reaction(msg, reaction)
+            reaction = emote.replace("<:", "")
+            reaction = reaction.replace(">", "")
+            reaction = reaction.split(':')[-1]
+            reaction = client.get_emoji(int(reaction))
+            await msg.add_reaction(reaction)
         except:
             try:
-                reaction = emote.replace("<:", "")
-                reaction = ':'.join(reaction.split(':')[:-1])
-                reaction = get(client.get_all_emojis(), name=reaction)
-                await client.add_reaction(msg, reaction)
+                reaction = next((x for x in msg.guild.emojis if x.name == emote), None)
+                await msg.add_reaction(reaction)
             except:
                 await say(msg, "I don't know that emoji: " + "`" + str(emote) + "`")
     return
+
+async def checkNSFW(msg):
+    if not msg.channel.is_nsfw():
+        await say(msg, "You can't use that command here. This channel is not maked as NSFW.")
+        return False
+    return True
 
 async def help(msg):
 
@@ -648,10 +667,12 @@ async def help(msg):
     embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)                      
     embed.add_field(name="🔤 Text Commands", value=", ".join(textCommandList), inline=False)                  
     embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel', value=", ".join(voiceCommandList), inline=False)
+    if msg.channel.is_nsfw():
+        embed.add_field(name='😲 NSFW Commands - These require you to be in a NSFW channel', value=", ".join(nsfwCommandList), inline=False)
     embed.set_footer(text="Created by {}".format(config['creator']))                                    
 
     await say(msg, "", embed)                                                 
-    return                                                                                             
+    return                                                                                        
 
 async def helpCommand(command, msg):
 
@@ -705,7 +726,7 @@ async def sayAscii(msg, message):
     await say(msg, output)
 
 async def setPlaying(name, type=0):
-    await client.change_presence(game=discord.Game(type=0, name=name))
+    await client.change_presence(activity=discord.Game(type=0, name=name))
     return
 
 async def textToIPA(text):
@@ -723,14 +744,18 @@ async def textToIPA(text):
     except:
         return ""
 
-async def defineUrban(msg, message, num=1, edit=None):
+async def defineUrban(msg, message=None, term='', num=1, edit=None):
     async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
         number = num
-        term = message.strip()
-        regexResult = list(filter(None, re.compile(r'page ([1-9]{1,3})$|-p ([1-9]{1,3})$').split(term)))
-        if len(regexResult) > 1:
-            number = regexResult[1]
-            term = regexResult[0]
+        if message is not None:
+            term = message.strip()
+            regexResult = list(filter(None, re.compile(r'page ([1-9]{1,3})$|-p ([1-9]{1,3})$').split(term)))
+            if len(regexResult) > 1:
+                number = regexResult[1]
+                term = regexResult[0]
+                await defineUrban(msg, term=term, num=int(number))
+        if not term:
+            return
         search = "\""+term+"\""
         async with session.get("http://api.urbandictionary.com/v0/define", params={"term": search}) as resp:
             result = await resp.json()
@@ -747,27 +772,39 @@ async def defineUrban(msg, message, num=1, edit=None):
                 embed.set_author(name="Submitted by " + top_result["author"],
                                  icon_url="https://lh5.ggpht.com/oJ67p2f1o35dzQQ9fVMdGRtA7jKQdxUFSQ7vYstyqTp-Xh-H5BAN4T5_abmev3kz55GH=w300")
                 number = str(int(number) + 1)
-                embed.set_footer(text="{} results were found. To see a different result, use {}{} {} -p {}.".format( 
-                    len(result["list"]), invoker, textCommands[11]['Command'], term, number))
+                if num < len(result["list"]):
+                    embed.set_footer(text="{} results were found. To see a different result, use {}{} {} -p {}.".format( 
+                        len(result["list"]), invoker, textCommands[11]['Command'], term, number))
+                else:
+                    embed.set_footer(text="{} results were found.".format(len(result["list"])))
                 definition = edit
                 if definition is not None:
-                    await client.edit_message(definition, embed=embed)
+                    await definition.edit(embed=embed)
                 else:
                     definition = await say(msg, "", embed=embed)
                 if num > 1:
                     await react(definition, "⬅")
                 if num < len(result["list"]):
                     await react(definition, "➡")
-                res = await client.wait_for_reaction(["⬅","➡"], message=definition, timeout=20.0, user=msg.author)
-                if num > 1:
-                    await client.remove_reaction(definition, "⬅", msg.author)
-                    await client.remove_reaction(definition, "⬅", definition.author)
-                if num < len(result["list"]):
-                    await client.remove_reaction(definition, "➡", msg.author)
-                    await client.remove_reaction(definition, "➡", definition.author)
-                if res is None:
+                def check(reaction, user):
+                    return reaction.message.id == definition.id and user == msg.author and (str(reaction.emoji) == "⬅" or str(reaction.emoji) == "➡")
+                res = None
+                try:
+                    res = await client.wait_for('reaction_add', timeout=20.0, check=check)
+                    if num > 1:
+                        await definition.remove_reaction("⬅", msg.author)
+                        await definition.remove_reaction("⬅", definition.author)
+                    if num < len(result["list"]):
+                        await definition.remove_reaction("➡", msg.author)
+                        await definition.remove_reaction("➡", definition.author)
+                except asyncio.TimeoutError:
+                    await definition.remove_reaction("⬅", definition.author)
+                    await definition.remove_reaction("➡", definition.author)
                     return
-                await defineUrban(msg, term, num=(num + ( 1 if res.reaction.emoji == "➡" else -1)), edit=definition)
+                else:
+                    if res is None:
+                        return
+                    await defineUrban(msg, term, num=(num + ( 1 if res[0].emoji == "➡" else -1)), edit=definition)
 
             except IndexError:
                 await say(msg, "That result doesn't exist! Try {}{} {}.".format(invoker, textCommands[11]['Command'], term))
@@ -837,11 +874,11 @@ async def defineGoogle(msg, message):
 async def mock(msg, *, text=""):
             #check for string or message id
         if text.isdigit():
-            async for message in client.logs_from(msg.channel, limit=100):
+            async for message in msg.channel.history(limit=100):
                 if text == str(message.id):
                     text = message.content
         elif text == "":
-            async for message in client.logs_from(msg.channel, limit=2):
+            async for message in msg.channel.history(limit=2):
                 text = message.content
 
             #randomize
@@ -880,7 +917,7 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0):
     try:
         existingScores = await readScores()
         for existingScore in existingScores:
-            if existingScore[0] == guild and existingScore[1] == user:
+            if int(existingScore[0]) == guild and int(existingScore[1]) == user:
                 oldUserObj = userObj
                 newScore = str(int(existingScore[2]) + score)
                 newGilding = str(int(existingScore[3]) + gilding) if (int(existingScore[3]) + gilding) > 0 else '0'
@@ -917,13 +954,13 @@ async def readScores(guild=None, userID=None):
         entries[i] = entries[i].split(' ')
         for j in range(0, len(entries[i])):
             entries[i][j] = entries[i][j].split('=')[1]
-        if guild is not None and entries[i][0] == guild:
+        if guild is not None and int(entries[i][0]) == guild:
             guildEntries.append(entries[i])
     if guild is not None:
         if userID is not None:
             found = None
             for entry in guildEntries:
-                if entry[1] == userID:
+                if int(entry[1]) == userID:
                     found = entry
                     break
             if found is not None:
@@ -954,9 +991,9 @@ async def botScoreDecay():
         if int(entry[2]) == 0:
             continue
         elif int(entry[2]) > 0:
-            await writeScore(entry[0], entry[1], score=-1)
+            await writeScore(int(entry[0]), int(entry[1]), score=-1)
         else:
-            await writeScore(entry[0], entry[1], score=1)
+            await writeScore(int(entry[0]), int(entry[1]), score=1)
 
 async def mal(msg, name, mediaType="anime", displayFormat="tv"):
     name = parse.quote_plus(name)
@@ -1054,7 +1091,7 @@ async def throwError(msg, error, custom=False, sayTraceback=False, printTracebac
 async def clearDailyRestrictions():
     scores = await readScores()
     for entry in scores:
-        await writeScore(entry[0], entry[1], voted=-100, gilded=-100)
+        await writeScore(int(entry[0]), int(entry[1]), voted=-100, gilded=-100)
 
 async def onNewDay():
     await checkDailyEvents()
@@ -1106,7 +1143,7 @@ async def status_task(loop, bypassCheck):                                       
             oldDate = currentDate
         if not loop:
             return
-        await asyncio.sleep(300)                                                                               # only look at the clock every 5 minutes
+        await asyncio.sleep(3)                                                                               # only look at the clock every 5 minutes
 
 async def checkDailyEvents():
     today = datetime.datetime.today()
@@ -1133,9 +1170,9 @@ async def checkDailyEvents():
 
             formattedDateMessage = dateMessage.replace("#day", str(dateDay)).replace("#month", str(dateMonth)).replace("#year", str(dateYear)).replace("#name", dateName).replace("#age", dateOrdAge).replace("#tag", dateTag).replace("#type", dateType)
             for dateChannel in dateChannels:
-                channel = client.get_channel(userInfo['channel_ids'][dateChannel])
+                channel = client.get_channel(int(userInfo['channel_ids'][dateChannel]))
                 reactCondition = await sayInChannelOnce(channel, formattedDateMessage) and reacts
-                async for message in client.logs_from(channel, limit=1):
+                async for message in channel.history(limit=1):
                     msg = message
                     break
                 if reactCondition:
@@ -1145,7 +1182,7 @@ async def checkDailyEvents():
 
 async def sayInChannelOnce(channel, message, embed=None):
     today = datetime.datetime.combine(date.today(), datetime.time())
-    async for msg in client.logs_from(channel, limit=100, after=today):
+    async for msg in channel.history(limit=100, after=today):
         if msg.author == client.user and msg.content == message:
            return False
     await sayInChannel(channel, message, embed)
@@ -1154,7 +1191,7 @@ async def sayInChannelOnce(channel, message, embed=None):
 async def donePlaying(voice, player):                                                                           # checks if the sound stopped playing
     global isPlaying
     while isPlaying:                                                                                                # if the sound is playing
-        if player.is_done():                                                                                            # and the sound's now over
+        if not voice.is_playing():                                                                                            # and the sound's now over
             await voice.disconnect()                                                                                    # leave the channel
             isPlaying = False                                                                                               # unflag isPlaying
         await asyncio.sleep(0.5)                                                                                        # only check if the sound is playing every 500 milliseconds

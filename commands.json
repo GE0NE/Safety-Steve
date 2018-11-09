@@ -146,14 +146,6 @@
         },
 		
 		{
-            "Command": "zerotwo",
-			"Alias": "zerotwosday",
-            "Help": "If you don't know what this is don't use it.",
-            "Params": "Big deal.",
-			"Examples": ""
-        },
-		
-		{
             "Command": "scp",
 			"Alias": "",
             "Help": "displays the given scp from scp-wiki.net",
@@ -161,8 +153,18 @@
 			"Examples": "scp 682#scp 420-j"
         }
     ],
-
-
+	
+	
+	"nsfw_commands":
+	[
+		{
+            "Command": "zerotwo",
+			"Alias": "zerotwosday",
+            "Help": "If you don't know what this is don't use it.",
+            "Params": "Big deal.",
+			"Examples": ""
+        }
+	],
     
     "voice_commands":
     [
@@ -607,18 +609,18 @@
         },
 		
 		{
-            "Command": "cacawww",
-			"Alias": "cacaw#cacaww#cacawww#cacawwww#cacawwwww#cacawwwwww#cacawwwwwww#cacawwwwwwww#cacawwwwwwwww",
+            "Command": "cacaw",
+			"Alias": "cacaww#cacawww#cacawwww#cacawwwww#cacawwwwww",
 			"SoundFile": "cacaw",
-            "Help": "Emergency!",
+            "Help": "Cacaw, cawcaaaaaw!",
             "Params": ""
         },
 		
 		{
-            "Command": "ricolaaa",
-			"Alias": "ricola#ricolaa#ricolaaa#ricolaaaa#ricolaaaaa#ricolaaaaaa#ricolaaaaaaa#ricolaaaaaaaa#ricolaaaaaaaaa",
+            "Command": "ricola",
+			"Alias": "ricolaa#ricolaaa#ricolaaaa#ricolaaaaa#ricolaaaaaa",
 			"SoundFile": "ricola",
-            "Help": "Emergency!",
+            "Help": "Rrrrrreeeecolaaa!",
             "Params": ""
         }
 	]
