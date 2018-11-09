@@ -453,6 +453,10 @@ async def on_message(msg: discord.Message):                                     
             await mal(msg, args.strip())
             return
 
+        if command == textCommands[18]['Command'] or command in textCommands[18]['Alias'].split('#'):
+            await subreddit('zerotwo', msg, True)
+            return
+
         if command == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
             isPlaying = False
             await voice.disconnect()

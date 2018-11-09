@@ -146,6 +146,14 @@
         },
 		
 		{
+            "Command": "zerotwo",
+			"Alias": "zerotwosday",
+            "Help": "If you don't know what this is don't use it.",
+            "Params": "Big deal.",
+			"Examples": ""
+        },
+		
+		{
             "Command": "scp",
 			"Alias": "",
             "Help": "displays the given scp from scp-wiki.net",
