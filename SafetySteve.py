@@ -269,11 +269,11 @@ async def on_message(msg: discord.Message):                                     
             return                                                                                              
 
         if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):                                                                   # animeme command
-            await subreddit('animemes', msg, True)
+            await subreddit(msg, 'animemes', True)
             return
 
         if command == textCommands[4]['Command'] or command in textCommands[4]['Alias'].split('#'):                                                               # reddit [subreddit] command
-            await subreddit(args, msg)
+            await subreddit(msg, args)
             return
 
         if command == textCommands[5]['Command'] or command in textCommands[5]['Alias'].split('#'):                                                               # ascii command
@@ -465,10 +465,10 @@ async def on_message(msg: discord.Message):                                     
                 return
             await mal(msg, args.strip())
             return
-
+            
         if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
             if await checkNSFW(msg):
-                await subreddit('zerotwo', msg, True)
+                await subreddit(msg, 'zerotwo', True)
             return
 
         if command == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
@@ -540,7 +540,7 @@ async def on_message(msg: discord.Message):                                     
                 targetScores = await readScores(guild=server.id, userID=author.id)
                 await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
         except Exception as e:
-            await throwError(msg, e, sayTraceback=True, printTraceback=True)
+            await throwError(msg, error=e, sayTraceback=True, printTraceback=True)
             return
 
     elif "git " in content:
@@ -587,7 +587,7 @@ async def on_message(msg: discord.Message):                                     
         return
 
 
-async def subreddit(sub, msg, bypassErrorCheck=False):
+async def subreddit(msg, sub, bypassErrorCheck=False):
     if not bypassErrorCheck and sub.strip() == "":
         await helpCommand('reddit', msg)
         return
@@ -660,6 +660,33 @@ async def checkNSFW(msg):
         await say(msg, "You can't use that command here. This channel is not maked as NSFW.")
         return False
     return True
+
+async def handleFunc(msg, filename, channel=None):
+    data = {}
+    if not msg:
+        if not channel:
+            async for message in channel.history(limit=2):
+                msg = message
+        else:
+            await throwError(None, error="No message or channel objects provided", vocalize=False)
+    try:
+        with open("func/" + filename + ".func","r") as funcFile:
+            data = funcFile.read()
+            funcFile.close()
+    except FileNotFoundError as e:
+        await throwError(None, error="File {}.func not found!".format(filename), vocalize=False)
+        return
+    if data:
+        lines = data.split("\n")
+        for line in lines:
+            try:
+                local_vars = {"msg":msg}
+                args = line.split(' ') if ' ' in line else line
+                func_args = [eval(arg, local_vars) for arg in args[1:]]
+                await eval(args[0], globals())(*func_args)
+            except Exception as e:
+                await throwError(None, error=e, vocalize=False)
+    return
 
 async def help(msg):
 
@@ -1007,7 +1034,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                 pass
         try:
             if result["error"]:
-                await throwError(msg, result["error"])
+                await throwError(msg, error=result["error"])
                 return
         except:
             pass
@@ -1070,21 +1097,25 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                     await say(msg, "", embed=embed)
 
                 except IndexError:
-                    await throwError(msg, "That result doesn't exist!", custom=True)
+                    await throwError(msg, error="That result doesn't exist!", custom=True)
                 except:
                     return
             except IndexError:
-                await throwError(msg, "That result doesn't exist!", custom=True)
+                await throwError(msg, error="That result doesn't exist!", custom=True)
             except Exception:
                 return
         return 
 
-async def throwError(msg, error, custom=False, sayTraceback=False, printTraceback=False):
-    await say(msg, "Woah! Something bad happened! ```\n{}\n```".format(error) if not custom else error)
-    if sayTraceback:
-        dump = "```{}```".format(''.join(traceback.format_stack()).replace("`", "\`"))
-        await say(msg, dump)
+async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False):
+    print(error)
+    if vocalize:
+        if error:
+            await say(msg, "Woah! Something bad happened! ```\n{}\n```".format(error) if not custom else error)
+        if sayTraceback:
+            dump = "```{}```".format(''.join(traceback.format_stack()).replace("`", "\`"))
+            await say(msg, dump)
     if printTraceback:
+        print("Traceback:")
         traceback.print_exc()
     return
 
@@ -1160,24 +1191,39 @@ async def checkDailyEvents():
 
         if (today.day == dateDay and today.month == dateMonth) or (dateType == 'weekday' and weekday == dateDay):
             dateName = date['Name']
-            dateMessage = date['Message']
+            dateMessage = date.get('Message')
             dateAge = today.year - dateYear
             dateOrdAge = ord(dateAge)
             dateTag = date['Tag']
             dateType = date['Type']
             dateChannels = date['Channel'].replace(" ", "").split('#')
-            reacts = date['React'].split("#")
+            reacts = date.get('React')
+            dateFunc = date.get('Func')
+            formattedDateMessage = None
 
-            formattedDateMessage = dateMessage.replace("#day", str(dateDay)).replace("#month", str(dateMonth)).replace("#year", str(dateYear)).replace("#name", dateName).replace("#age", dateOrdAge).replace("#tag", dateTag).replace("#type", dateType)
+            if reacts:
+                reacts = reacts.split("#")
+
+            if dateMessage:
+                formattedDateMessage = dateMessage.replace("#day", str(dateDay)).replace("#month", str(dateMonth)).replace("#year", str(dateYear)).replace("#name", dateName).replace("#age", dateOrdAge).replace("#tag", dateTag).replace("#type", dateType)
+            
             for dateChannel in dateChannels:
                 channel = client.get_channel(int(userInfo['channel_ids'][dateChannel]))
-                reactCondition = await sayInChannelOnce(channel, formattedDateMessage) and reacts
-                async for message in channel.history(limit=1):
-                    msg = message
-                    break
-                if reactCondition:
-                    for emojis in reacts:
-                        await react(msg, emojis)
+                if formattedDateMessage:
+                    reactCondition = await sayInChannelOnce(channel, formattedDateMessage) and reacts
+                    async for message in channel.history(limit=1):
+                        msg = message
+                        break
+                    if reactCondition:
+                        for emojis in reacts:
+                            await react(msg, emojis)
+                if dateFunc:
+                    data = {"id": 0,"size": 0,"":""}
+                    dummyMessage = discord.Message(state=None, channel=channel, data=data)
+                    dummyMessage.author = client.user
+                    dummyMessage.content = ""
+                    dummyMessage.channel = channel
+                    await handleFunc(dummyMessage, dateFunc, channel=channel)
     return
 
 async def sayInChannelOnce(channel, message, embed=None):
