@@ -622,6 +622,14 @@
 			"SoundFile": "ricola",
             "Help": "Rrrrrreeeecolaaa!",
             "Params": ""
+        },
+		
+		{
+            "Command": "wurtz",
+			"Alias": "billwurtz#bill",
+			"SoundFile": "wurtz/and-the-day-goes-on#wurtz/got-to-know-whats-going-on#wurtz/hallelujah#wurtz/hello-sexy-pants#wurtz/im-best-friends-with-my-own-front-door#wurtz/im-confused#wurtz/i-wanna-sail-you-away#wurtz/la-de-da-de-da-de-da-de-day-oh#wurtz/long-long-long-journey#wurtz/mount-st-helens-is-about-to-blow-up#wurtz/movie-star#wurtz/outside#wurtz/slow-down#wurtz/the-moon-is-made-of-cheese-but-i-cant-taste-it#wurtz/when-i-get-older#wurtz/write-a-song-on-the-count-of-3#wurtz/youre-free-to-do-whatever-you-want-to",
+            "Help": "www.youtube.com/user/billwurtz",
+            "Params": ""
         }
 	]
 }

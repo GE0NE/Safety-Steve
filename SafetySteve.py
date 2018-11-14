@@ -1143,7 +1143,7 @@ async def status_task(loop, bypassCheck):                                       
             oldDate = currentDate
         if not loop:
             return
-        await asyncio.sleep(3)                                                                               # only look at the clock every 5 minutes
+        await asyncio.sleep(300)                                                                               # only look at the clock every 5 minutes
 
 async def checkDailyEvents():
     today = datetime.datetime.today()
