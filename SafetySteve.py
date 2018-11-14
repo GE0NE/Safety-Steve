@@ -9,6 +9,7 @@ import time
 import json                                                                                                     # some dude named jason
 import asyncio                                                                                                  # a kitchen sinkio
 import re                                                                                                       # re:re:re:re:re: meeting time
+import inspect
 import praw
 import random
 import math
@@ -20,27 +21,27 @@ import ctypes
 from ctypes.util import find_library
 import traceback
 
-try:                                                                                                            # try to
-    import discord                                                                                                  # import discord.py
-except ImportError:                                                                                             # if discord.py isn't installed
-    import pip                                                                                                      # import pip
-    pip.main(['install', 'discord'])                                                                                # install discord.py
-    import discord                                                                                              # import discord.py
-from discord import opus                                                                                        # inport opus, the discord sound lib
+try:
+    import discord
+except ImportError:
+    from pip._internal import main as pip
+    pip(['install', '-U', 'git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]'])
+    import discord
+from discord import opus
 from discord.utils import get
 
 try:
     import requests
 except ImportError:
-    import pip
-    pip.main(['install', 'requests'])
+    from pip._internal import main as pip
+    pip(['install', 'requests'])
     import requests 
 
 try:
     import bs4
 except ImportError:
-    import pip
-    pip.main(['install', 'beautifulsoup4'])
+    from pip._internal import main as pip
+    pip(['install', 'beautifulsoup4'])
     import bs4
 from bs4 import BeautifulSoup
 
@@ -210,11 +211,11 @@ isPlaying = False
 currentDate = 999
 
 # The client
-client = discord.Client(description=desc, max_messages=100)                                                     # create the client
+client = discord.Client(description=desc, max_messages=100)
 
 
 @client.event
-async def on_message(msg: discord.Message):                                                                     # When a message is sent to a channel
+async def on_message(msg: discord.Message):
     global voice
     global player
     global isPlaying
@@ -227,10 +228,10 @@ async def on_message(msg: discord.Message):                                     
             for reaction in entry['reaction'].split('#'):
                 await react(msg, reaction)
 
-    if msg.author.bot:                                                                                          # if the message was from the bot
-        return                                                                                                      # ignore it
+    if msg.author.bot:
+        return
 
-    if content.startswith(invoker):                                                                         # if the message starts with the invoker
+    if content.startswith(invoker):
         rawMessage = rawContent[len(invoker):].strip()
         message = rawMessage.lower()
         breakdown = message.split(" ")
@@ -247,20 +248,25 @@ async def on_message(msg: discord.Message):                                     
                 emojis = messageFormatted.strip().split(" ")
                 for emoji in emojis:
                     await react(msg, emoji)
-            return       
+            return
 
-        if command == textCommands[0]['Command'] or command in textCommands[0]['Alias'].split('#'):                # help command
+        if command == "func":                                                                 
+            if len(args.strip()) >= 1:
+                await handleFunc(msg, args)
+            return
+
+        if command == textCommands[0]['Command'] or command in textCommands[0]['Alias'].split('#'):
             if not args:
                 await help(msg)
-                return                                                                     # help [command] command
+                return
             else:
                 await helpCommand(args, msg) 
                 return                                            
 
-        if command == textCommands[1]['Command'] or command in textCommands[1]['Alias'].split('#'):              # git command
+        if command == textCommands[1]['Command'] or command in textCommands[1]['Alias'].split('#'):
             await git(msg)
 
-        if command == textCommands[2]['Command'] or command in textCommands[2]['Alias'].split('#'):                                                               # say <text> command
+        if command == textCommands[2]['Command'] or command in textCommands[2]['Alias'].split('#'):
             if len(args.strip()) < 1:
                 await helpCommand(textCommands[2]['Command'], msg)
                 return
@@ -268,15 +274,15 @@ async def on_message(msg: discord.Message):                                     
             await msg.delete()                                                                   
             return                                                                                              
 
-        if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):                                                                   # animeme command
+        if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):
             await subreddit(msg, 'animemes', True)
             return
 
-        if command == textCommands[4]['Command'] or command in textCommands[4]['Alias'].split('#'):                                                               # reddit [subreddit] command
+        if command == textCommands[4]['Command'] or command in textCommands[4]['Alias'].split('#'):
             await subreddit(msg, args)
             return
 
-        if command == textCommands[5]['Command'] or command in textCommands[5]['Alias'].split('#'):                                                               # ascii command
+        if command == textCommands[5]['Command'] or command in textCommands[5]['Alias'].split('#'):
             if len(args) > 30:
                 await say(msg, "Whoah! That's too many letter! Keep it below 30 please.")
                 return
@@ -286,7 +292,7 @@ async def on_message(msg: discord.Message):                                     
             await sayAscii(msg, args)
             return
 
-        if command == textCommands[6]['Command'] or command in textCommands[6]['Alias'].split('#'):                                                               # reddit [subreddit] command
+        if command == textCommands[6]['Command'] or command in textCommands[6]['Alias'].split('#'):
             if len(args.strip()) < 1:
                 await status_task(False, True)
                 return
@@ -471,33 +477,33 @@ async def on_message(msg: discord.Message):                                     
                 await subreddit(msg, 'zerotwo', True)
             return
 
-        if command == voiceCommands[0]['Command'] and isPlaying:                                                    # leave command
+        if command == voiceCommands[0]['Command'] and isPlaying:
             isPlaying = False
             await voice.disconnect()
             return
 
-        for i in range(1, len(voiceCommands)):                                                                      # handler for all voice commands
-            if isPlaying:                                                                                               # if a sound is already playing
-                await say(msg, 'I\'m already playing a sound! Please wait your turn.')                                      # send a message informing them
+        for i in range(1, len(voiceCommands)):
+            if isPlaying:
+                await say(msg, 'I\'m already playing a sound! Please wait your turn.')
                 return
-            if message == voiceCommands[i]['Command'] or command in voiceCommands[i]['Alias'].split('#'):                                                                  # otherwise
-                if msg.author.voice.channel:                                                                                # if the user is in a voice channel
-                    try:                                                                                                        # try to
+            if message == voiceCommands[i]['Command'] or command in voiceCommands[i]['Alias'].split('#'):
+                if msg.author.voice.channel:
+                    try:
                         sounds = voiceCommands[i]['SoundFile'].split("#")
                         sound = random.choice(sounds)
-                        voice = await msg.author.voice.channel.connect()                                           # create a voice client
+                        voice = await msg.author.voice.channel.connect()
                         voice.play(discord.FFmpegPCMAudio('sound/' + sound + fileExt))
-                        isPlaying = True                                                                                                  # start the player
-                        client.loop.create_task(donePlaying(voice, player))                                                         # start a thread to keep track of when the sound is finished playing
-                    except Exception as e:                                                                                      # if you can't
-                        print(e)                                                                                                    # notify the host that there was an issue
-                        await say(msg, 'There was an issue playing the sound file 🙁')                                              # notify the client that there was an issue
-                        pass                                                                                                        # drakememe.jpg
-                else:                                                                                                       # otherwise
-                    await say(msg, 'You\'re not in a voice channel!')                                                           # inform the user that they're not in a voice channel
+                        isPlaying = True
+                        client.loop.create_task(donePlaying(voice, player))
+                    except Exception as e:
+                        print(e)
+                        await say(msg, 'There was an issue playing the sound file 🙁')
+                        pass
+                else:
+                    await say(msg, 'You\'re not in a voice channel!')
                 return
 
-    elif any([badword in content for badword in wordBlacklist]):                                          # if the message does not start with the invoker but it contains bad words
+    elif any([badword in content for badword in wordBlacklist]):
         for word in content.split():
             try:
                 for goodword in wordWhitelist:
@@ -505,7 +511,7 @@ async def on_message(msg: discord.Message):                                     
                         raise Exception()
                 for badword in wordBlacklist:
                     if badword in word:
-                        await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))                                        # tell them politely, yet firmly, to leave
+                        await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))
                         return
             except:
                 continue
@@ -582,8 +588,8 @@ async def on_message(msg: discord.Message):                                     
         await say(msg, "It is currently {}:{}, my dude!".format(hour, minute))
 
 
-    elif client.user.mentioned_in(msg) and not msg.mention_everyone:                                       # if a user mentions the bot
-        await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))               # send the help command
+    elif client.user.mentioned_in(msg) and not msg.mention_everyone:
+        await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))
         return
 
 
@@ -607,9 +613,9 @@ async def subreddit(msg, sub, bypassErrorCheck=False):
                 icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
             await say(msg, "Here's a trending post from r/{}".format(str(submission.subreddit)), embed)
         else:
-            await say(msg, "We're out of memes!")
+            await throwError(msg, "There's nothing in that subreddit!", custom=true)
     except:
-        await say(msg, 'reddit.com/r/{} couldn\'t be accessed.'.format(sub))
+        await throwError(msg, "reddit.com/r/{} couldn\'t be accessed.".format(sub), custom=true)
 
 async def git(msg):
     gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                                                                                      
@@ -652,16 +658,72 @@ async def react(msg, emote):
                 reaction = next((x for x in msg.guild.emojis if x.name == emote), None)
                 await msg.add_reaction(reaction)
             except:
-                await say(msg, "I don't know that emoji: " + "`" + str(emote) + "`")
+                await throwError(msg, "I don't know that emoji: " + "`" + str(emote) + "`", custom=True)
     return
 
 async def checkNSFW(msg):
     if not msg.channel.is_nsfw():
-        await say(msg, "You can't use that command here. This channel is not maked as NSFW.")
+        await throwError(msg, "You can't use that command here. This channel is not maked as NSFW.", custom=true)
         return False
     return True
 
 async def handleFunc(msg, filename, channel=None):
+
+    variables = {}
+
+    def setVar(key, value):
+        variables[key] = value
+
+    def getVar(key):
+        if key not in variables:
+            setVar(key, "default")
+        return variables[key]
+
+    def var(key, value=None):
+        if value:
+            setVar(key, value)
+        else:
+            return getVar(key)
+
+    def isStringFuncCorutine(funcString, globalsVars, localVars):
+        try:
+            return inspect.iscoroutinefunction(eval(funcString.split('(', 1)[0], globalsVars, localVars))
+        except:
+            return False
+
+    def sanitizeSpaces(arg, forward=False):
+        if forward:
+            sanatize = re.findall(r'''\"(.+?)\"''', arg)
+            for result in sanatize:
+                if result in arg:
+                    modResult = result.replace(" ", "%20")
+                    arg = arg.replace(result, modResult)
+            return arg
+        else:
+            return arg.replace("%20", " ")
+
+    def formatArg(arg, spaceSeperated=False):
+        if spaceSeperated:
+            arg = re.sub(r'(.*)->(".*")', "var {} {}".format(r'\2', r'\1'), arg)
+            arg = re.sub(r'(".*")<-(.*)', "var {} {}".format(r'\1', r'\2'), arg)
+
+            arg = re.sub(r'(.*)->(.*)', "var {} \"{}\"".format(r'\2', r'\1'), arg)
+            arg = re.sub(r'(.*)<-(.*)', "var \"{}\" {}".format(r'\1', r'\2'), arg)
+
+            arg = re.sub(r'\|("[^\|]*")\|', "var {}".format(r'\1'), arg)
+            arg = re.sub(r'\|([^\|]*)\|', "var \"{}\"".format(r'\1'), arg)
+        else:
+            arg = re.sub(r'(.*)->(".*")', "var({},{})".format(r'\2', r'\1'), arg)
+            arg = re.sub(r'(".*")<-(.*)', "var({},{})".format(r'\1', r'\2'), arg)
+
+            arg = re.sub(r'(.*)->(.*)', "var({},\"{}\")".format(r'\2', r'\1'), arg)
+            arg = re.sub(r'(.*)<-(.*)', "var(\"{}\",{})".format(r'\1', r'\2'), arg)
+
+            arg = re.sub(r'\|("[^\|]*")\|', "var({})".format(r'\1'), arg)
+            arg = re.sub(r'\|([^\|]*)\|', "var(\"{}\")".format(r'\1'), arg)
+        return arg
+
+    commandMap = {"say":say, "subreddit":subreddit, "botScoreDecay":botScoreDecay, "sayAscii":sayAscii, "readScores":readScores}
     data = {}
     if not msg:
         if not channel:
@@ -676,20 +738,35 @@ async def handleFunc(msg, filename, channel=None):
     except FileNotFoundError as e:
         await throwError(None, error="File {}.func not found!".format(filename), vocalize=False)
         return
+
     if data:
         lines = data.split("\n")
         for line in lines:
-            try:
-                local_vars = {"msg":msg}
-                args = line.split(' ') if ' ' in line else line
-                func_args = [eval(arg, local_vars) for arg in args[1:]]
-                await eval(args[0], globals())(*func_args)
-            except Exception as e:
-                await throwError(None, error=e, vocalize=False)
+            line = sanitizeSpaces(line, True)
+            localVars = {"msg":msg,"getVar":getVar, "setVar":setVar, "var":var}
+            args = line.split(' ') if ' ' in line else [line]
+            args = [formatArg(arg, spaceSeperated=(True if i == 0 else False)) for i, arg in enumerate(args)]
+            tempArgs = []
+            for i, arg in enumerate(args):
+                if ' ' in arg:
+                    tempArgs[i:i] = arg.split(' ')
+                else:
+                    tempArgs.insert(i, arg)
+            args = list(filter(None, tempArgs))
+            funcArgs = []
+            for i, arg in enumerate(args[1:]):
+                if isStringFuncCorutine(arg, commandMap, localVars):
+                    funcArgs.append(await eval(arg.replace("#", " "), commandMap, localVars))
+                else:
+                    funcArgs.append(eval(sanitizeSpaces(arg), commandMap, localVars))
+
+            if isStringFuncCorutine(args[0], commandMap, localVars):
+                await eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
+            else:
+                eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
     return
 
 async def help(msg):
-
     embed = discord.Embed(title=name, description=desc, color=embedColor)                                
     embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)                      
     embed.add_field(name="🔤 Text Commands", value=", ".join(textCommandList), inline=False)                  
@@ -860,7 +937,6 @@ async def defineGoogle(msg, message):
 
             embed.add_field(name="{}".format(word), value="/{}/".format(ipa), inline=False)
             for pos in list(values[3].keys())[:3]:
-                #embed.add_field(name="{}".format(pos), value="\a", inline=False)
                 postxt = pos
                 definitionCount = 1
                 definitions = ""
@@ -869,26 +945,20 @@ async def defineGoogle(msg, message):
                     definition = ""
                     if 'definition' in entry:
                         definition = entry['definition']
-                        #definition += "\n"
-                        #embed.add_field(name="\a", value="{}".format("1. {}".format(definition)), inline=False)
 
                     example = ""
                     if 'example' in entry:
                         example = entry['example']
-                        #example += "\n"
-                        #embed.add_field(name="example:", value="{}".format(example), inline=False)
 
                     synonyms = ""
                     if 'synonyms' in entry:
                         synonyms = entry['synonyms'][:4]
                         synonyms = ', '.join(synonyms)
                         
-                        #embed.add_field(name="synonyms:", value="{}".format(synonyms), inline=False)
                     seperator = "_ _\n" if definitionCount == 1 else ""
                     definitions += str(definitionCount) + ". " + definition + "\n"
                     definitionCount += 1
-                    #embed.add_field(name=("synonyms" if not example else "example"), value=("{}" + (" " if not synonyms else "\n___synonyms: "+synonyms+"___")).format("_" + example + "_"), inline=True)
-                    
+
                 embed.add_field(name="{}".format(postxt), value="{}".format(definitions), inline=False)
                 postxt = u'\u200b'
             embed.set_footer(text="Powered by googledictionaryapi.eu-gb.mybluemix.net")
@@ -1148,7 +1218,7 @@ async def setDailyGame():
     now = datetime.datetime.now()
     await setPlaying(config['{}_game'.format(now.strftime("%A").lower())])
 
-async def status_task(loop, bypassCheck):                                                                                        # choose what game to play based on the day of the week
+async def status_task(loop, bypassCheck):
     while True:
 
         now = datetime.datetime.now()
@@ -1174,14 +1244,11 @@ async def status_task(loop, bypassCheck):                                       
             oldDate = currentDate
         if not loop:
             return
-        await asyncio.sleep(300)                                                                               # only look at the clock every 5 minutes
+        await asyncio.sleep(300)
 
 async def checkDailyEvents():
     today = datetime.datetime.today()
     weekday = today.weekday()
-
-    if weekday == 6:
-        await botScoreDecay()
     
     for date in dates:
         dateDay = date['Day']
@@ -1234,13 +1301,13 @@ async def sayInChannelOnce(channel, message, embed=None):
     await sayInChannel(channel, message, embed)
     return True
 
-async def donePlaying(voice, player):                                                                           # checks if the sound stopped playing
+async def donePlaying(voice, player):
     global isPlaying
-    while isPlaying:                                                                                                # if the sound is playing
-        if not voice.is_playing():                                                                                            # and the sound's now over
-            await voice.disconnect()                                                                                    # leave the channel
-            isPlaying = False                                                                                               # unflag isPlaying
-        await asyncio.sleep(0.5)                                                                                        # only check if the sound is playing every 500 milliseconds
+    while isPlaying:
+        if not voice.is_playing():
+            await voice.disconnect()
+            isPlaying = False
+        await asyncio.sleep(0.5)
 
 def clearTerminal():
     if platform.system() == 'Windows':
@@ -1250,13 +1317,13 @@ def clearTerminal():
     else:
         os.system("clear && printf \'\\e[3J\'")
 
-def ord(n):                                                                                                     # this adds an ordinal indicator to a number and returns it as a string
-    return "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])                                   # IE: 1st 2nd 3rd 4th
+def ord(n):
+    return "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])
 
 @client.event
-async def on_ready():                                                                                           # When the bot has logged in and is ready to start receiving commands
-    app_info = await client.application_info()                                                                      # get the client info
-    client.owner = app_info.owner                                                                                   # get the owner's name from the info
+async def on_ready():
+    app_info = await client.application_info()
+    client.owner = app_info.owner
 
     await setDailyGame()
     global currentDate
@@ -1264,43 +1331,40 @@ async def on_ready():                                                           
         currentDate = await getClock()
     except IOError:
         await tickClock()
-    await status_task(False, False)                                                                                         # set the game the bot is playing                                                                         
+    await status_task(False, False)
 
-    print('Bot: {0.name}:{0.id}'.format(client.user))                                                               # print the bot info to the console
-    print('Owner: {0.name}:{0.id}'.format(client.owner))                                                            # print the owner info to the console
-    print('------------------')                                                                                     # a line seperator thingy
+    print('Bot: {0.name}:{0.id}'.format(client.user))
+    print('Owner: {0.name}:{0.id}'.format(client.owner))
+    print('------------------')
     perms = discord.Permissions.none()
-    perms.administrator = True                                                                                      # this makes the bot an admin. Oh the possibilities
-    url = discord.utils.oauth_url(app_info.id, perms)                                                               #   *Note to Self: do not abuse
-    print('To invite me to a server, use this link\n{}'.format(url))                                                # print out the discord invitation url to the console
+    perms.administrator = True
+    url = discord.utils.oauth_url(app_info.id, perms)
+    print('To invite me to a server, use this link\n{}'.format(url))
     if platform.system() == 'Windows':
-        if sys.maxsize > 2**32:                                                                                         # if the current system is x64 bit
-            opus.load_opus('libopus-0.x64.dll')                                                                             # load opus x64 Windows library
-        else:                                                                                                           # if the current system is x32 bit
-            opus.load_opus('libopus-0.x86.dll')                                                                             # load opus x32 Windows library
+        if sys.maxsize > 2**32:
+            opus.load_opus('libopus-0.x64.dll')
+        else:
+            opus.load_opus('libopus-0.x86.dll')
     elif platform.system() == 'Linux':
         opus.load_opus(find_library('opus'))
     else:
         print('Your OS is not supported.')
         sys.exit("OS not supported")
-    #await checkDailyEvents()
-#                                                                                                                   # check if it's anyone's bithday today
-    client.loop.create_task(status_task(True, False))                                                                          # send a thread to periodically check what day of the week it is
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(Client.start(*args, **kwargs))
 
-if __name__ == '__main__':                                                                                      # weird preformance trick
+if __name__ == '__main__':
     while True:
-        try:                                                                                                            # try to
-            run_client(client, discordToken)                                                                                               # run the client
-        except KeyError:                                                                                                # if the config file isn't filled out
-            print("config not yet filled out.")                                                                             # print to the console
-        except discord.errors.LoginFailure as e:                                                                        # if the discord token is not correct
-            print("Invalid discord token.")                                                                                 # hey, you're not me... stop editing my code
+        try:
+            run_client(client, discordToken)
+        except KeyError:
+            print("config not yet filled out.")
+        except discord.errors.LoginFailure as e:
+            print("Invalid discord token.")
         except Exception as e:
-            print("Error", e)  # or use proper logging
+            print("Error", e)
             logTime = datetime.datetime.now()
             log = open("log.txt","a")
             log.write("----------------------------" + "\n")
