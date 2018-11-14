@@ -691,6 +691,17 @@ async def handleFunc(msg, filename, channel=None):
         except:
             return False
 
+    def sanitizeSpaces(arg, forward=False):
+        if forward:
+            sanatize = re.findall(r'''\"(.+?)\"''', arg)
+            for result in sanatize:
+                if result in arg:
+                    modResult = result.replace(" ", "%20")
+                    arg = arg.replace(result, modResult)
+            return arg
+        else:
+            return arg.replace("%20", " ")
+
     def formatArg(arg, spaceSeperated=False):
         if spaceSeperated:
             arg = re.sub(r'(.*)->(".*")', "var {} {}".format(r'\2', r'\1'), arg)
@@ -731,7 +742,7 @@ async def handleFunc(msg, filename, channel=None):
     if data:
         lines = data.split("\n")
         for line in lines:
-
+            line = sanitizeSpaces(line, True)
             localVars = {"msg":msg,"getVar":getVar, "setVar":setVar, "var":var}
             args = line.split(' ') if ' ' in line else [line]
             args = [formatArg(arg, spaceSeperated=(True if i == 0 else False)) for i, arg in enumerate(args)]
@@ -745,14 +756,14 @@ async def handleFunc(msg, filename, channel=None):
             funcArgs = []
             for i, arg in enumerate(args[1:]):
                 if isStringFuncCorutine(arg, commandMap, localVars):
-                    funcArgs.append(await eval(arg, commandMap, localVars))
+                    funcArgs.append(await eval(arg.replace("#", " "), commandMap, localVars))
                 else:
-                    funcArgs.append(eval(arg, commandMap, localVars))
+                    funcArgs.append(eval(sanitizeSpaces(arg), commandMap, localVars))
 
             if isStringFuncCorutine(args[0], commandMap, localVars):
-                await eval(args[0], commandMap, localVars)(*funcArgs)
+                await eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
             else:
-                eval(args[0], commandMap, localVars)(*funcArgs)
+                eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
     return
 
 async def help(msg):
