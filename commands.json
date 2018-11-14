@@ -531,7 +531,7 @@
 		{
             "Command": "dootdoot",
 			"Alias": "doot",
-			"SoundFile": "dootdoot",
+			"SoundFile": "dootdoot#dootdoot#dootdoot#dootdoot#dootwiththesickness#dootmeupinside",
             "Help": "Thank Mr. Skeltal!\nUpdoot in 1.5 seconds or commit die.",
             "Params": ""
         },
