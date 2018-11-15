@@ -294,7 +294,7 @@ async def on_message(msg: discord.Message):
 
         if command == textCommands[6]['Command'] or command in textCommands[6]['Alias'].split('#'):
             if len(args.strip()) < 1:
-                await status_task(False, True)
+                await setDailyGame()
                 return
             await setPlaying(args)
             return
@@ -1240,30 +1240,31 @@ async def setDailyGame():
     now = datetime.datetime.now()
     await setPlaying(config['{}_game'.format(now.strftime("%A").lower())])
 
-async def status_task(loop, bypassCheck):
+async def status_task(loop):
     while True:
 
         now = datetime.datetime.now()
         day = str(now.day)
         month = str(now.month)
         year = str(now.year)
-        date = "{}-{}-{}".format(day, month, year)
+        localDate = "{}-{}-{}".format(day, month, year)
 
         global currentDate
         oldDate = await getClock()
         
-        if currentDate != date or bypassCheck:
-            await setDailyGame()
-        if not bypassCheck:
-            currentDate = date
-            
-            await tickClock()
+        #if currentDate != localDate or bypassCheck:
+            #await setDailyGame()
+        currentDate = localDate
 
-            if oldDate != currentDate:
-                await onNewDay()
-            
-            currentDate = date
-            oldDate = currentDate
+        
+        await tickClock()
+
+        if oldDate != currentDate:
+            await onNewDay()
+        
+        currentDate = localDate
+        oldDate = currentDate
+
         if not loop:
             return
         await asyncio.sleep(300)
@@ -1274,8 +1275,8 @@ async def checkDailyEvents():
     
     for date in dates:
         dateDay = date['Day']
-        dateMonth = date['Month']
-        dateYear = date['Year']
+        dateMonth = date.get('Month', 0)
+        dateYear = date.get('Year', 0)
         dateType = date['Type']
 
         if (today.day == dateDay and today.month == dateMonth) or (dateType == 'weekday' and weekday == dateDay):
@@ -1283,7 +1284,7 @@ async def checkDailyEvents():
             dateMessage = date.get('Message')
             dateAge = today.year - dateYear
             dateOrdAge = ord(dateAge)
-            dateTag = date['Tag']
+            dateTag = date.get('Tag', '')
             dateType = date['Type']
             dateChannels = date['Channel'].replace(" ", "").split('#')
             reacts = date.get('React')
@@ -1294,7 +1295,13 @@ async def checkDailyEvents():
                 reacts = reacts.split("#")
 
             if dateMessage:
-                formattedDateMessage = dateMessage.replace("#day", str(dateDay)).replace("#month", str(dateMonth)).replace("#year", str(dateYear)).replace("#name", dateName).replace("#age", dateOrdAge).replace("#tag", dateTag).replace("#type", dateType)
+                formattedDateMessage = dateMessage.replace("#day", str(dateDay))
+                formattedDateMessage = formattedDateMessage.replace("#month", str(dateMonth))
+                formattedDateMessage = formattedDateMessage.replace("#year", str(dateYear))
+                formattedDateMessage = formattedDateMessage.replace("#name", str(dateName))
+                formattedDateMessage = formattedDateMessage.replace("#age", str(dateOrdAge))
+                formattedDateMessage = formattedDateMessage.replace("#tag", str(dateTag))
+                formattedDateMessage = formattedDateMessage.replace("#type", str(dateType))
             
             for dateChannel in dateChannels:
                 channel = client.get_channel(int(userInfo['channel_ids'][dateChannel]))
@@ -1363,7 +1370,7 @@ async def on_ready():
         currentDate = await getClock()
     except IOError:
         await tickClock()
-    await status_task(False, False)
+    await status_task(False)
 
     def isx64System():
         if sys.maxsize > 2**32:
@@ -1397,8 +1404,8 @@ async def on_ready():
     perms.administrator = True
     url = discord.utils.oauth_url(app_info.id, perms)
     print('To invite me to a server, use this link\n{}'.format(url))
-
     loadOpus()
+    client.loop.create_task(status_task(True))
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()
