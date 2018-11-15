@@ -753,6 +753,8 @@ async def handleFunc(msg, filename, channel=None):
                 else:
                     tempArgs.insert(i, arg)
             args = list(filter(None, tempArgs))
+            if not args:
+                continue
             funcArgs = []
             for i, arg in enumerate(args[1:]):
                 if isStringFuncCorutine(arg, commandMap, localVars):
