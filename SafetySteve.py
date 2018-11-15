@@ -756,7 +756,7 @@ async def handleFunc(msg, filename, channel=None):
             funcArgs = []
             for i, arg in enumerate(args[1:]):
                 if isStringFuncCorutine(arg, commandMap, localVars):
-                    funcArgs.append(await eval(arg.replace("#", " "), commandMap, localVars))
+                    funcArgs.append(await eval(sanitizeSpaces(arg), commandMap, localVars))
                 else:
                     funcArgs.append(eval(sanitizeSpaces(arg), commandMap, localVars))
 
