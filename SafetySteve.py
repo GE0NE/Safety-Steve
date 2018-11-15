@@ -496,11 +496,10 @@ async def on_message(msg: discord.Message):
                         isPlaying = True
                         client.loop.create_task(donePlaying(voice, player))
                     except Exception as e:
-                        print(e)
-                        await say(msg, 'There was an issue playing the sound file 🙁')
+                        throwError(msg, 'There was an issue playing the sound file 🙁', custom=True)
                         pass
                 else:
-                    await say(msg, 'You\'re not in a voice channel!')
+                    await throwError(msg, 'You\'re not in a voice channel!', custom=True, printError=False)
                 return
 
     elif any([badword in content for badword in wordBlacklist]):
@@ -658,12 +657,12 @@ async def react(msg, emote):
                 reaction = next((x for x in msg.guild.emojis if x.name == emote), None)
                 await msg.add_reaction(reaction)
             except:
-                await throwError(msg, "I don't know that emoji: " + "`" + str(emote) + "`", custom=True)
+                await throwError(msg, "I don't know that emoji: " + "`" + str(emote) + "`", custom=True, printError=False)
     return
 
 async def checkNSFW(msg):
     if not msg.channel.is_nsfw():
-        await throwError(msg, "You can't use that command here. This channel is not maked as NSFW.", custom=True)
+        await throwError(msg, "You can't use that command here. This channel is not maked as NSFW.", custom=True, printError=False)
         return False
     return True
 
@@ -710,8 +709,7 @@ async def handleFunc(msg, filename, channel=None):
             arg = re.sub(r'(.*)->(.*)', "var {} \"{}\"".format(r'\2', r'\1'), arg)
             arg = re.sub(r'(.*)<-(.*)', "var \"{}\" {}".format(r'\1', r'\2'), arg)
 
-            arg = re.sub(r'\|("[^\|]*")\|', "var {}".format(r'\1'), arg)
-            arg = re.sub(r'\|([^\|]*)\|', "var \"{}\"".format(r'\1'), arg)
+            arg = formatArg(arg, False)
         else:
             arg = re.sub(r'(.*)->(".*")', "var({},{})".format(r'\2', r'\1'), arg)
             arg = re.sub(r'(".*")<-(.*)', "var({},{})".format(r'\1', r'\2'), arg)
@@ -723,7 +721,7 @@ async def handleFunc(msg, filename, channel=None):
             arg = re.sub(r'\|([^\|]*)\|', "var(\"{}\")".format(r'\1'), arg)
         return arg
 
-    commandMap = {"say":say, "subreddit":subreddit, "botScoreDecay":botScoreDecay, "sayAscii":sayAscii, "readScores":readScores}
+    commandMap = {"say":say, "subreddit":subreddit, "botScoreDecay":botScoreDecay, "sayAscii":sayAscii, "readScores":readScores, "react":react}
     data = {}
     if not msg:
         if not channel:
@@ -732,7 +730,7 @@ async def handleFunc(msg, filename, channel=None):
         else:
             await throwError(None, error="No message or channel objects provided", vocalize=False)
     try:
-        with open("func/" + filename + ".func","r") as funcFile:
+        with open("func/" + filename + ".func","r", encoding='utf8') as funcFile:
             data = funcFile.read()
             funcFile.close()
     except FileNotFoundError as e:
@@ -753,15 +751,12 @@ async def handleFunc(msg, filename, channel=None):
                 else:
                     tempArgs.insert(i, arg)
             args = list(filter(None, tempArgs))
-            if not args:
-                continue
             funcArgs = []
             for i, arg in enumerate(args[1:]):
                 if isStringFuncCorutine(arg, commandMap, localVars):
                     funcArgs.append(await eval(sanitizeSpaces(arg), commandMap, localVars))
                 else:
                     funcArgs.append(eval(sanitizeSpaces(arg), commandMap, localVars))
-
             if isStringFuncCorutine(args[0], commandMap, localVars):
                 await eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
             else:
@@ -916,7 +911,7 @@ async def defineUrban(msg, message=None, term='', num=1, edit=None):
                 await say(msg, "That result doesn't exist! Try {}{} {}.".format(invoker, textCommands[11]['Command'], term))
 
             except Exception as e:
-                print(e)
+                throwError(msg, e, vocalize=False)
         return 
 
 async def defineGoogle(msg, message):
@@ -1082,7 +1077,7 @@ async def getScores(guild=None, iter=0):
                 scores.close()
                 await getScores(iter=iter+1)
         else:
-            print(str(e))
+            throwError(msg, e)
 
 async def botScoreDecay():
     scores = await readScores()
@@ -1095,6 +1090,10 @@ async def botScoreDecay():
             await writeScore(int(entry[0]), int(entry[1]), score=1)
 
 async def mal(msg, name, mediaType="anime", displayFormat="tv"):
+
+    async def notFound():
+        await throwError(msg, "{} couldn't be found on MyAnimeList.".format(name), custom=True, printError=False)
+
     name = parse.quote_plus(name)
     async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
         async with session.get("https://api.jikan.moe/search/{0}?q={1}&type={2}&page=1".format(mediaType, name, displayFormat)) as resp:
@@ -1106,12 +1105,12 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                 pass
         try:
             if result["error"]:
-                await throwError(msg, error=result["error"])
+                await notFound()
                 return
         except:
             pass
         if not results:
-            await throwError(msg, "{} couldn't be found on MyAnimeList.".format(name), custom=True)
+            await throwError(msg, "{} couldn't be found on MyAnimeList.".format(name), custom=True, printError=False)
             return
         else:
             try:
@@ -1123,7 +1122,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                     result = await resp.json()
                 try:
                     if result["error"]:
-                        await throwError(msg, result["error"])
+                        await notFound()
                         return
                 except:
                     pass
@@ -1169,17 +1168,18 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                     await say(msg, "", embed=embed)
 
                 except IndexError:
-                    await throwError(msg, error="That result doesn't exist!", custom=True)
+                    await notFound()
                 except:
                     return
             except IndexError:
-                await throwError(msg, error="That result doesn't exist!", custom=True)
+                await notFound()
             except Exception:
                 return
         return 
 
-async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False):
-    print(error)
+async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False, printError=True):
+    if printError:
+        print("ERROR:\n{}".format(error))
     if vocalize:
         if error:
             await say(msg, "Woah! Something bad happened! ```\n{}\n```".format(error) if not custom else error)
