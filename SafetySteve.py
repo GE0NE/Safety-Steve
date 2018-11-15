@@ -46,10 +46,10 @@ except ImportError:
 from bs4 import BeautifulSoup
 
 try:
-    with open('config.json', encoding='utf8') as f:                                                             
+    with open('config/config.json', encoding='utf8') as f:                                                             
         config = json.load(f)
 except FileNotFoundError:
-    with open('config.json', 'w', encoding='utf8') as f:
+    with open('config/config.json', 'w', encoding='utf8') as f:
         config = {}
         print("config file created. Please restart the bot.")
         json.dump({
@@ -73,10 +73,10 @@ except FileNotFoundError:
             "Please fill out the config.json file and restart the bot.");
 
 try:
-    with open('user-info.json', encoding='utf8') as f:
+    with open('config/user-info.json', encoding='utf8') as f:
         userInfo = json.load(f)
 except FileNotFoundError:
-    with open('user-info.json', 'w', encoding='utf8') as f:
+    with open('config/user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
         json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": ""},
             "channel_ids":{"lobby": ""}}, f, indent = 4)
@@ -84,10 +84,10 @@ except FileNotFoundError:
             "Please fill out the user-info.json file and restart the bot.");
 
 try:
-    with open('commands.json', encoding='utf8') as f:
+    with open('config/commands.json', encoding='utf8') as f:
         commandsFile = json.load(f)
 except FileNotFoundError:
-    with open('commands.json', 'w', encoding='utf8') as f:
+    with open('config/commands.json', 'w', encoding='utf8') as f:
         commandsFile = {}
         json.dump({'text_commands': [{'Command': '', 'Help': '', 'Params': ''}],
             'voice_commands': [{'Command': '', 'Help': '', 'Params': ''}]}, f, indent = 4)
@@ -95,20 +95,20 @@ except FileNotFoundError:
             "Please fill out the commands.json file and restart the bot.");
 
 try:
-    with open('fonts.json', encoding='utf8') as f:
+    with open('config/fonts.json', encoding='utf8') as f:
         fonts = json.load(f, strict=False)
 except FileNotFoundError:
-    with open('fonts.json', 'w', encoding='utf8') as f:
+    with open('config/fonts.json', 'w', encoding='utf8') as f:
         font = {}
         json.dump({'bubble': [''], "bubble_mask": ['']}, f, indent = 4)
         sys.exit("fonts file created. "
             "Please fill out the fonts.json file and restart the bot.");
 
 try:
-    with open('dates.json', encoding='utf8') as f:
+    with open('config/dates.json', encoding='utf8') as f:
         date_list = json.load(f, strict=False)
 except FileNotFoundError:
-    with open('dates.json', 'w', encoding='utf8') as f:
+    with open('config/dates.json', 'w', encoding='utf8') as f:
         date_list = {}
         json.dump({'dates': [{"Name": "Safety Steve", "Day": 1, "Month": 4, "Year": 2018, 
             "Tag": "<@430061939805257749>", "Type": "birthday", "Message": "Happy #age #type, #tag!",
@@ -303,7 +303,7 @@ async def on_message(msg: discord.Message):
             await say(msg, "`༼ つ ◕_ ◕ ༽つ GIVE BAN ༼ つ ◕_ ◕ ༽つ`")
 
         if command == textCommands[8]['Command'] or command in textCommands[8]['Alias'].split('#'):
-            usernamesFile = open("usernames.txt", "r")
+            usernamesFile = open("res/data/usernames.txt", "r")
             usernamesRaw = usernamesFile.read()
             usernames = usernamesRaw.split('\n')
             users = []
@@ -488,7 +488,7 @@ async def on_message(msg: discord.Message):
                         sounds = voiceCommands[i]['SoundFile'].split("#")
                         sound = random.choice(sounds)
                         voice = await msg.author.voice.channel.connect()
-                        voice.play(discord.FFmpegPCMAudio('sound/' + sound + fileExt))
+                        voice.play(discord.FFmpegPCMAudio('res/sound/' + sound + fileExt))
                         isPlaying = True
                         client.loop.create_task(donePlaying(voice, player))
                     except Exception as e:
@@ -731,7 +731,7 @@ async def handleFunc(msg, filename, channel=None):
         else:
             await throwError(None, error="No message or channel objects provided", vocalize=False)
     try:
-        with open("func/" + filename + ".func","r", encoding='utf8') as funcFile:
+        with open("res/func/" + filename + ".func","r", encoding='utf8') as funcFile:
             data = funcFile.read()
             funcFile.close()
     except FileNotFoundError as e:
@@ -1037,7 +1037,7 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0):
                     newVoted, newGilded)
                 oldScores = await getScores()
                 oldScores = oldScores.split("\n")[:-1]
-                with open("botScores.txt","w") as scores:
+                with open("res/data/botScores.txt","w") as scores:
                     for oldScore in oldScores:
                         if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
                             if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0'):
@@ -1047,9 +1047,9 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0):
                     scores.close()
                     return
     except:
-        with open("botScores.txt","w") as writer:
+        with open("res/data/botScores.txt","w") as writer:
             writer.close()
-    with open("botScores.txt","a") as scores:
+    with open("res/data/botScores.txt","a") as scores:
         scores.write(userObj + "\n")
         scores.close()
     return
@@ -1083,13 +1083,13 @@ async def readScores(guild=None, userID=None):
 
 async def getScores(guild=None, iter=0):
     try:
-        with open("botScores.txt","r") as scores:
+        with open("res/data/botScores.txt","r") as scores:
             data = scores.read()
             scores.close()
             return data
     except FileNotFoundError as e:
         if iter <= 1:
-            with open("botScores.txt","w+") as scores:
+            with open("res/data/botScores.txt","w+") as scores:
                 scores.close()
                 await getScores(iter=iter+1)
         else:
@@ -1194,7 +1194,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                     return
             return 
 
-async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False, printError=True):
+async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False, printError=True, fatal=False):
     if printError:
         print("ERROR:\n{}".format(error))
     if vocalize:
@@ -1206,6 +1206,9 @@ async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=
     if printTraceback:
         print("Traceback:")
         traceback.print_exc()
+
+    if printError or printTraceback or sayTraceback:
+        writeLog(error, fatal)
     return
 
 async def clearDailyRestrictions():
@@ -1219,7 +1222,7 @@ async def onNewDay():
 
 async def tickClock():
     now = datetime.datetime.now()
-    with open("clock.txt","w") as clock:
+    with open("res/data/clock.txt","w") as clock:
         day = str(now.day)
         month = str(now.month)
         year = str(now.year)
@@ -1228,7 +1231,7 @@ async def tickClock():
 
 async def getClock():
     date = "0-0-0"
-    with open("clock.txt","r") as clock:
+    with open("res/data/clock.txt","r") as clock:
         date = clock.read()
         clock.close()
     return date
@@ -1312,6 +1315,16 @@ async def checkDailyEvents():
                     await handleFunc(dummyMessage, dateFunc, channel=channel)
     return
 
+def writeLog(e, crash=False):
+    logTime = datetime.datetime.now()
+    filename = 'res/data/logs/log-{}'.format(str(logTime)) if crash else 'res/data/logs/log.txt'
+    with open(filename, 'a') as log:
+        log.write("Time: " + str(logTime) + "\n")
+        log.write("-\/-----------------------------\/-" + "\n")
+        log.write(str(e)+"\n")
+        log.write("-/\-----------------------------/\-" + "\n")
+        log.write("\n")
+
 async def sayInChannelOnce(channel, message, embed=None):
     today = datetime.datetime.combine(date.today(), datetime.time())
     async for msg in channel.history(limit=100, after=today):
@@ -1361,18 +1374,18 @@ async def on_ready():
     def loadOpus():
         if platform.system() == 'Windows':
             if isx64System():
-                opus.load_opus('res/opus/win/x64/libopus-0.x64.dll')
+                opus.load_opus('res/lib/opus/win/x64/libopus-0.x64.dll')
             else:
-                opus.load_opus('res/opus/win/x86/libopus-0.x86.dll')
+                opus.load_opus('res/lib/opus/win/x86/libopus-0.x86.dll')
         elif platform.system() == 'Linux':
             opusPath=find_library('opus')
             if opusPath:
                 opus.load_opus(opusPath)
             else:
                 if isx64System():
-                    opus.load_opus('res/opus/linux/x64/libopus.so')
+                    opus.load_opus('res/lib/opus/linux/x64/libopus.so')
                 else:
-                    opus.load_opus('res/opus/linux/x86/libopus.so')
+                    opus.load_opus('res/lib/opus/linux/x86/libopus.so')
         else:
             print('Your OS is not supported.')
             sys.exit("OS not supported")
@@ -1400,18 +1413,9 @@ if __name__ == '__main__':
         except discord.errors.LoginFailure as e:
             print("Invalid discord token.")
         except Exception as e:
-            print("Error", e)
-            logTime = datetime.datetime.now()
-            log = open("log.txt","a")
-            log.write("----------------------------" + "\n")
-            log.write("----------------------------" + "\n")
-            log.write("Log: " + str(logTime) + "\n")
-            log.write("\n")
-            log.write(str(e))
-            log.write("\n")
-            log.close()
+            writeLog(e, True)
             clearTerminal()
-            print("An error occured! Restarting...")
+            print("An error occured! See log for details.\nRestarting...")
             time.sleep(10)
 Client.logout()
 Client.close()
