@@ -51,7 +51,6 @@ try:
 except FileNotFoundError:
     with open('config/config.json', 'w', encoding='utf8') as f:
         config = {}
-        print("config file created. Please restart the bot.")
         json.dump({
             "description": "I keep us safe from evil words!",
             "name": "Safety Steve", "invoker": "^", "creator": "GEONE",
@@ -394,15 +393,18 @@ async def on_message(msg: discord.Message):
             scores = await readScores(msg.guild.id)
             embed = discord.Embed(title="Scores:", description="_ _")
             for scoreEntry in scores:
-                user = await client.get_user_info(scoreEntry[1])
-                score = scoreEntry[2]
-                if score != '0':
-                    displayName = user.display_name
-                    nick = msg.guild.get_member(user.id).nick
-                    nick = displayName if nick is None else nick
-                    sanitizedDisplayName = displayName.replace('_','\_')
-                    displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
-                    embed.add_field(name=nick, value="{}{}".format(displayName, score), inline=True)
+                try:
+                    user = await client.get_user_info(scoreEntry[1])
+                    score = scoreEntry[2]
+                    if score != '0':
+                        displayName = user.display_name
+                        nick = msg.guild.get_member(user.id).nick
+                        nick = displayName if nick is None else nick
+                        sanitizedDisplayName = displayName.replace('_','\_')
+                        displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
+                        embed.add_field(name=nick, value="{}{}".format(displayName, score), inline=True)
+                except:
+                    continue
             await say(msg, "", embed=embed)
             return
 
@@ -412,7 +414,7 @@ async def on_message(msg: discord.Message):
             author = None
             invokerScores = await readScores(guild=server.id, userID=msg.author.id)
 
-            if invokerScores is not None and int(invokerScores[5]) >= gildLimit:
+            if invokerScores[0] and int(invokerScores[5]) >= gildLimit:
                 await say(msg, "You have already gilded someone {}today!".format((str(gildLimit) + ' times ') if gildLimit != 1 else ''))
                 return
 
@@ -453,7 +455,7 @@ async def on_message(msg: discord.Message):
             nick = displayName if nick is None else nick
 
             scores = await readScores(guild=msg.guild.id, userID=target.id)
-            gilded = '0' if scores is None else scores[3]
+            gilded = scores[3]
             embed = discord.Embed(title="{} been gilded:".format("You have" if target == msg.author else nick + " has"), 
                 description="_{} time{}_".format(gilded, 's' if int(gilded) != 1 else ''), 
                 color=gradient[int(gilded) if int(gilded) < 6 else 5])
@@ -527,10 +529,9 @@ async def on_message(msg: discord.Message):
                     await say(msg, "You can't vote positively for yourself!")
                     return
 
-                if invokerScores is not None:
-                    if len(invokerScores) >= 4 and int(invokerScores[4]) >= voteLimit:
-                        await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
-                        return
+                if int(invokerScores[4]) >= voteLimit:
+                    await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
+                    return
 
                 if content =="medium bot":
                     await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
@@ -676,7 +677,7 @@ async def handleFunc(msg, filename, channel=None):
 
     def getVar(key):
         if key not in variables:
-            setVar(key, "default")
+            setVar(key, 0)
         return variables[key]
 
     def var(key, value=None):
@@ -691,6 +692,11 @@ async def handleFunc(msg, filename, channel=None):
         except:
             return False
 
+    def isStringCallable(funcString):
+        funcString = str(funcString)
+        funcString = funcString.split('(', 1)[0] if '(' in funcString else funcString
+        return callable(eval(funcString, commandMap, localVars))
+
     def sanitizeSpaces(arg, forward=False):
         if forward:
             sanatize = re.findall(r'''\"(.+?)\"''', arg)
@@ -700,7 +706,10 @@ async def handleFunc(msg, filename, channel=None):
                     arg = arg.replace(result, modResult)
             return arg
         else:
-            return arg.replace("%20", " ")
+            try:
+                return arg.replace("%20", " ")
+            except:
+                return arg
 
     def formatArg(arg, spaceSeperated=False):
         if spaceSeperated:
@@ -742,7 +751,7 @@ async def handleFunc(msg, filename, channel=None):
         lines = data.split("\n")
         for line in lines:
             line = sanitizeSpaces(line, True)
-            localVars = {"msg":msg,"getVar":getVar, "setVar":setVar, "var":var}
+            localVars = {"msg":msg, "var":var}
             args = line.split(' ') if ' ' in line else [line]
             args = [formatArg(arg, spaceSeperated=(True if i == 0 else False)) for i, arg in enumerate(args)]
             tempArgs = []
@@ -758,10 +767,14 @@ async def handleFunc(msg, filename, channel=None):
                     funcArgs.append(await eval(sanitizeSpaces(arg), commandMap, localVars))
                 else:
                     funcArgs.append(eval(sanitizeSpaces(arg), commandMap, localVars))
-            if isStringFuncCorutine(args[0], commandMap, localVars):
-                await eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
-            else:
-                eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
+            if args:
+                if isStringCallable(args[0]):
+                    if isStringFuncCorutine(args[0], commandMap, localVars):
+                        await eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
+                    else:
+                        eval(sanitizeSpaces(args[0]), commandMap, localVars)(*funcArgs)
+                else:
+                    eval(sanitizeSpaces(args[0]), commandMap, localVars)
     return
 
 async def help(msg):
@@ -1076,7 +1089,8 @@ async def readScores(guild=None, userID=None):
             if found is not None:
                 return found
             else:
-                return None
+                blankEntry = [0,0,0,0,0,0]
+                return blankEntry
         else:
             return guildEntries
     return sorted(entries, key=lambda x: x[0])
