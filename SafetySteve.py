@@ -1352,6 +1352,31 @@ async def on_ready():
         await tickClock()
     await status_task(False, False)
 
+    def isx64System():
+        if sys.maxsize > 2**32:
+            return True
+        else:
+            return False
+
+    def loadOpus():
+        if platform.system() == 'Windows':
+            if isx64System():
+                opus.load_opus('res/opus/win/x64/libopus-0.x64.dll')
+            else:
+                opus.load_opus('res/opus/win/x86/libopus-0.x86.dll')
+        elif platform.system() == 'Linux':
+            opusPath=find_library('opus')
+            if opusPath:
+                opus.load_opus(opusPath)
+            else:
+                if isx64System():
+                    opus.load_opus('res/opus/linux/x64/libopus.so')
+                else:
+                    opus.load_opus('res/opus/linux/x86/libopus.so')
+        else:
+            print('Your OS is not supported.')
+            sys.exit("OS not supported")
+
     print('Bot: {0.name}:{0.id}'.format(client.user))
     print('Owner: {0.name}:{0.id}'.format(client.owner))
     print('------------------')
@@ -1359,16 +1384,8 @@ async def on_ready():
     perms.administrator = True
     url = discord.utils.oauth_url(app_info.id, perms)
     print('To invite me to a server, use this link\n{}'.format(url))
-    if platform.system() == 'Windows':
-        if sys.maxsize > 2**32:
-            opus.load_opus('libopus-0.x64.dll')
-        else:
-            opus.load_opus('libopus-0.x86.dll')
-    elif platform.system() == 'Linux':
-        opus.load_opus(find_library('opus'))
-    else:
-        print('Your OS is not supported.')
-        sys.exit("OS not supported")
+
+    loadOpus()
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()
