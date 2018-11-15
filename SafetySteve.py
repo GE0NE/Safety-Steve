@@ -483,10 +483,10 @@ async def on_message(msg: discord.Message):
             return
 
         for i in range(1, len(voiceCommands)):
-            if isPlaying:
-                await say(msg, 'I\'m already playing a sound! Please wait your turn.')
-                return
             if message == voiceCommands[i]['Command'] or command in voiceCommands[i]['Alias'].split('#'):
+                if isPlaying:
+                    await say(msg, 'I\'m already playing a sound! Please wait your turn.')
+                    return
                 if msg.author.voice.channel:
                     try:
                         sounds = voiceCommands[i]['SoundFile'].split("#")
