@@ -14,6 +14,7 @@ import praw
 import random
 import math
 import html
+import shlex
 from urllib import parse
 from urllib.request import Request, urlopen
 import aiohttp
@@ -237,6 +238,7 @@ async def on_message(msg: discord.Message):
         rawBreakdown = rawMessage.split(" ")
         command = breakdown[0]
         args = ' '.join(rawBreakdown[1:]) if len(breakdown) > 1 else ''
+        argList = shlex.split(args)
 
         if command == '':
             return
@@ -390,23 +392,36 @@ async def on_message(msg: discord.Message):
             return
 
         if command == textCommands[14]['Command'] or command in textCommands[14]['Alias'].split('#'):
-            scores = await readScores(msg.guild.id)
-            embed = discord.Embed(title="Scores:", description="_ _")
-            for scoreEntry in scores:
-                try:
-                    user = await client.get_user_info(scoreEntry[1])
-                    score = scoreEntry[2]
-                    if score != '0':
-                        displayName = user.display_name
-                        nick = msg.guild.get_member(user.id).nick
-                        nick = displayName if nick is None else nick
-                        sanitizedDisplayName = displayName.replace('_','\_')
-                        displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
-                        embed.add_field(name=nick, value="{}{}".format(displayName, score), inline=True)
-                except:
-                    continue
-            await say(msg, "", embed=embed)
-            return
+            if not argList:
+                scores = await readScores(msg.guild.id)
+                embed = discord.Embed(title="Scores:", description="_ _")
+                for scoreEntry in scores:
+                    try:
+                        user = await client.get_user_info(scoreEntry[1])
+                        score = scoreEntry[2]
+                        if score != '0':
+                            displayName = user.display_name
+                            nick = msg.guild.get_member(user.id).nick
+                            nick = displayName if nick is None else nick
+                            sanitizedDisplayName = displayName.replace('_','\_')
+                            displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
+                            embed.add_field(name=nick, value="{}{}".format(displayName, score), inline=True)
+                    except:
+                        continue
+                await say(msg, "", embed=embed)
+                return
+            else:
+                if argList[0] in ['voted']:
+                    target = msg.author
+                    if msg.mentions:
+                        target = msg.mentions[0]
+                    targetScores = await readScores(msg.guild.id, target.id)
+                    await say(msg, "{} voted {} time{}.".format("You've" if target is msg.author else target.mention+' has', targetScores[4], '' if targetScores[4] == 1 else 's'))
+                    return
+                if msg.mentions:
+                    target = msg.mentions[0]
+                    targetScores = await readScores(msg.guild.id, target.id)
+                    await say(msg, "{}'s score is {}.".format(target.mention, targetScores[2]))
 
         if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
             server = msg.guild
@@ -513,7 +528,7 @@ async def on_message(msg: discord.Message):
             except:
                 continue
 
-    elif content == "good bot" or content == "bad bot" or content == "medium bot":
+    elif content in ['good bot', 'bad bot', 'medium bot']:
         try:
             targetMessage = None
             server = msg.guild
@@ -566,22 +581,9 @@ async def on_message(msg: discord.Message):
             return
 
 
-    elif content == "time?" or content == "time":
+    elif content in ['time', 'time?', 'time.', 'time!']:
         now = datetime.datetime.now()
-        hour = now.hour
-        minute = now.minute
-
-        if hour == 0:
-            hour = "00"
-
-        if minute == 0:
-            minute = "00"
-        elif minute < 10:
-            minuteTemp = str(minute)
-            minute = "0"
-            minute += minuteTemp
-
-        await say(msg, "It is currently {}:{}, my dude!".format(hour, minute))
+        await say(msg, "It is currently {}, my dude!".format(now.strftime('%H:%M')))
 
 
     elif client.user.mentioned_in(msg) and not msg.mention_everyone:
