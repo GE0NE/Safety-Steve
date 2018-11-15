@@ -605,7 +605,7 @@ async def subreddit(msg, sub, bypassErrorCheck=False):
             if any([ext in submission.url[-len(ext):] for ext in extensions]):
                 submissionList.append(submission)
         if len(submissionList) > 0:
-            submission = submissionList[random.randint(1, len(submissionList))]
+            submission = submissionList[random.randint(1, len(submissionList)-1)]
             embed = discord.Embed(title=submission.title, 
                 url="https://reddit.com{}".format(submission.permalink), color=embedColor)
             embed.set_image(url=submission.url)
@@ -613,9 +613,9 @@ async def subreddit(msg, sub, bypassErrorCheck=False):
                 icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
             await say(msg, "Here's a trending post from r/{}".format(str(submission.subreddit)), embed)
         else:
-            await throwError(msg, "There's nothing in that subreddit!", custom=true)
+            await throwError(msg, "There's nothing in that subreddit!", custom=True)
     except:
-        await throwError(msg, "reddit.com/r/{} couldn\'t be accessed.".format(sub), custom=true)
+        await throwError(msg, "reddit.com/r/{} couldn\'t be accessed.".format(sub), custom=True)
 
 async def git(msg):
     gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                                                                                      
@@ -663,7 +663,7 @@ async def react(msg, emote):
 
 async def checkNSFW(msg):
     if not msg.channel.is_nsfw():
-        await throwError(msg, "You can't use that command here. This channel is not maked as NSFW.", custom=true)
+        await throwError(msg, "You can't use that command here. This channel is not maked as NSFW.", custom=True)
         return False
     return True
 
