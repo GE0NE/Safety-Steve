@@ -926,7 +926,7 @@ async def defineUrban(msg, message=None, term='', num=1, edit=None):
                 await say(msg, "That result doesn't exist! Try {}{} {}.".format(invoker, textCommands[11]['Command'], term))
 
             except Exception as e:
-                throwError(msg, e, vocalize=False)
+                await throwError(msg, e, vocalize=False)
         return 
 
 async def defineGoogle(msg, message):
