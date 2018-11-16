@@ -416,7 +416,7 @@ async def on_message(msg: discord.Message):
                     if msg.mentions:
                         target = msg.mentions[0]
                     targetScores = await readScores(msg.guild.id, target.id)
-                    await say(msg, "{} voted {} time{} today.".format("You've" if target is msg.author else target.mention+' has', targetScores[4], '' if targetScores[4] == 1 else 's'))
+                    await say(msg, "{} voted {} time{} today.".format("You've" if target is msg.author else target.mention+' has', targetScores[4], '' if targetScores[4] == '1' else 's'))
                     return
                 if msg.mentions:
                     target = msg.mentions[0]
