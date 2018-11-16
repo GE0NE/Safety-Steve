@@ -1051,7 +1051,7 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0):
                 newVoted, newGilded)
             oldScores = await getScores()
             oldScores = oldScores.split("\n")[:-1]
-            with open("res/data/user_data.scores","w") as scores:
+            with open("res/data/user-data.dat","w") as scores:
                 for oldScore in oldScores:
                     if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
                         if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0'):
@@ -1060,7 +1060,7 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0):
                         scores.write(oldScore + "\n")
                 scores.close()
                 return
-    with open("res/data/user_data.scores","a") as scores:
+    with open("res/data/user-data.dat","a") as scores:
         scores.write(userObj + "\n")
         scores.close()
     return
@@ -1095,13 +1095,13 @@ async def readScores(guild=None, userID=None):
 
 async def getScores(iteration=0):
     try:
-        with open("res/data/user_data.scores","r") as scores:
+        with open("res/data/user-data.dat","r") as scores:
             data = scores.read()
             scores.close()
             return data
     except FileNotFoundError as e:
         if iteration <= 1:
-            with open("res/data/user_data.scores","w+") as scores:
+            with open("res/data/user-data.dat","w+") as scores:
                 scores.close()
                 await getScores(iteration=iteration+1)
         else:
@@ -1234,7 +1234,7 @@ async def onNewDay():
 
 async def tickClock():
     now = datetime.datetime.now()
-    with open("res/data/clock.txt","w") as clock:
+    with open("res/data/clock.dat","w") as clock:
         day = str(now.day)
         month = str(now.month)
         year = str(now.year)
@@ -1243,7 +1243,7 @@ async def tickClock():
 
 async def getClock():
     date = "0-0-0"
-    with open("res/data/clock.txt","r") as clock:
+    with open("res/data/clock.dat","r") as clock:
         date = clock.read()
         clock.close()
     return date
