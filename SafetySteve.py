@@ -416,7 +416,7 @@ async def on_message(msg: discord.Message):
                     if msg.mentions:
                         target = msg.mentions[0]
                     targetScores = await readScores(msg.guild.id, target.id)
-                    await say(msg, "{} voted {} time{}.".format("You've" if target is msg.author else target.mention+' has', targetScores[4], '' if targetScores[4] == 1 else 's'))
+                    await say(msg, "{} voted {} time{} today.".format("You've" if target is msg.author else target.mention+' has', targetScores[4], '' if targetScores[4] == 1 else 's'))
                     return
                 if msg.mentions:
                     target = msg.mentions[0]
@@ -733,7 +733,7 @@ async def handleFunc(msg, filename, channel=None):
             arg = re.sub(r'\|([^\|]*)\|', "var(\"{}\")".format(r'\1'), arg)
         return arg
 
-    commandMap = {"say":say, "subreddit":subreddit, "botScoreDecay":botScoreDecay, "sayAscii":sayAscii, "readScores":readScores, "react":react}
+    commandMap = {"say":say, "subreddit":subreddit, "scoreDecay":scoreDecay, "sayAscii":sayAscii, "readScores":readScores, "react":react}
     data = {}
     if not msg:
         if not channel:
@@ -1039,40 +1039,37 @@ async def mock(msg, *, text=""):
 async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0):
     userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={}".format(guild, user, str(score), str(gilding), 
         str(voted), str(gilded))
-    try:
-        existingScores = await readScores()
-        for existingScore in existingScores:
-            if int(existingScore[0]) == guild and int(existingScore[1]) == user:
-                oldUserObj = userObj
-                newScore = str(int(existingScore[2]) + score)
-                newGilding = str(int(existingScore[3]) + gilding) if (int(existingScore[3]) + gilding) > 0 else '0'
-                newVoted = str(int(existingScore[4]) + voted) if (int(existingScore[4]) + voted) > 0 else '0'
-                newGilded = str(int(existingScore[5]) + gilded) if (int(existingScore[5]) + gilded) > 0 else '0'
-                userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={}".format(guild, user, newScore, newGilding,
-                    newVoted, newGilded)
-                oldScores = await getScores()
-                oldScores = oldScores.split("\n")[:-1]
-                with open("res/data/botScores.txt","w") as scores:
-                    for oldScore in oldScores:
-                        if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
-                            if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0'):
-                                scores.write(userObj + "\n")
-                        else:
-                            scores.write(oldScore + "\n")
-                    scores.close()
-                    return
-    except:
-        with open("res/data/botScores.txt","w") as writer:
-            writer.close()
-    with open("res/data/botScores.txt","a") as scores:
+    existingScores = await readScores()
+    for existingScore in existingScores:
+        if int(existingScore[0]) == guild and int(existingScore[1]) == user:
+            oldUserObj = userObj
+            newScore = str(int(existingScore[2]) + score)
+            newGilding = str(int(existingScore[3]) + gilding) if (int(existingScore[3]) + gilding) > 0 else '0'
+            newVoted = str(int(existingScore[4]) + voted) if (int(existingScore[4]) + voted) > 0 else '0'
+            newGilded = str(int(existingScore[5]) + gilded) if (int(existingScore[5]) + gilded) > 0 else '0'
+            userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={}".format(guild, user, newScore, newGilding,
+                newVoted, newGilded)
+            oldScores = await getScores()
+            oldScores = oldScores.split("\n")[:-1]
+            with open("res/data/user_data.scores","w") as scores:
+                for oldScore in oldScores:
+                    if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
+                        if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0'):
+                            scores.write(userObj + "\n")
+                    else:
+                        scores.write(oldScore + "\n")
+                scores.close()
+                return
+    with open("res/data/user_data.scores","a") as scores:
         scores.write(userObj + "\n")
         scores.close()
     return
 
 async def readScores(guild=None, userID=None):
+    blankEntry = ['0','0','0','0','0','0']
     data = await getScores()
     if not data:
-        return []
+        return blankEntry
     entries = data.split("\n")[:-1]
     guildEntries = []
     for i in range(0, len(entries)):
@@ -1091,27 +1088,26 @@ async def readScores(guild=None, userID=None):
             if found is not None:
                 return found
             else:
-                blankEntry = [0,0,0,0,0,0]
                 return blankEntry
         else:
             return guildEntries
     return sorted(entries, key=lambda x: x[0])
 
-async def getScores(guild=None, iter=0):
+async def getScores(iteration=0):
     try:
-        with open("res/data/botScores.txt","r") as scores:
+        with open("res/data/user_data.scores","r") as scores:
             data = scores.read()
             scores.close()
             return data
     except FileNotFoundError as e:
-        if iter <= 1:
-            with open("res/data/botScores.txt","w+") as scores:
+        if iteration <= 1:
+            with open("res/data/user_data.scores","w+") as scores:
                 scores.close()
-                await getScores(iter=iter+1)
+                await getScores(iteration=iteration+1)
         else:
             throwError(msg, e)
 
-async def botScoreDecay():
+async def scoreDecay():
     scores = await readScores()
     for entry in scores:
         if int(entry[2]) == 0:

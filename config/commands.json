@@ -114,11 +114,11 @@
         },
         
         {
-            "Command": "botscores",
-            "Alias": "scores#scoreboard",
+            "Command": "scores",
+            "Alias": "votes#score#botscores#scoreboard",
             "Help": "displays bot/user scores from using the good bot/bad bot command",
-            "Params": "",
-            "Examples": "botscores"
+            "Params": "[[user mention] | voted [user mention]]",
+            "Examples": "scores#scores voted @Safety-Steve#score @Safety-Steve"
         },
         
         {
