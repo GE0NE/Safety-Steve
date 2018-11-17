@@ -632,7 +632,7 @@
             "Params": ""
         },
 		
-		{
+        {
             "Command": "dandan",
             "Alias": "",
             "SoundFile": "dandan",
