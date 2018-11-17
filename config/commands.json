@@ -631,12 +631,20 @@
             "Help": "www.youtube.com/user/billwurtz",
             "Params": ""
         },
-		
+
         {
             "Command": "dandan",
             "Alias": "",
             "SoundFile": "dandan",
             "Help": "dan dan. dan dan. dan dan. dan dan.",
+            "Params": ""
+        },
+        
+        {
+            "Command": "dandanfull",
+            "Alias": "",
+            "SoundFile": "dandanfull",
+            "Help": "dan dan. dan dan. dan dan. dan dan. dan dan. dan dan. dan dan. dan dan.",
             "Params": ""
         }
     ]
