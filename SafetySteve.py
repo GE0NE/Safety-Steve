@@ -801,7 +801,7 @@ async def helpCommand(command, msg):
         await say(msg, "That's not a command I know or it is an alias.")
         return
                     
-    embed = discord.Embed(title="Command:", description=command, color=embedColor) #                      
+    embed = discord.Embed(title="Command:", description=command, color=embedColor)
     embed.add_field(name="Description:", value=commandHelp[commandList.index(command)], inline=False)
     embed.add_field(name="Usage:", value="```" + invoker + command + " " + commandParams[commandList.index(command)] + "```", inline=False)
     if ('-e' in args or 'example' in args or 'all' in args) and command in textCommandList:
@@ -1231,14 +1231,16 @@ async def clearDailyRestrictions():
 async def onNewDay():
     await checkDailyEvents()
     await clearDailyRestrictions()
+    await setDailyGame()
 
 async def tickClock():
+    global currentDate
     now = datetime.datetime.now()
+    realDate = "%d-%d-%d" % (now.day, now.month, now.year)
+    currentDate = realDate
+
     with open("res/data/clock.dat","w") as clock:
-        day = str(now.day)
-        month = str(now.month)
-        year = str(now.year)
-        clock.write("{}-{}-{}".format(day, month, year))
+        clock.write(realDate)
         clock.close()
 
 async def getClock():
@@ -1256,30 +1258,21 @@ async def status_task(loop):
     while True:
 
         now = datetime.datetime.now()
-        day = str(now.day)
-        month = str(now.month)
-        year = str(now.year)
-        localDate = "{}-{}-{}".format(day, month, year)
+
+        realDate = "%d-%d-%d" % (now.day, now.month, now.year)
 
         global currentDate
-        oldDate = await getClock()
+        recordDate = await getClock()
         
-        #if currentDate != localDate or bypassCheck:
-            #await setDailyGame()
-        currentDate = localDate
-
-        
-        await tickClock()
-
-        if oldDate != currentDate:
+        if recordDate != currentDate:
+            await tickClock()
             await onNewDay()
         
-        currentDate = localDate
-        oldDate = currentDate
+        currentDate = realDate
 
         if not loop:
             return
-        await asyncio.sleep(300)
+        await asyncio.sleep(60)
 
 async def checkDailyEvents():
     today = datetime.datetime.today()
@@ -1377,12 +1370,7 @@ async def on_ready():
     client.owner = app_info.owner
 
     await setDailyGame()
-    global currentDate
-    try:
-        currentDate = await getClock()
-    except IOError:
-        await tickClock()
-    await status_task(False)
+    await tickClock()
 
     def isx64System():
         if sys.maxsize > 2**32:
