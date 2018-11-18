@@ -509,7 +509,7 @@ async def on_message(msg: discord.Message):
                         isPlaying = True
                         client.loop.create_task(donePlaying(voice, player))
                     except Exception as e:
-                        throwError(msg, 'There was an issue playing the sound file 🙁', custom=True)
+                        await throwError(msg, 'There was an issue playing the sound file 🙁', custom=True)
                         pass
                 else:
                     await throwError(msg, 'You\'re not in a voice channel!', custom=True, printError=False)
