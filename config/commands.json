@@ -631,7 +631,7 @@
             "Help": "www.youtube.com/user/billwurtz",
             "Params": ""
         },
-
+        
         {
             "Command": "dandan",
             "Alias": "",
@@ -645,6 +645,14 @@
             "Alias": "",
             "SoundFile": "dandanfull",
             "Help": "dan dan. dan dan. dan dan. dan dan. dan dan. dan dan. dan dan. dan dan.",
+            "Params": ""
+        },
+        
+        {
+            "Command": "neat",
+            "Alias": "prettyneat",
+            "SoundFile": "neat",
+            "Help": "Come with me on a neature walk!",
             "Params": ""
         }
     ]
