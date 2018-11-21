@@ -639,7 +639,7 @@
             "Help": "dan dan. dan dan. dan dan. dan dan.",
             "Params": ""
         },
-        
+
         {
             "Command": "dandanfull",
             "Alias": "",
@@ -647,12 +647,44 @@
             "Help": "dan dan. dan dan. dan dan. dan dan. dan dan. dan dan. dan dan. dan dan.",
             "Params": ""
         },
-        
+
         {
             "Command": "neat",
             "Alias": "prettyneat",
             "SoundFile": "neat",
             "Help": "Come with me on a neature walk!",
+            "Params": ""
+        },
+
+        {
+            "Command": "seno",
+            "Alias": "onetwo",
+            "SoundFile": "renaicirculation/seno",
+            "Help": "One, two-",
+            "Params": ""
+        },
+
+        {
+            "Command": "renaicirculation",
+            "Alias": "renaicirc",
+            "SoundFile": "renaicirculation/renai-circulation",
+            "Help": "Demo sonnanja dame\nMou sonnanja hora\nKokoro wa shinka suru yo motto motto",
+            "Params": ""
+        },
+
+        {
+            "Command": "renaicirculationfull",
+            "Alias": "renaicircf",
+            "SoundFile": "renaicirculation/renai-circulation-full",
+            "Help": "The full OP.",
+            "Params": ""
+        },
+
+        {
+            "Command": "everybodyscirculation",
+            "Alias": "everycirc",
+            "SoundFile": "renaicirculation/everybodys-circulation",
+            "Help": "COME ON AND SLAM!\nAND WELCOME TO THE JAM!",
             "Params": ""
         }
     ]
