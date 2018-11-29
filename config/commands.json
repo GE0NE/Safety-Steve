@@ -686,6 +686,22 @@
             "SoundFile": "renaicirculation/everybodys-circulation",
             "Help": "COME ON AND SLAM!\nAND WELCOME TO THE JAM!",
             "Params": ""
+        },
+
+        {
+            "Command": "chuglife",
+            "Alias": "danktank#thomasthedankengine#thomasthetankengine#thomasthetank#thomasthedank",
+            "SoundFile": "thomasthedankengine",
+            "Help": "Biggie Smalls feat. Thomas the Tank Engine",
+            "Params": ""
+        },
+
+        {
+            "Command": "thomaser",
+            "Alias": "thomasearrape",
+            "SoundFile": "thomaser",
+            "Help": "Thomas the Tank Engine: ear rape edition",
+            "Params": ""
         }
     ]
 }
