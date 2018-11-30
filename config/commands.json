@@ -170,7 +170,7 @@
     [
         {
             "Command": "leave",
-            "Alias": "stop#shutup",
+            "Alias": "stop#shutup#fuckoff",
             "SoundFile": "leave",
             "Help": "Leaves the current voice channel",
             "Params": ""
@@ -701,6 +701,14 @@
             "Alias": "thomasearrape",
             "SoundFile": "thomaser",
             "Help": "Thomas the Tank Engine: ear rape edition",
+            "Params": ""
+        },
+        
+        {
+            "Command": "whaaat",
+            "Alias": "whaaat?#whaaaat#whaaaat?",
+            "SoundFile": "whaaat",
+            "Help": "Oh no!",
             "Params": ""
         }
     ]
