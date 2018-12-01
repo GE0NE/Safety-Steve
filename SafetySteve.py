@@ -238,7 +238,10 @@ async def on_message(msg: discord.Message):
         rawBreakdown = rawMessage.split(" ")
         command = breakdown[0]
         args = ' '.join(rawBreakdown[1:]) if len(breakdown) > 1 else ''
-        argList = shlex.split(args)
+        try:
+            argList = shlex.split(args)
+        except ValueError:
+            argList = args.split()
 
         if command == '':
             return
