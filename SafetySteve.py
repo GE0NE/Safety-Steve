@@ -811,14 +811,18 @@ async def helpCommand(command, msg):
         examples = []
         for example in textCommandExample[commandList.index(command)]:
             examples.append(invoker + example)
+        if not examples:
+            examples.append('None')
         embed.add_field(name="Examples:", value="```\n" + '\n'.join(examples) + "```", inline=False)
     if '-a' in args or 'alias' in args or 'all' in args:
         aliases = []
         for alias in commandAlias[commandList.index(command)]:
             if alias:
                 aliases.append(invoker + alias)
+        if not aliases:
+            aliases.append('None')
         embed.add_field(name="Alias:", value=', '.join(aliases), inline=False)
-    await say(msg, "", embed)                                      
+    await say(msg, "", embed)
     return
 
 async def sayAscii(msg, message):
