@@ -633,6 +633,14 @@
         },
         
         {
+            "Command": "stauber",
+            "Alias": "jackstauber",
+            "SoundFile": "stauber/6B-Baby#stauber/Two-Time#stauber/Hamantha#stauber/Gettin-My-Mom-On#stauber/Doctor#stauber/Aleph-Mine#stauber/The-Motions-Of-Fun#stauber/Sandwich-Song#stauber/Peppermint#stauber/On-Mona-Lisa#stauber/Mr-Backwards#stauber/Keyman#stauber/If-I-Had-A-Tiny-Mouth#stauber/How-Tall-Are-You",
+            "Help": "jackstauber on Youtube",
+            "Params": ""
+        },
+        
+        {
             "Command": "dandan",
             "Alias": "",
             "SoundFile": "dandan",
