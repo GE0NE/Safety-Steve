@@ -1,7 +1,7 @@
 {
     "description": "I keep us safe from evil words!",
     "name": "Safety Steve",
-    "invoker": "!",
+    "invoker": "^",
     "creator": "GEONE",
     "git_link": "https://github.com/GE0NE/Safety-Steve",
     "fileformat": ".mp3",
