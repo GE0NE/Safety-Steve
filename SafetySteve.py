@@ -426,10 +426,11 @@ async def on_message(msg: discord.Message):
                     targetScores = await readScores(msg.guild.id, target.id)
                     await say(msg, "{} voted {} time{} today.".format("You've" if target is msg.author else target.mention+' has', targetScores[4], '' if targetScores[4] == '1' else 's'))
                     return
-                if msg.mentions:
+                else if msg.mentions:
                     target = msg.mentions[0]
                     targetScores = await readScores(msg.guild.id, target.id)
                     await say(msg, "{}'s score is {}.".format(target.mention, targetScores[2]))
+                else if argList[0] in ['me','myself','self']
 
         if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
             server = msg.guild
@@ -1174,19 +1175,26 @@ async def scoreDecay():
 
 async def exchange(msg, args):
     def pointsToCurrency(points):
+        if points <= 0:
+            return 0
         return points * pointValueInCurrency
     def gildingsToCurrency(gildings):
+        if gildings <= 0:
+            return 0
         return gildings * gildingValueInCurrency
+    async def notEnoughToExchange(_type):
+        await throwError(msg, "You cannot exchange your %s; you have negative or 0 %s." % (_type, _type), custom=True, printError=False)
+        return
     async def unknownValue(value):
         await throwError(msg, "%s is not an amount I know." % (str(value)), custom=True, printError=False)
-    async def displayCurrentCurrency():
-        currency = await readScores(msg.guild.id, msg.author.id)
-        await say(msg, "You now have ¤%s" % (currency[6]))
     amountQueried = 0
     scoreEntry = await readScores(msg.guild.id, msg.author.id)
     if args:
         if args[0] == 'all':
             returnCurrency = pointsToCurrency(int(scoreEntry[2])) + gildingsToCurrency(int(scoreEntry[3]))
+            if returnCurrency <= 0:
+                await notEnoughToExchange('points and gildings')
+                return True
             confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) and gildings (%s) for %s%s?" % (scoreEntry[2], scoreEntry[3], currencySymbol, str(returnCurrency)))
             if confirmation:
                 await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency)
@@ -1195,6 +1203,9 @@ async def exchange(msg, args):
         elif args[0] in ['score','points','point','scores']:
             if len(args) <= 1 or (len(args) > 1 and args[1] == 'all'):
                 returnCurrency = pointsToCurrency(int(scoreEntry[2]))
+                if returnCurrency <= 0:
+                    await notEnoughToExchange('points')
+                    return True
                 confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) for %s%s?" % (scoreEntry[2], currencySymbol, str(returnCurrency)))
                 if confirmation:
                     await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency)
@@ -1206,6 +1217,9 @@ async def exchange(msg, args):
                     if amountQueried > int(scoreEntry[2]):
                         amountQueried = int(scoreEntry[2])
                     returnCurrency = pointsToCurrency(amountQueried)
+                    if returnCurrency <= 0:
+                        await notEnoughToExchange('points')
+                        return True
                     confirmation = await confirm(msg, "Are you sure you want to exchange %s score point%s for %s%s?" % (amountQueried, 's' if amountQueried > 1 else '', currencySymbol, str(returnCurrency)))
                     if confirmation:
                         await writeScore(msg.guild.id, msg.author.id, score=-amountQueried, currency=returnCurrency)
@@ -1216,9 +1230,12 @@ async def exchange(msg, args):
         elif args[0] in ['gildings','gild','gilding','gold']:
             if len(args) <= 1 or (len(args) > 1 and args[1] == 'all'):
                 returnCurrency = gildingsToCurrency(int(scoreEntry[3]))
+                if returnCurrency <= 0:
+                    await notEnoughToExchange('gildings')
+                    return True
                 confirmation = await confirm(msg, "Are you sure you want to exchange all your gildings (%s) for %s%s?" % (scoreEntry[3], currencySymbol, str(returnCurrency)))
                 if confirmation:
-                    await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency)
+                    await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), currency=returnCurrency)
                 else:
                     return
             else:
@@ -1227,6 +1244,9 @@ async def exchange(msg, args):
                     if amountQueried > int(scoreEntry[3]):
                         amountQueried = int(scoreEntry[3])
                     returnCurrency = gildingsToCurrency(amountQueried)
+                    if returnCurrency <= 0:
+                        await notEnoughToExchange('gildings')
+                        return True
                     confirmation = await confirm(msg, "Are you sure you want to exchange %s gilding%s for %s%s?" % (amountQueried, 's' if amountQueried > 1 else '', currencySymbol, str(returnCurrency)))
                     if confirmation:
                         await writeScore(msg.guild.id, msg.author.id, gilding=-amountQueried, currency=returnCurrency)

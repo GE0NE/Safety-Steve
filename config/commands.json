@@ -116,9 +116,9 @@
         {
             "Command": "scores",
             "Alias": "votes#score#botscores#scoreboard",
-            "Help": "Displays bot/user scores from using the good bot/bad bot command",
-            "Params": "[[user mention] | 'voted' [user mention]]",
-            "Examples": "scores#scores voted @Safety-Steve#score @Safety-Steve"
+            "Help": "Displays scores from using the good bot/bad bot command",
+            "Params": "[['voted'] [user mention] | 'me']",
+            "Examples": "scores#scores voted @Safety-Steve#score @Safety-Steve#score me"
         },
         
         {
@@ -156,9 +156,9 @@
         {
             "Command": "balance",
             "Alias": "currency#money",
-            "Help": "Displays specified user's currency balance. No params displays your balance",
-            "Params": "[user mention]",
-            "Examples": "balance#balance @Safety-Steve"
+            "Help": "Displays specified user's currency balance, or everyone's balance. No params displays your balance",
+            "Params": "[user mention | all]",
+            "Examples": "balance#balance @Safety-Steve#balance all"
         },
         
         {
