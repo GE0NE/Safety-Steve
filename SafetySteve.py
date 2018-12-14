@@ -426,11 +426,16 @@ async def on_message(msg: discord.Message):
                     targetScores = await readScores(msg.guild.id, target.id)
                     await say(msg, "{} voted {} time{} today.".format("You've" if target is msg.author else target.mention+' has', targetScores[4], '' if targetScores[4] == '1' else 's'))
                     return
-                else if msg.mentions:
-                    target = msg.mentions[0]
-                    targetScores = await readScores(msg.guild.id, target.id)
-                    await say(msg, "{}'s score is {}.".format(target.mention, targetScores[2]))
-                else if argList[0] in ['me','myself','self']
+                else:
+                    if msg.mentions:
+                        target = msg.mentions[0]
+                        targetScores = await readScores(msg.guild.id, target.id)
+                        await say(msg, "{}'s score is {}.".format(target.mention, targetScores[2]))
+                    elif argList[0] in ['me','myself','self']:
+                        target = msg.author
+                        targetScores = await readScores(msg.guild.id, target.id)
+                        await say(msg, "{}'s score is {}.".format(target.mention, targetScores[2]))
+            return
 
         if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
             server = msg.guild
