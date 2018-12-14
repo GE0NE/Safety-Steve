@@ -117,7 +117,7 @@
             "Command": "scores",
             "Alias": "votes#score#botscores#scoreboard",
             "Help": "Displays scores from using the good bot/bad bot command",
-            "Params": "[['voted'] [user mention] | 'me']",
+            "Params": "[['voted'] [user mention]] | ['me']",
             "Examples": "scores#scores voted @Safety-Steve#score @Safety-Steve#score me"
         },
         
