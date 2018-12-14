@@ -5,7 +5,7 @@
             "Command": "help",
             "Alias": "h#whatis",
             "Help": "What are ya, some kind of funny guy, eh?",
-            "Params": "[[command] [-a | alias] [-e | example] [all]]",
+            "Params": "[[command] ['-a' | 'alias'] ['-e' | 'example'] ['all']]",
             "Examples": "help#help git#help ascii -a#help game all"
         },
         
@@ -93,7 +93,7 @@
             "Command": "urbandefine",
             "Alias": "ud#udefine#urban",
             "Help": "Searches Urban Dictionary for the term",
-            "Params": "<term> [-p number]",
+            "Params": "<term> ['-p' number]",
             "Examples": "urbandefine pebkac#urbandefine foobar -p 2"
         },
         
@@ -116,15 +116,15 @@
         {
             "Command": "scores",
             "Alias": "votes#score#botscores#scoreboard",
-            "Help": "displays bot/user scores from using the good bot/bad bot command",
-            "Params": "[[user mention] | voted [user mention]]",
+            "Help": "Displays bot/user scores from using the good bot/bad bot command",
+            "Params": "[[user mention] | 'voted' [user mention]]",
             "Examples": "scores#scores voted @Safety-Steve#score @Safety-Steve"
         },
         
         {
             "Command": "gild",
             "Alias": "gold#redditgold#redditsilver",
-            "Help": "gilds a user. No params gilds last message",
+            "Help": "Gilds a user. No params gilds last message",
             "Params": "[user mention]",
             "Examples": "gild#gild @Safety-Steve"
         },
@@ -132,7 +132,7 @@
         {
             "Command": "usergildings",
             "Alias": "gildings#gilds",
-            "Help": "displays specified user's gild. No params displays your gilding",
+            "Help": "Displays specified user's gild. No params displays your gilding",
             "Params": "[user mention]",
             "Examples": "usergildings#usergildings @Safety-Steve"
         },
@@ -140,15 +140,39 @@
         {
             "Command": "mal",
             "Alias": "myanimelist#anime",
-            "Help": "displays the best matching MyAnimeList entry it can find for a given anime",
+            "Help": "Displays the best matching MyAnimeList entry it can find for a given anime",
             "Params": "<anime title>",
             "Examples": "mal steins gate#mal pokemon"
         },
         
         {
+            "Command": "exchange",
+            "Alias": "",
+            "Help": "Allows you to exchange your score points and gildings for worthless currency, yay!",
+            "Params": "<'all'> | <'score'|'gild' ['all'|number]>",
+            "Examples": "exchange all#exchange score 4#exchange gild all#exchange gild 2"
+        },
+        
+        {
+            "Command": "balance",
+            "Alias": "currency#money",
+            "Help": "Displays specified user's currency balance. No params displays your balance",
+            "Params": "[user mention]",
+            "Examples": "balance#balance @Safety-Steve"
+        },
+        
+        {
+            "Command": "give",
+            "Alias": "grant",
+            "Help": "Gives specified user's a specified amount of your currency",
+            "Params": "<user mention> <amount to give>",
+            "Examples": "give @Safety-Steve 20"
+        },
+        
+        {
             "Command": "scp",
             "Alias": "",
-            "Help": "displays the given scp from scp-wiki.net",
+            "Help": "Displays the given scp from scp-wiki.net",
             "Params": "<scp number>",
             "Examples": "scp 682#scp 420-j"
         }
