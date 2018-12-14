@@ -506,7 +506,10 @@ async def on_message(msg: discord.Message):
                 target = msg.mentions[0] 
             else:
                 target = msg.author
-            await displayCurrency(msg, target)
+            if argList and argList[0] == 'all':
+                await displayEveryonesCurrency(msg)
+            else:
+                await displayCurrency(msg, target)
             return
 
         if command == textCommands[20]['Command'] or command in textCommands[20]['Alias'].split('#'):
@@ -1260,6 +1263,25 @@ async def displayCurrency(msg, target):
         description="_{}{}_".format(currencySymbol, currency), 
         color=embedColor)
     embed.set_thumbnail(url="https://i.imgur.com/BVRyJEr.png")
+    await say(msg, "", embed=embed)
+    return
+
+async def displayEveryonesCurrency(msg):
+    scores = await readScores(msg.guild.id)
+    embed = discord.Embed(title="Balance:", description="_ _")
+    for scoreEntry in scores:
+        try:
+            user = await client.get_user_info(scoreEntry[1])
+            balance = scoreEntry[6]
+            if balance != '0':
+                displayName = user.display_name
+                nick = msg.guild.get_member(user.id).nick
+                nick = displayName if nick is None else nick
+                sanitizedDisplayName = displayName.replace('_','\_')
+                displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
+                embed.add_field(name=nick, value="{}{}{}".format(displayName, currencySymbol, balance), inline=True)
+        except:
+            continue
     await say(msg, "", embed=embed)
     return
 
