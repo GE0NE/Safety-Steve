@@ -1204,7 +1204,7 @@ async def exchange(msg, args):
             if confirmation:
                 await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency)
             else:
-                return
+                return True
         elif args[0] in ['score','points','point','scores']:
             if len(args) <= 1 or (len(args) > 1 and args[1] == 'all'):
                 returnCurrency = pointsToCurrency(int(scoreEntry[2]))
@@ -1215,7 +1215,7 @@ async def exchange(msg, args):
                 if confirmation:
                     await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency)
                 else:
-                    return
+                    return True
             else:
                 try:
                     amountQueried = int(args[1])
@@ -1229,7 +1229,7 @@ async def exchange(msg, args):
                     if confirmation:
                         await writeScore(msg.guild.id, msg.author.id, score=-amountQueried, currency=returnCurrency)
                     else:
-                        return
+                        return True
                 except ValueError:
                     await unknownValue(args[1])
         elif args[0] in ['gildings','gild','gilding','gold']:
@@ -1242,7 +1242,7 @@ async def exchange(msg, args):
                 if confirmation:
                     await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), currency=returnCurrency)
                 else:
-                    return
+                    return True
             else:
                 try:
                     amountQueried = int(args[1])
@@ -1256,7 +1256,7 @@ async def exchange(msg, args):
                     if confirmation:
                         await writeScore(msg.guild.id, msg.author.id, gilding=-amountQueried, currency=returnCurrency)
                     else:
-                        return
+                        return True
                 except ValueError:
                     await unknownValue(args[1])
         else:
