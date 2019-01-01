@@ -46,6 +46,10 @@
     "reaction_words":
     [
         {
+            "word": "birthday",
+            "reaction": "🎂#🍰"
+        },
+        {
             "word": "wednesday",
             "reaction": "🐸"
         },
