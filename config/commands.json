@@ -742,6 +742,14 @@
             "SoundFile": "whaaat",
             "Help": "Oh no!",
             "Params": ""
+        },
+		
+		{
+            "Command": "knock",
+            "Alias": "plsknock",
+            "SoundFile": "knock",
+            "Help": "You should check the door!",
+            "Params": ""
         }
     ]
 }
