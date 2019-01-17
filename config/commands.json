@@ -647,6 +647,14 @@
             "Help": "Rrrrrreeeecolaaa!",
             "Params": ""
         },
+		
+		{
+            "Command": "smashfrica",
+            "Alias": "bottlesmash#bottlesmashfrica",
+            "SoundFile": "bottlesmashfrica",
+            "Help": "It's gonna take a lot to drag me away from youuuuuuu",
+            "Params": ""
+        },
         
         {
             "Command": "wurtz",
