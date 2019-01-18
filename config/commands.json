@@ -647,8 +647,8 @@
             "Help": "Rrrrrreeeecolaaa!",
             "Params": ""
         },
-		
-		{
+
+        {
             "Command": "smashfrica",
             "Alias": "bottlesmash#bottlesmashfrica",
             "SoundFile": "bottlesmashfrica",
@@ -659,7 +659,7 @@
         {
             "Command": "justgonnasendit",
             "Alias": "gonnasendit#sendit#send",
-            "SoundFile": "sendit/bangjustgonnasendit#sendit/send ittttt",
+            "SoundFile": "sendit/bang bang just gonna send it#sendit/send ittttt",
             "Help": "It's gonna be a good day",
             "Params": ""
         },
@@ -759,8 +759,8 @@
             "Help": "Oh no!",
             "Params": ""
         },
-		
-		{
+
+        {
             "Command": "knock",
             "Alias": "plsknock",
             "SoundFile": "knock",
