@@ -766,6 +766,14 @@
             "SoundFile": "knock",
             "Help": "You should check the door!",
             "Params": ""
+        },
+
+        {
+            "Command": "crabrave",
+            "Alias": "gone#isgone#obamaisgone",
+            "SoundFile": "crabrave",
+            "Help": "Noisestorm - Crab Rave",
+            "Params": ""
         }
     ]
 }
