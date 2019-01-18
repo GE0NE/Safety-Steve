@@ -655,6 +655,14 @@
             "Help": "It's gonna take a lot to drag me away from youuuuuuu",
             "Params": ""
         },
+
+        {
+            "Command": "justgonnasendit",
+            "Alias": "gonnasendit#sendit#send",
+            "SoundFile": "sendit/bangjustgonnasendit#sendit/send ittttt",
+            "Help": "It's gonna be a good day",
+            "Params": ""
+        },
         
         {
             "Command": "wurtz",
