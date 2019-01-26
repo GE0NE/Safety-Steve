@@ -774,6 +774,14 @@
             "SoundFile": "crabrave",
             "Help": "Noisestorm - Crab Rave",
             "Params": ""
-        }
+        },
+
+        {
+            "Command": "laughtrack",
+            "Alias": "laugh#laughs#cuelaugh#cuelaughs#laughtracks#cuelaughtrack#cuelaughtracks",
+            "SoundFile": "laughtrack/laughtrack0#laughtrack/laughtrack1#laughtrack/laughtrack2#laughtrack/laughtrack3#laughtrack/laughtrack4#laughtrack/laughtrack5",
+            "Help": "Guess you're the laughing stock of the room now, huh?",
+            "Params": ""
+        },
     ]
 }
