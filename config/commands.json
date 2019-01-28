@@ -782,6 +782,14 @@
             "SoundFile": "laughtrack/laughtrack0#laughtrack/laughtrack1#laughtrack/laughtrack2#laughtrack/laughtrack3#laughtrack/laughtrack4#laughtrack/laughtrack5",
             "Help": "Guess you're the laughing stock of the room now, huh?",
             "Params": ""
+        },
+
+        {
+            "Command": "illegal",
+            "Alias": "oblivion#youveviolatedthelaw#law",
+            "SoundFile": "stop",
+            "Help": "STOP! YOU'VE VIOLATED THE LAW!",
+            "Params": ""
         }
     ]
 }
