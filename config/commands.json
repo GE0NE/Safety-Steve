@@ -790,6 +790,46 @@
             "SoundFile": "stop",
             "Help": "STOP! YOU'VE VIOLATED THE LAW!",
             "Params": ""
+        },
+
+        {
+            "Command": "questions",
+            "Alias": "snakequestions#msgquestions#unnecessaryquestions",
+            "SoundFile": "questions/questions#questions/questions2#questions/questions3#questions/questions4#questions/questions5#questions/questions6#questions/questions7#questions/questions8#questions/questions9#questions/questions10",
+            "Help": "Snake Asking Unnecessary Questions.",
+            "Params": ""
+        },
+
+        {
+            "Command": "metalgear",
+            "Alias": "metalgear?",
+            "SoundFile": "metalgear/metalgear#metalgear/metalgear2#metalgear/metalgear3#metalgear/metalgear4#metalgear/metalgear5#metalgear/metalgear6#metalgear/metalgear7#metalgear/metalgear8#metalgear/metalgear9",
+            "Help": "Metal Gear!?",
+            "Params": ""
+        },
+
+        {
+            "Command": "mgsprettygood",
+            "Alias": "mgprettygood#metalgearprettygood#youreprettygood#you'reprettygood",
+            "SoundFile": "youreprettygood/youreprettygood#youreprettygood/youreprettygood2#youreprettygood/youreprettygood3#youreprettygood/youreprettygood4",
+            "Help": "You're pretty good!",
+            "Params": ""
+        },
+
+        {
+            "Command": "dinosaurthemepark",
+            "Alias": "themepark",
+            "SoundFile": "dinosaurthemepark",
+            "Help": "Aw heck, it's like some kind of D I N O S A U R  T H E M E  P A R K",
+            "Params": ""
+        },
+
+        {
+            "Command": "japaneseanimes",
+            "Alias": "inmyanimes#oneofmyjapaneseanimes#onlyinanime",
+            "SoundFile": "inmyanimes",
+            "Help": "It's like one of my Japanese animes!",
+            "Params": ""
         }
     ]
 }
