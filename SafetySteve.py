@@ -215,6 +215,9 @@ player = None
 isPlaying = False
 currentDate = 999
 
+# Important Voice Commands
+despacito = None
+
 # The client
 client = discord.Client(description=desc, max_messages=100)
 
@@ -553,23 +556,7 @@ async def on_message(msg: discord.Message):
 
         for i in range(1, len(voiceCommands)):
             if message == voiceCommands[i]['Command'] or command in voiceCommands[i]['Alias'].split('#'):
-                if isPlaying:
-                    await say(msg, 'I\'m already playing a sound! Please wait your turn.')
-                    return
-                if msg.author.voice.channel:
-                    try:
-                        sounds = voiceCommands[i]['SoundFile'].split("#")
-                        sound = random.choice(sounds)
-                        voice = await msg.author.voice.channel.connect()
-                        voice.play(discord.FFmpegPCMAudio('res/sound/' + sound + fileExt))
-                        isPlaying = True
-                        client.loop.create_task(donePlaying(voice, player))
-                    except Exception as e:
-                        await throwError(msg, 'There was an issue playing the sound file 🙁', custom=True)
-                        pass
-                else:
-                    await throwError(msg, 'You\'re not in a voice channel!', custom=True, printError=False)
-                return
+                await playSound(msg, voiceCommands[i])
 
     elif any([badword in content for badword in wordBlacklist]):
         for word in content.split():
@@ -641,11 +628,46 @@ async def on_message(msg: discord.Message):
         now = datetime.datetime.now()
         await say(msg, "It is currently {}, my dude!".format(now.strftime('%H:%M')))
 
+    elif content in ['this is so sad', 'this is sad', 'this is so sad, alexa play despacito', \
+        'this is so sad. alexa play despacito', 'this is so sad. alexa, play despacito', \
+        'this is so sad, play despacito', 'this is so sad. play despacito', \
+        'this is so sad alexa play despacito', 'this is so sad.', 'this is sad.', \
+        'this is so sad, alexa play despacito.', 'this is so sad. alexa play despacito.', \
+        'this is so sad. alexa, play despacito.', 'this is so sad, play despacito.', \
+        'this is so sad. play despacito.', 'this is so sad alexa play despacito.']:
+        await say(msg, 'ɴᴏᴡ ᴘʟᴀʏɪɴɢ: Despacito\n─────⚪────────────────────────────\n◄◄⠀▐▐ ⠀►►⠀⠀ ⠀ 1:17 / 3:48 ⠀ ───○ 🔊⠀ ᴴᴰ ⚙ ❐ ⊏⊐')
+        await playSound(msg, despacito, True)
+        return
 
     elif client.user.mentioned_in(msg) and not msg.mention_everyone:
         await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))
         return
 
+
+async def playSound(msg, command, silent=False):
+    global voice
+    global player
+    global isPlaying
+    if isPlaying:
+        if not silent:
+            await say(msg, 'I\'m already playing a sound! Please wait your turn.')
+        return
+    if msg.author.voice and msg.author.voice.channel:
+        try:
+            sounds = command['SoundFile'].split("#")
+            sound = random.choice(sounds)
+            voice = await msg.author.voice.channel.connect()
+            voice.play(discord.FFmpegPCMAudio('res/sound/' + sound + fileExt))
+            isPlaying = True
+            client.loop.create_task(donePlaying(voice, player))
+        except Exception as e:
+            if not silent:
+                await throwError(msg, 'There was an issue playing the sound file 🙁', custom=True)
+            pass
+    else:
+        if not silent:
+            await throwError(msg, 'You\'re not in a voice channel!', custom=True, printError=False)
+    return
 
 async def subreddit(msg, sub, bypassErrorCheck=False):
     if not bypassErrorCheck and sub.strip() == "":
@@ -1582,6 +1604,15 @@ def clearTerminal():
 def ord(n):
     return "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])
 
+def findInfo():
+    global voiceCommands
+    global despacito
+    for i in range(1, len(voiceCommands)):
+        if voiceCommands[i]['Command'] == 'despacito':
+            despacito = voiceCommands[i]
+            break
+    return
+
 @client.event
 async def on_ready():
     app_info = await client.application_info()
@@ -1624,6 +1655,7 @@ async def on_ready():
     print('To invite me to a server, use this link\n{}'.format(url))
     loadOpus()
     client.loop.create_task(status_task(True))
+    findInfo()
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()
