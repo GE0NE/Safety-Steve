@@ -838,6 +838,46 @@
             "SoundFile": "despacito",
             "Help": "Quiero respirar tu cuello despacito",
             "Params": ""
+        },
+
+        {
+            "Command": "negaoryx",
+            "Alias": "cutie#cutestfuckingthing#caralarm",
+            "SoundFile": "negaoryx",
+            "Help": "twitch.tv/negaoryx",
+            "Params": ""
+        },
+
+        {
+            "Command": "whistle",
+            "Alias": "deadlypremonition",
+            "SoundFile": "whistle",
+            "Help": "Whistle theme from Deadly Premonition.",
+            "Params": ""
+        },
+
+        {
+            "Command": "whistlefull",
+            "Alias": "deadlypremonitionfull",
+            "SoundFile": "whistlefull",
+            "Help": "Whistle theme from Deadly Premonition but it's 3:00.",
+            "Params": ""
+        },
+
+        {
+            "Command": "blendw",
+            "Alias": "blendsnoop",
+            "SoundFile": "blendw",
+            "Help": "Smile, sweet, sister, sadistic, surprise, service, SNOOP DOG!",
+            "Params": ""
+        },
+
+        {
+            "Command": "blendwfull",
+            "Alias": "blendsnoopfull",
+            "SoundFile": "blendwfull",
+            "Help": "Smile, sweet, sister, sadistic, surprise, service, SNOOP DOG for 1:30!",
+            "Params": ""
         }
     ]
 }
