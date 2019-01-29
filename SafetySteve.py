@@ -372,13 +372,13 @@ async def on_message(msg: discord.Message):
                 else:
                     messageEmojis = '👍 👎'
                 emojis = messageEmojis.strip().split(" ")
-                await say(msg, question)
-                poll = None
-                async for sentMessage in msg.channel.history(limit=1):
-                    poll = sentMessage
-                    break
+                poll = await say(msg, question)
+                await msg.delete()
                 for emoji in emojis:
-                    await react(poll, emoji)
+                    try:
+                        await react(poll, emoji)
+                    except:
+                        continue
                 return
             except:
                 await helpCommand(textCommands[10]['Command'], msg)
