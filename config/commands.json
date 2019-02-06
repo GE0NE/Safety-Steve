@@ -878,6 +878,14 @@
             "SoundFile": "blendwfull",
             "Help": "Smile, sweet, sister, sadistic, surprise, service, SNOOP DOG for 1:30!",
             "Params": ""
+        },
+
+        {
+            "Command": "fbiopenup",
+            "Alias": "fbi#openup",
+            "SoundFile": "fbiopenup",
+            "Help": "Knock knock...",
+            "Params": ""
         }
     ]
 }
