@@ -858,7 +858,7 @@
 
         {
             "Command": "whistlefull",
-            "Alias": "deadlypremonitionfull",
+            "Alias": "whistlef#deadlypremonitionfull#deadlypremonitionf",
             "SoundFile": "whistlefull",
             "Help": "Whistle theme from Deadly Premonition but it's 3:00.",
             "Params": ""
@@ -874,7 +874,7 @@
 
         {
             "Command": "blendwfull",
-            "Alias": "blendsnoopfull",
+            "Alias": "blendwf#blendsnoopfull#blendsnoopf",
             "SoundFile": "blendwfull",
             "Help": "Smile, sweet, sister, sadistic, surprise, service, SNOOP DOG for 1:30!",
             "Params": ""
@@ -893,6 +893,22 @@
             "Alias": "fairytale#wow!",
             "SoundFile": "wow",
             "Help": "'Wow!' sound effect from Fairy Tale.",
+            "Params": ""
+        },
+
+        {
+            "Command": "ayaya",
+            "Alias": "ayayaintensifies",
+            "SoundFile": "ayaya",
+            "Help": "Ayaya! Ayaya! Intensifies.",
+            "Params": ""
+        },
+
+        {
+            "Command": "ayayafull",
+            "Alias": "ayayaf#ayayaintensifiesfull#ayayaintensifiesf",
+            "SoundFile": "ayayafull",
+            "Help": "Ayaya! Ayaya! Intensifies but it's 0:55",
             "Params": ""
         }
     ]
