@@ -886,6 +886,14 @@
             "SoundFile": "fbiopenup",
             "Help": "Knock knock...",
             "Params": ""
+        },
+
+        {
+            "Command": "wow",
+            "Alias": "fairytale#wow!",
+            "SoundFile": "wow",
+            "Help": "'Wow!' sound effect from Fairy Tale.",
+            "Params": ""
         }
     ]
 }
