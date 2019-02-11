@@ -910,6 +910,14 @@
             "SoundFile": "ayayafull",
             "Help": "Ayaya! Ayaya! Intensifies but it's 0:55",
             "Params": ""
+        },
+        
+        {
+            "Command": "whojustjoined",
+            "Alias": "whodis?",
+            "SoundFile": "whojustjoined",
+            "Help": "Who just joined the voice channel?",
+            "Params": ""
         }
     ]
 }
