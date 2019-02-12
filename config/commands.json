@@ -918,6 +918,14 @@
             "SoundFile": "whojustjoined",
             "Help": "Who just joined the voice channel?",
             "Params": ""
+        },
+
+        {
+            "Command": "stapler",
+            "Alias": "staplerwasmylife",
+            "SoundFile": "stapler",
+            "Help": "That stapler was my life!",
+            "Params": ""
         }
     ]
 }
