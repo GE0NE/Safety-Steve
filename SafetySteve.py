@@ -308,7 +308,13 @@ async def on_message(msg: discord.Message):
             if len(args.strip()) < 1:
                 await setDailyGame()
                 return
-            await setPlaying(args)
+            typeindex = 0
+            for i, index in enumerate(argList):
+                if 'type=' in index:
+                    typeindex = argList[i].replace('type=', '').strip()
+                    args = re.sub(r'type=[\d\w]*', '', args)
+                    break
+            await setPlaying(args, typeindex)
             return
 
         if command == textCommands[7]['Command'] or command in textCommands[7]['Alias'].split('#'):
@@ -929,8 +935,22 @@ async def sayAscii(msg, message):
 
     await say(msg, output)
 
-async def setPlaying(name, type=0):
-    await client.change_presence(activity=discord.Game(type=0, name=name))
+async def setPlaying(name, activitytype=0):
+    try:
+        activitytype = int(activitytype)
+    except:
+        activityTypes = ['playing', 'streaming', 'listening', 'watching']
+        if isinstance(activitytype, str):
+            if activitytype.lower() in activityTypes:
+                activitytype = activityTypes.index(activitytype.lower())
+            else:
+                activitytype = 0
+        else:
+            activitytype = 0
+    activityEnumType = [discord.ActivityType.playing, discord.ActivityType.streaming, discord.ActivityType.listening, discord.ActivityType.watching]
+    activityTypeIndexClamped = 3 if activitytype > 3 else (0 if activitytype < 0 else activitytype)
+    activity = discord.Activity(type=activityEnumType[activityTypeIndexClamped], name=name)
+    await client.change_presence(activity=activity)
     return
 
 async def sayIPA(msg, text):
@@ -1539,7 +1559,8 @@ async def checkDailyEvents():
             dateChannels = date['Channel'].replace(" ", "").split('#')
             reacts = date.get('React')
             dateFunc = date.get('Func')
-            dateGame = date.get('Game')
+            dateActivity = date.get('Activity')
+            dateActivityType = date.get('ActivityType')
             formattedDateMessage = None
 
             if reacts:
@@ -1571,8 +1592,8 @@ async def checkDailyEvents():
                     dummyMessage.content = ""
                     dummyMessage.channel = channel
                     await handleFunc(dummyMessage, dateFunc, channel=channel)
-                if dateGame:
-                    await setPlaying(dateGame)
+                if dateActivity:
+                    await setPlaying(dateActivity, dateActivityType)
     return
 
 def writeLog(e, crash=False):
