@@ -3,7 +3,7 @@
     [
         {
             "Command": "help",
-            "Alias": "h#whatis",
+            "Alias": "h#halp#whatis",
             "Help": "What are ya, some kind of funny guy, eh?",
             "Params": "[[command] ['-a' | 'alias'] ['-e' | 'example'] ['all']]",
             "Examples": "help#help git#help ascii -a#help game all"
