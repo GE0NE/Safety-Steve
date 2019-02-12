@@ -1474,9 +1474,9 @@ async def clearDailyRestrictions():
         await writeScore(int(entry[0]), int(entry[1]), voted=-100, gilded=-100)
 
 async def onNewDay():
+    await setDailyGame()
     await checkDailyEvents()
     await clearDailyRestrictions()
-    await setDailyGame()
 
 async def tickClock():
     global currentDate
@@ -1539,6 +1539,7 @@ async def checkDailyEvents():
             dateChannels = date['Channel'].replace(" ", "").split('#')
             reacts = date.get('React')
             dateFunc = date.get('Func')
+            dateGame = date.get('Game')
             formattedDateMessage = None
 
             if reacts:
@@ -1570,6 +1571,8 @@ async def checkDailyEvents():
                     dummyMessage.content = ""
                     dummyMessage.channel = channel
                     await handleFunc(dummyMessage, dateFunc, channel=channel)
+                if dateGame:
+                    await setPlaying(dateGame)
     return
 
 def writeLog(e, crash=False):
