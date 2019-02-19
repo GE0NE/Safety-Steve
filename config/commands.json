@@ -950,6 +950,22 @@
             "SoundFile": "heyyy",
             "Help": "HEY!",
             "Params": ""
+        },
+
+        {
+            "Command": "muffintime",
+            "Alias": "itsmuffintime",
+            "SoundFile": "muffintime",
+            "Help": "TomSka's Muffin Time.",
+            "Params": ""
+        },
+
+        {
+            "Command": "muffintimefull",
+            "Alias": "muffintimef#itsmuffintimefull#itsmuffintimef",
+            "SoundFile": "muffintimefull",
+            "Help": "TomSka's Muffin Time but it's 3:05.",
+            "Params": ""
         }
     ]
 }
