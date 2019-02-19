@@ -6,3 +6,4 @@ urllib3 1.22+
 aiohttp 3.4.4+
 ffmpeg 3.4+ (included for Windows)
 libopus (included for Windows)
+GitPython 2.1.11+
