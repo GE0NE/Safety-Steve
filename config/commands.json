@@ -747,7 +747,7 @@
         {
             "Command": "knock",
             "Alias": "plsknock",
-            "SoundFile": "knock",
+            "SoundFile": "knock/knock#knock/knock3l#knock/knock3r#knock/knock4l#knock/knock4r#knock/knock5l#knock/knock5r#knock/knockfbi",
             "Help": "You should check the door!",
             "Params": ""
         },
@@ -883,7 +883,7 @@
         {
             "Command": "fbiopenup",
             "Alias": "fbi#openup",
-            "SoundFile": "fbiopenup",
+            "SoundFile": "fbiopenup#fbafrica",
             "Help": "Knock knock...",
             "Params": ""
         },
@@ -941,6 +941,14 @@
             "Alias": "can'tdothat#youcan'tdothat#cantdothat#youcantdothat#can'tdothatbud#youcan'tdothatbud#cantdothatbud#youcantdothatbud",
             "SoundFile": "youcan'tdothatbud",
             "Help": "You wouldn't stop in the middle of an icy highway without warning, would you?",
+            "Params": ""
+        },
+
+        {
+            "Command": "heyyy",
+            "Alias": "hey#heyy#heyyy#heyyyy#heyyyyy#heyyyyyy#heyyyyyyy#heyyyyyyyy",
+            "SoundFile": "heyyy",
+            "Help": "HEY!",
             "Params": ""
         }
     ]
