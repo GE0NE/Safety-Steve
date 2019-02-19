@@ -934,6 +934,14 @@
             "SoundFile": "stapler",
             "Help": "That stapler was my life!",
             "Params": ""
+        },
+
+        {
+            "Command": "cantdothat",
+            "Alias": "can'tdothat#youcan'tdothat#cantdothat#youcantdothat#can'tdothatbud#youcan'tdothatbud#cantdothatbud#youcantdothatbud",
+            "SoundFile": "youcan'tdothatbud",
+            "Help": "You wouldn't stop in the middle of an icy highway without warning, would you?",
+            "Params": ""
         }
     ]
 }
