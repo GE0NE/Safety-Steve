@@ -21,6 +21,7 @@ import aiohttp
 import ctypes
 from ctypes.util import find_library
 import traceback
+import git
 
 try:
     import discord
@@ -79,7 +80,7 @@ except FileNotFoundError:
     with open('config/user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
         json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": ""},
-            "channel_ids":{"lobby": ""}}, f, indent = 4)
+            "channel_ids":{"lobby": ""},"admins":[""]}, f, indent = 4)
         sys.exit("user info file created. "
             "Please fill out the user-info.json file and restart the bot.");
 
@@ -197,6 +198,9 @@ embedColor = int(config['embed_color'], 0)
 # Channel IDs
 channels = userInfo['channel_ids']
 
+# Admins
+admins = userInfo['admins']
+
 # Birthdays
 dates = date_list['dates']
 
@@ -254,13 +258,18 @@ async def on_message(msg: discord.Message):
         if command == '':
             return
 
-        if command == "react":                                                                 
-            if len(args.strip()) >= 1:
-                messageFormatted = " ".join(args.split())
-                emojis = messageFormatted.strip().split(" ")
-                for emoji in emojis:
-                    await react(msg, emoji)
-            return
+        if command == "restart":
+            if str(msg.author.id) in admins:
+                await restart(msg)
+            else:
+                await say(msg, "You don't have permission to use that command!")
+
+
+        if command == "pull":
+            if str(msg.author.id) in admins:
+                await pullFromRepo(msg)
+            else:
+                await say(msg, "You don't have permission to use that command!")
 
         if command == "func":                                                                 
             if len(args.strip()) >= 1:
@@ -276,7 +285,7 @@ async def on_message(msg: discord.Message):
                 return                                            
 
         if command == textCommands[1]['Command'] or command in textCommands[1]['Alias'].split('#'):
-            await git(msg)
+            await broadcastGitRepo(msg)
 
         if command == textCommands[2]['Command'] or command in textCommands[2]['Alias'].split('#'):
             if len(args.strip()) < 1:
@@ -709,7 +718,7 @@ async def subreddit(msg, sub, bypassErrorCheck=False):
         except:
             await throwError(msg, "reddit.com/r/{} couldn\'t be accessed.".format(sub), custom=True)
 
-async def git(msg):
+async def broadcastGitRepo(msg):
     gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                                                                                      
     embed = discord.Embed(title="", description=gitLink, color=embedColor)                                
     await say(msg, gitMessage, embed)                                     
@@ -1686,6 +1695,22 @@ async def on_ready():
     loadOpus()
     client.loop.create_task(status_task(True))
     findInfo()
+
+async def pullFromRepo(msgLogCxt = None):
+    await setPlaying("Pulling...")
+    try:
+        repo = git.Repo(os.path.dirname(os.path.realpath(__file__)))
+        repo.remotes.origin.pull()
+        await restart(msgLogCxt)
+    except Exception as e:
+        if msgLogCxt:
+            await throwError(msgLogCxt, e)
+
+async def restart(msgLogCxt = None):
+    await setPlaying("Restarting...")
+    if msgLogCxt:
+        await say(msgLogCxt, "Restarting. This may take a while.")
+    os.execl(sys.executable, sys.executable, * sys.argv)
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()
