@@ -1677,6 +1677,7 @@ async def on_ready():
     client.owner = app_info.owner
 
     await setDailyGame()
+    await status_task(False)
     await tickClock()
 
     def isx64System():
