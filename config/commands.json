@@ -966,6 +966,30 @@
             "SoundFile": "muffintimefull",
             "Help": "TomSka's Muffin Time but it's 3:05.",
             "Params": ""
+        },
+
+        {
+            "Command": "whatthehell",
+            "Alias": "wth#whatthehellisthat#whatthehelliseventhat",
+            "SoundFile": "whatthehelliseventhat",
+            "Help": "Daddy, chill.",
+            "Params": ""
+        },
+
+        {
+            "Command": "whatishedoing",
+            "Alias": "omgwhatishedoing",
+            "SoundFile": "whatishedoing",
+            "Help": "How did you even get that round?",
+            "Params": ""
+        },
+
+        {
+            "Command": "loadingmag",
+            "Alias": "loadmag",
+            "SoundFile": "loadingmag",
+            "Help": "That voice crack.",
+            "Params": ""
         }
     ]
 }
