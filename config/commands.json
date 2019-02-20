@@ -297,6 +297,14 @@
         },
         
         {
+            "Command": "dododofull",
+            "Alias": "dof#dododof",
+            "SoundFile": "dododofull",
+            "Help": "Buu buu desu wa but it's 1:30",
+            "Params": ""
+        },
+        
+        {
             "Command": "shutdown",
             "Alias": "bye#shut",
             "SoundFile": "shutdown",
@@ -417,14 +425,6 @@
         },
         
         {
-            "Command": "dododofull",
-            "Alias": "dof#dododof",
-            "SoundFile": "dododofull",
-            "Help": "Buu buu desu wa but it's 1:30",
-            "Params": ""
-        },
-        
-        {
             "Command": "ussrfull",
             "Alias": "ussrf",
             "SoundFile": "ussrfull",
@@ -465,6 +465,38 @@
         },
         
         {
+            "Command": "wolfnoises",
+            "Alias": "wolfsnarl",
+            "SoundFile": "wolfnoises",
+            "Help": "Grrrr!",
+            "Params": ""
+        },
+
+        {
+            "Command": "howl",
+            "Alias": "awoo#wolfhowl",
+            "SoundFile": "awoo",
+            "Help": "Awooooo!",
+            "Params": ""
+        },
+        
+        {
+            "Command": "baa",
+            "Alias": "sheep#baaa#baaaa",
+            "SoundFile": "baa",
+            "Help": "Aggressive baaing",
+            "Params": ""
+        },
+        
+        {
+            "Command": "crickets",
+            "Alias": "cricket",
+            "SoundFile": "crickets",
+            "Help": "...",
+            "Params": ""
+        },
+        
+        {
             "Command": "tuturu",
             "Alias": "tu",
             "SoundFile": "tuturu",
@@ -501,38 +533,6 @@
             "Alias": "yeee#yeee",
             "SoundFile": "yee",
             "Help": "Yeeee",
-            "Params": ""
-        },
-
-        {
-            "Command": "awoo",
-            "Alias": "wolfhowl",
-            "SoundFile": "awoo",
-            "Help": "Awooooo!",
-            "Params": ""
-        },
-        
-        {
-            "Command": "wolfnoises",
-            "Alias": "wolfsnarl",
-            "SoundFile": "wolfnoises",
-            "Help": "Grrrr!",
-            "Params": ""
-        },
-        
-        {
-            "Command": "baa",
-            "Alias": "sheep#baaa#baaaa",
-            "SoundFile": "baa",
-            "Help": "Aggressive baaing",
-            "Params": ""
-        },
-        
-        {
-            "Command": "crickets",
-            "Alias": "cricket",
-            "SoundFile": "crickets",
-            "Help": "...",
             "Params": ""
         },
         
