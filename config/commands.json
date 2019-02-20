@@ -681,6 +681,14 @@
         },
 
         {
+            "Command": "dandanscream",
+            "Alias": "dandanyell#danyell#danscream",
+            "SoundFile": "dandanscream",
+            "Help": "dan dan. AHHHHHHHH!",
+            "Params": ""
+        },
+
+        {
             "Command": "neat",
             "Alias": "prettyneat",
             "SoundFile": "neat",
@@ -946,7 +954,7 @@
 
         {
             "Command": "cantdothat",
-            "Alias": "can'tdothat#youcan'tdothat#cantdothat#youcantdothat#can'tdothatbud#youcan'tdothatbud#cantdothatbud#youcantdothatbud",
+            "Alias": "youcantdothat#cantdothatbud#youcantdothatbud",
             "SoundFile": "youcan'tdothatbud",
             "Help": "You wouldn't stop in the middle of an icy highway without warning, would you?",
             "Params": ""
@@ -954,7 +962,7 @@
 
         {
             "Command": "heyyy",
-            "Alias": "hey#heyy#heyyy#heyyyy#heyyyyy#heyyyyyy#heyyyyyyy#heyyyyyyyy",
+            "Alias": "hey#heyy#heyyy#heyyyy",
             "SoundFile": "heyyy",
             "Help": "HEY!",
             "Params": ""
@@ -986,7 +994,7 @@
 
         {
             "Command": "whatishedoing",
-            "Alias": "omgwhatishedoing",
+            "Alias": "",
             "SoundFile": "whatishedoing",
             "Help": "How did you even get that round?",
             "Params": ""
@@ -997,6 +1005,22 @@
             "Alias": "loadmag",
             "SoundFile": "loadingmag",
             "Help": "That voice crack.",
+            "Params": ""
+        },
+
+        {
+            "Command": "gnomed",
+            "Alias": "",
+            "SoundFile": "gnomed/gnomed",
+            "Help": "Hol-lo me ol' chum.",
+            "Params": ""
+        },
+
+        {
+            "Command": "stealthgnome",
+            "Alias": "ho#stealthgnomed#ninjagnomed#ninjagnome",
+            "SoundFile": "gnomed/gnomed1#gnomed/gnomed2#gnomed/gnomed3#gnomed/gnomed4#gnomed/gnomed5",
+            "Help": "...Ho!",
             "Params": ""
         }
     ]
