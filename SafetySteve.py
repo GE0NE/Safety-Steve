@@ -218,7 +218,6 @@ bubbleFontMask = fonts['bubble_mask']
 voice = None
 player = None
 isPlaying = False
-currentDate = 999
 
 # Important Voice Commands
 despacito = None
@@ -1528,10 +1527,8 @@ async def onNewDay():
     await clearDailyRestrictions()
 
 async def tickClock():
-    global currentDate
     now = datetime.datetime.now()
     realDate = "%d-%d-%d" % (now.day, now.month, now.year)
-    currentDate = realDate
 
     with open("res/data/clock.dat","w") as clock:
         clock.write(realDate)
@@ -1555,14 +1552,11 @@ async def status_task(loop):
 
         realDate = "%d-%d-%d" % (now.day, now.month, now.year)
 
-        global currentDate
         recordDate = await getClock()
         
-        if recordDate != currentDate:
+        if recordDate != realDate:
             await tickClock()
             await onNewDay()
-        
-        currentDate = realDate
 
         if not loop:
             return
@@ -1676,9 +1670,9 @@ async def on_ready():
     app_info = await client.application_info()
     client.owner = app_info.owner
 
-    await setDailyGame()
     await status_task(False)
     await tickClock()
+    await setDailyGame()
 
     def isx64System():
         if sys.maxsize > 2**32:
