@@ -22,6 +22,7 @@ import ctypes
 from ctypes.util import find_library
 import traceback
 import git
+import textwrap
 
 try:
     import discord
@@ -879,11 +880,29 @@ async def handleFunc(msg, filename, channel=None):
 
 async def help(msg):
     embed = discord.Embed(title=name, description=desc, color=embedColor)                                
-    embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)                      
-    embed.add_field(name="🔤 Text Commands", value=", ".join(textCommandList), inline=False)                  
-    embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel', value=", ".join(voiceCommandList), inline=False)
+    embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)
+    if len(", ".join(textCommandList)) > 1000:
+        tcSplitList = textwrap.wrap(", ".join(textCommandList), 1000)
+        embed.add_field(name='🔤 Text Commands', value=tcSplitList[0], inline=False)
+        for i in range(1, math.ceil(len(", ".join(textCommandList)) / 1000)):
+            embed.add_field(name='🔤 Text Commands Part %s' % str(i+1), value=tcSplitList[i], inline=False)
+    else:
+        embed.add_field(name="🔤 Text Commands", value=", ".join(textCommandList), inline=False)                  
+    if len(", ".join(voiceCommandList)) > 1000:
+        vcSplitList = textwrap.wrap(", ".join(voiceCommandList), 1000)
+        embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel', value=vcSplitList[0], inline=False)
+        for i in range(1, math.ceil(len(", ".join(voiceCommandList)) / 1000)):
+            embed.add_field(name='🔊 Voice Commands Part %s' % str(i+1), value=vcSplitList[i], inline=False)
+    else:
+        embed.add_field(name='🔊 Voice Commands - These require you to be in a voice channel', value=", ".join(voiceCommandList), inline=False)
     if msg.channel.is_nsfw():
-        embed.add_field(name='😲 NSFW Commands - These require you to be in a NSFW channel', value=", ".join(nsfwCommandList), inline=False)
+        if len(", ".join(nsfwCommandList)) > 1000:
+            nsfwcSplitList = textwrap.wrap(", ".join(nsfwCommandList), 1000)
+            embed.add_field(name='😲 NSFW Commands - These require you to be in a NSFW channel', value=nsfwcSplitList[0], inline=False)
+            for i in range(1, math.ceil(len(", ".join(nsfwCommandList)) / 1000)):
+                embed.add_field(name='😲 NSFW Commands Part %s' % str(i+1), value=nsfwcSplitList[i], inline=False)
+        else:
+            embed.add_field(name='😲 NSFW Commands - These require you to be in a NSFW channel', value=", ".join(nsfwCommandList), inline=False)
     embed.set_footer(text="Created by {}".format(config['creator']))                                    
 
     await say(msg, "", embed)                                                 
