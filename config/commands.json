@@ -491,7 +491,7 @@
         {
             "Command": "alert",
             "Alias": "!",
-            "SoundFile": "alert",
+            "SoundFile": "mgs/alert",
             "Help": "MGS alert sound",
             "Params": ""
         },
@@ -579,7 +579,7 @@
         {
             "Command": "gameover",
             "Alias": "snake#snaake#snaaake",
-            "SoundFile": "gameover",
+            "SoundFile": "mgs/gameover",
             "Help": "SNAAAAKE!",
             "Params": ""
         },
@@ -795,7 +795,7 @@
         {
             "Command": "questions",
             "Alias": "snakequestions#msgquestions#unnecessaryquestions",
-            "SoundFile": "questions/questions#questions/questions2#questions/questions3#questions/questions4#questions/questions5#questions/questions6#questions/questions7#questions/questions8#questions/questions9#questions/questions10",
+            "SoundFile": "mgs/questions/questions#mgs/questions/questions2#mgs/questions/questions3#mgs/questions/questions4#mgs/questions/questions5#mgs/questions/questions6#mgs/questions/questions7#mgs/questions/questions8#mgs/questions/questions9#mgs/questions/questions10",
             "Help": "Snake Asking Unnecessary Questions.",
             "Params": ""
         },
@@ -803,7 +803,7 @@
         {
             "Command": "metalgear",
             "Alias": "metalgear?",
-            "SoundFile": "metalgear/metalgear#metalgear/metalgear2#metalgear/metalgear3#metalgear/metalgear4#metalgear/metalgear5#metalgear/metalgear6#metalgear/metalgear7#metalgear/metalgear8#metalgear/metalgear9",
+            "SoundFile": "mgs/metalgear/metalgear#mgs/metalgear/metalgear2#mgs/metalgear/metalgear3#mgs/metalgear/metalgear4#mgs/metalgear/metalgear5#mgs/metalgear/metalgear6#mgs/metalgear/metalgear7#mgs/metalgear/metalgear8#mgs/metalgear/metalgear9",
             "Help": "Metal Gear!?",
             "Params": ""
         },
@@ -811,7 +811,7 @@
         {
             "Command": "mgsprettygood",
             "Alias": "mgprettygood#metalgearprettygood#youreprettygood#you'reprettygood",
-            "SoundFile": "youreprettygood/youreprettygood#youreprettygood/youreprettygood2#youreprettygood/youreprettygood3#youreprettygood/youreprettygood4",
+            "SoundFile": "mgs/youreprettygood/youreprettygood#mgs/youreprettygood/youreprettygood2#mgs/youreprettygood/youreprettygood3#mgs/youreprettygood/youreprettygood4",
             "Help": "You're pretty good!",
             "Params": ""
         },
@@ -819,7 +819,7 @@
         {
             "Command": "dinosaurthemepark",
             "Alias": "themepark",
-            "SoundFile": "dinosaurthemepark",
+            "SoundFile": "mgs/dinosaurthemepark",
             "Help": "Aw heck, it's like some kind of D I N O S A U R  T H E M E  P A R K",
             "Params": ""
         },
@@ -827,8 +827,16 @@
         {
             "Command": "japaneseanimes",
             "Alias": "inmyanimes#oneofmyjapaneseanimes#onlyinanime",
-            "SoundFile": "inmyanimes",
+            "SoundFile": "mgs/inmyanimes",
             "Help": "It's like one of my Japanese animes!",
+            "Params": ""
+        },
+
+        {
+            "Command": "snakeimpression",
+            "Alias": "lewdsnake",
+            "SoundFile": "mgs/impressions/dummythicc#mgs/impressions/mcdonalds#mgs/impressions/squeezemyhog#mgs/impressions/snakeowo#mgs/impressions/snakebreasts#mgs/impressions/snaketiddies",
+            "Help": "Kept you waiting, huh?",
             "Params": ""
         },
 
