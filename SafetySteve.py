@@ -11,6 +11,7 @@ import asyncio                                                                  
 import re                                                                                                       # re:re:re:re:re: meeting time
 import inspect
 import praw
+from prawcore import NotFound
 import random
 import math
 import html
@@ -623,6 +624,11 @@ async def on_message(msg: discord.Message):
             await throwError(msg, error=e, sayTraceback=True, printTraceback=True)
             return
 
+    elif "r/" in content:
+        results = re.findall(r'\/?r\/([A-Za-z0-9_]{1,21})', content)
+        for result in results:
+            await linkSubreddit(msg, result)
+
     elif "git " in content:
         gitCommand = re.split(r'^git\s|\sgit\s', content, flags=re.I)
         if len(gitCommand) > 1:
@@ -688,6 +694,20 @@ async def playSound(msg, command, silent=False):
         if not silent:
             await throwError(msg, 'You\'re not in a voice channel!', custom=True, printError=False)
     return
+
+async def linkSubreddit(msg, sub):
+    exists = True
+    try:
+        reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
+        reddit.subreddits.search_by_name(sub, exact=True)
+    except NotFound:
+        exists = False
+    if exists:
+        if reddit.subreddit(sub).over18 and msg.channel.is_nsfw() or not reddit.subreddit(sub).over18:
+            embed = discord.Embed(title="r/"+sub, url="http://old.reddit.com/r/{}".format(sub), color=embedColor)
+            await say(msg, "", embed)
+        else:
+            await react(msg, '😲')
 
 async def subreddit(msg, sub, bypassErrorCheck=False):
     if not bypassErrorCheck and sub.strip() == "":
