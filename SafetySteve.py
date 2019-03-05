@@ -599,8 +599,8 @@ async def on_message(msg: discord.Message):
             if targetMessage is not None:
                 deltaTime = datetime.datetime.now() - targetMessage.created_at
                 minutesSincePost = divmod(deltaTime.total_seconds(), 60)[0]
-                if minutesSincePost > (60*24):
-                    await say(msg, "You can't vote on posts older than 24 hours!")
+                if minutesSincePost > (60*16):
+                    await say(msg, "You can't vote on posts older than 16 hours!")
                     return
                 author = targetMessage.author
                 server = targetMessage.guild
