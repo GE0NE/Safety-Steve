@@ -624,7 +624,7 @@ async def on_message(msg: discord.Message):
             await throwError(msg, error=e, sayTraceback=True, printTraceback=True)
             return
 
-    elif "r/" in content:
+    elif "r/" in content and not "http" in content:
         results = re.findall(r'\/?r\/([A-Za-z0-9_]{1,21})', content)
         for result in results:
             await linkSubreddit(msg, result)
