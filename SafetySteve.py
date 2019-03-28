@@ -226,6 +226,22 @@ despacito = None
 # The client
 client = discord.Client(description=desc, max_messages=100)
 
+async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False, printError=True, fatal=False):
+    if printError:
+        print("ERROR:\n{}".format(error))
+    if vocalize:
+        if error:
+            await say(msg, "Woah! Something bad happened! ```\n{}\n```".format(error) if not custom else error)
+        if sayTraceback:
+            dump = "```{}```".format(''.join(traceback.format_stack()).replace("`", "\`"))
+            await say(msg, dump)
+    if printTraceback:
+        print("Traceback:")
+        traceback.print_exc()
+
+    if printError or printTraceback or sayTraceback:
+        writeLog(error, fatal)
+    return
 
 @client.event
 async def on_message(msg: discord.Message):
@@ -559,6 +575,21 @@ async def on_message(msg: discord.Message):
                     return
             await giveCurrency(msg, target, amount)
 
+        if command == textCommands[21]['Command'] or command in textCommands[21]['Alias'].split('#'):
+            await throwError(msg, 'Sorry, dude. This command is still being developed!', custom=True, printError=False)
+
+        if command == textCommands[22]['Command'] or command in textCommands[22]['Alias'].split('#'):
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[22]['Command'], msg)
+            else:
+                stringbuilder = ""
+                for arg in argList:
+                    emote = await stringToEmoji(msg, arg, globalEmotes=str(msg.author.id) in admins)
+                    if isinstance(emote, discord.Emoji):
+                        stringbuilder = stringbuilder + "<{}:{}:{}>".format('a' if emote.animated else '', emote.name, emote.id)
+                    elif isinstance(emote, str):
+                        stringbuilder = stringbuilder + emote
+                await say(msg, stringbuilder)
             
         if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
             if await checkNSFW(msg):
@@ -781,6 +812,20 @@ async def react(msg, emote):
             except:
                 await throwError(msg, "I don't know that emoji: " + "`" + str(emote) + "`", custom=True, printError=False)
     return
+
+async def stringToEmoji(msg, emote, globalEmotes=False, vocalizeMissing=False):
+    string = emote
+    emote = emote.replace("<", "")
+    emote = emote.replace(">", "")
+    emote = emote.replace(":", "")
+    if globalEmotes:
+        emote = next((x for x in client.emojis if x.name == emote), None)
+    else:
+        emote = next((x for x in msg.guild.emojis if x.name == emote), None)
+    if not emote:
+        await throwError(msg, "I don't know that emoji: " + "`" + str(emote) + "`", vocalize=vocalizeMissing, custom=True, printError=False)
+        return string
+    return emote
 
 async def checkNSFW(msg):
     if not msg.channel.is_nsfw():
@@ -1518,23 +1563,6 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                 except Exception:
                     return
             return 
-
-async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False, printError=True, fatal=False):
-    if printError:
-        print("ERROR:\n{}".format(error))
-    if vocalize:
-        if error:
-            await say(msg, "Woah! Something bad happened! ```\n{}\n```".format(error) if not custom else error)
-        if sayTraceback:
-            dump = "```{}```".format(''.join(traceback.format_stack()).replace("`", "\`"))
-            await say(msg, dump)
-    if printTraceback:
-        print("Traceback:")
-        traceback.print_exc()
-
-    if printError or printTraceback or sayTraceback:
-        writeLog(error, fatal)
-    return
 
 async def clearDailyRestrictions():
     scores = await readScores()

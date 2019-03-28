@@ -175,6 +175,14 @@
             "Help": "Displays the given scp from scp-wiki.net",
             "Params": "<scp number>",
             "Examples": "scp 682#scp 420-j"
+        },
+        
+        {
+            "Command": "emote",
+            "Alias": "emoji#em",
+            "Help": "Sends specified emote.\nAdmins have access to global emotes from any server this bot is in.",
+            "Params": "<emote name>",
+            "Examples": "emote partyparrot#emote :agree:"
         }
     ],
     
