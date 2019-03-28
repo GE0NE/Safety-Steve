@@ -656,9 +656,9 @@ async def on_message(msg: discord.Message):
             return
 
     elif "r/" in content and not "http" in content:
-        results = re.findall(r'\/?r\/([A-Za-z0-9_]{1,21})', content)
+        results = re.findall(r'(?:^| )\/?r\/([A-Za-z0-9_]{1,21})', content)
         for result in results:
-            await linkSubreddit(msg, result)
+            await linkSubreddit(msg, result.strip())
 
     elif "git " in content:
         gitCommand = re.split(r'^git\s|\sgit\s', content, flags=re.I)
