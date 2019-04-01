@@ -646,8 +646,8 @@ async def on_message(msg: discord.Message):
                 if content =="medium bot":
                     await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
                     return
-
-                await writeScore(server.id, author.id, score=1 if 'good' in content else -1)
+                randnum = random.randint(-5, 5)
+                await writeScore(server.id, author.id, score=randnum if 'good' in content else randnum) #April Fools
                 await writeScore(server.id, msg.author.id, voted=1)
                 targetScores = await readScores(guild=server.id, userID=author.id)
                 await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
