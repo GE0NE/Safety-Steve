@@ -937,14 +937,6 @@
         },
         
         {
-            "Command": "whojustjoined",
-            "Alias": "whodis?#whodis#whojoined#whojoined?",
-            "SoundFile": "jukes/whojustjoined#jukes/hellowhojoined",
-            "Help": "Who just joined the voice channel?",
-            "Params": ""
-        },
-        
-        {
             "Command": "joinspam",
             "Alias": "join#discordnoises",
             "SoundFile": "jukes/joinspam",
