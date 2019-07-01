@@ -649,7 +649,7 @@ async def on_message(msg: discord.Message):
                 
                 if content == "mega bad bot":
                     await say(msg, "You just blew all your remaining votes today ({}) on {}!".format(str(voteLimit - int(invokerScores[4])), author.mention))
-                    await writeScore(server.id, author.id, score=-(voteLimit - int(invokerScores[4]))
+                    await writeScore(server.id, author.id, score=-(voteLimit - int(invokerScores[4])))
                     await writeScore(server.id, msg.author.id, voted=(voteLimit - int(invokerScores[4])))
                 else:
                     await writeScore(server.id, author.id, score=1 if 'good' in content else -1)
