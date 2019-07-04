@@ -618,7 +618,7 @@ async def on_message(msg: discord.Message):
             except:
                 continue
 
-    elif content in ['good bot', 'bad bot', 'mega bad bot', 'medium bot']:
+    elif content in ['good bot', 'bad bot', 'medium bot']:#, 'mega bad bot']:
         try:
             targetMessage = None
             server = msg.guild
