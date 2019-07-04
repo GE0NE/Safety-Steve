@@ -769,22 +769,6 @@
         },
 
         {
-            "Command": "smashfrica",
-            "Alias": "bottlesmash#bottlesmashfrica",
-            "SoundFile": "bottlesmashfrica",
-            "Help": "It's gonna take a lot to drag me away from youuuuuuu",
-            "Params": ""
-        },
-
-        {
-            "Command": "justgonnasendit",
-            "Alias": "gonnasendit#sendit#send",
-            "SoundFile": "sendit/bang bang just gonna send it#sendit/send ittttt",
-            "Help": "It's gonna be a good day",
-            "Params": ""
-        },
-
-        {
             "Command": "crabrave",
             "Alias": "gone#isgone#obamaisgone",
             "SoundFile": "crabrave",
@@ -945,14 +929,6 @@
         },
 
         {
-            "Command": "stapler",
-            "Alias": "staplerwasmylife",
-            "SoundFile": "stapler",
-            "Help": "That stapler was my life!",
-            "Params": ""
-        },
-
-        {
             "Command": "cantdothat",
             "Alias": "youcantdothat#cantdothatbud#youcantdothatbud",
             "SoundFile": "youcan'tdothatbud",
@@ -989,14 +965,6 @@
             "Alias": "wth#whatthehellisthat#whatthehelliseventhat",
             "SoundFile": "whatthehelliseventhat",
             "Help": "Daddy, chill.",
-            "Params": ""
-        },
-
-        {
-            "Command": "whatishedoing",
-            "Alias": "",
-            "SoundFile": "whatishedoing",
-            "Help": "How did you even get that round?",
             "Params": ""
         },
 
