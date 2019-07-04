@@ -1616,10 +1616,27 @@ async def status_task(loop):
             return
         await asyncio.sleep(60)
 
+async def reloadDates():
+    global date_list
+    global dates
+    try:
+        with open('config/dates.json', encoding='utf8') as f:
+            date_list = json.load(f, strict=False)
+    except FileNotFoundError:
+        with open('config/dates.json', 'w', encoding='utf8') as f:
+            date_list = {}
+            json.dump({'dates': [{"Name": "Safety Steve", "Day": 1, "Month": 4, "Year": 2018, 
+                "Tag": "<@430061939805257749>", "Type": "birthday", "Message": "Happy #age #type, #tag!",
+                "Channel": "lobby", "React": "🎉#🎂#🎊#🍰"}]}, f, indent = 4)
+            await throwError(None, error="dates.json could not be reloaded because the file does not exsist! dates.json file created.", vocalize=False, custom=True, printError=True)
+    dates = date_list['dates']
+
 async def checkDailyEvents():
     today = datetime.datetime.today()
     weekday = today.weekday()
     
+    await reloadDates()
+
     for date in dates:
         dateDay = date['Day']
         dateMonth = date.get('Month', 0)
