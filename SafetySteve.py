@@ -639,12 +639,12 @@ async def on_message(msg: discord.Message):
                     await say(msg, "You can't vote positively for yourself!")
                     return
 
-                if content == "medium bot":
-                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
-                    return
-
                 if int(invokerScores[4]) >= voteLimit:
                     await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
+                    return
+
+                if content == "medium bot":
+                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
                     return
 
                 if content == "mega bad bot":
