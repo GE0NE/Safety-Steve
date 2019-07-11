@@ -183,9 +183,32 @@
             "Help": "Sends specified emote.\nAdmins have access to global emotes from any server this bot is in.",
             "Params": "<emote name>",
             "Examples": "emote partyparrot#emote :agree:"
+        },
+        
+        {
+            "Command": "shop",
+            "Alias": "store#buy#trader",
+            "Help": "Displays or purchases items from the shop. No params displays the shop.",
+            "Params": "[item name | info]",
+            "Examples": "shop#shop Shield#shop info"
+        },
+        
+        {
+            "Command": "inventory",
+            "Alias": "inv#backpack",
+            "Help": "Displays the items in your inventory.",
+            "Params": "",
+            "Examples": "inventory"
+        },
+        
+        {
+            "Command": "item",
+            "Alias": "use#useitem#activate",
+            "Help": "Uses the specified item from your inventory",
+            "Params": "<item name>",
+            "Examples": "item Shield#item Ward"
         }
     ],
-    
     
     "nsfw_commands":
     [

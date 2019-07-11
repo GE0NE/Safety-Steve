@@ -1,0 +1,65 @@
+{
+    "items":
+    [
+        {
+            "Item": "Shield",
+            "Name": "Shield",
+            "Icon": "<:SSshield:597584394873470976>",
+            "Description": "Protects you from recieving positive or negative votes",
+            "Id": 0,
+            "Cost": 30,
+            "RequiresTarget":false,
+            "Exec": "writeScore(msg.guild.id, target.id, inventory={'ActiveShield':1})"
+        },
+        {
+            "Item": "ActiveShield",
+            "Name": "Shield (Active)",
+            "Icon": "<:SSactiveshield:597585237848883237>",
+            "Description": "Protects you from recieving positive or negative votes",
+            "Id": 1,
+            "Cost": -1,
+            "RequiresTarget":false,
+            "Exec": "say(msg, 'Use `mega good bot` or `mega bad bot` to use this item.')"
+        },
+        {
+            "Item": "Ward",
+            "Name": "Ward",
+            "Icon": "<:SSward:597255000980193292>",
+            "Description": "Protects you from recieving negative votes",
+            "Id": 2,
+            "Cost": 50,
+            "RequiresTarget":false,
+            "Exec": "writeScore(msg.guild.id, target.id, inventory={'ActiveWard':1})"
+        },
+        {
+            "Item": "ActiveWard",
+            "Name": "Ward (Active)",
+            "Icon": "<:SSactiveward:597264884400521226>",
+            "Description": "Protects you from recieving negative votes",
+            "Id": 3,
+            "Cost": -1,
+            "RequiresTarget":false,
+            "Exec": ""
+        },
+        {
+            "Item": "MegaVote",
+            "Name": "Mega Vote",
+            "Icon": "<:SSmegavote:598739688509145098>",
+            "Description": "Uses all your remaining votes on a single message",
+            "Id": 4,
+            "Cost": 20,
+            "RequiresTarget":false,
+            "Exec": "writeScore(msg.guild.id, msg.author.id, inventory={'ActiveShield':1})"
+        },
+        {
+            "Item": "LoveBomb",
+            "Name": "Love Bomb",
+            "Icon": "<:SSlovebomb:597274897068195851>",
+            "Description": "Adds 10 score to a single user of your choosing",
+            "Id": 5,
+            "Cost": 100,
+            "RequiresTarget":true,
+            "Exec": "writeScore(msg.guild.id, target.id, score=10)"
+        }
+    ]
+}
