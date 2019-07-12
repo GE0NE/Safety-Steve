@@ -8,8 +8,10 @@
             "Description": "Protects you from recieving positive or negative votes",
             "Id": 0,
             "Cost": 30,
+            "Type": "Active",
             "RequiresTarget":false,
-            "Exec": "writeScore(msg.guild.id, target.id, inventory={'ActiveShield':1})"
+            "AcceptsTarget":false,
+            "Exec": ["writeScore(msg.guild.id, target.id, inventory={'ActiveShield':1})"]
         },
         {
             "Item": "ActiveShield",
@@ -18,28 +20,34 @@
             "Description": "Protects you from recieving positive or negative votes",
             "Id": 1,
             "Cost": -1,
+            "Type": "Passive",
             "RequiresTarget":false,
-            "Exec": "say(msg, 'Use `mega good bot` or `mega bad bot` to use this item.')"
+            "AcceptsTarget":true,
+            "Exec": [""]
         },
         {
             "Item": "Ward",
             "Name": "Ward",
             "Icon": "<:SSward:597255000980193292>",
-            "Description": "Protects you from recieving negative votes",
+            "Description": "Protects the target from recieving negative votes",
             "Id": 2,
             "Cost": 50,
+            "Type": "Active",
             "RequiresTarget":false,
-            "Exec": "writeScore(msg.guild.id, target.id, inventory={'ActiveWard':1})"
+            "AcceptsTarget":true,
+            "Exec": ["writeScore(msg.guild.id, target.id, inventory={'ActiveWard':1})"]
         },
         {
             "Item": "ActiveWard",
             "Name": "Ward (Active)",
             "Icon": "<:SSactiveward:597264884400521226>",
-            "Description": "Protects you from recieving negative votes",
+            "Description": "Protects the target from recieving negative votes",
             "Id": 3,
             "Cost": -1,
+            "Type": "Passive",
             "RequiresTarget":false,
-            "Exec": ""
+            "AcceptsTarget":true,
+            "Exec": [""]
         },
         {
             "Item": "MegaVote",
@@ -48,8 +56,10 @@
             "Description": "Uses all your remaining votes on a single message",
             "Id": 4,
             "Cost": 20,
+            "Type": "Active",
             "RequiresTarget":false,
-            "Exec": "writeScore(msg.guild.id, msg.author.id, inventory={'ActiveShield':1})"
+            "AcceptsTarget":false,
+            "Exec": ["say(msg, 'Use `mega good bot` or `mega bad bot` to use this item.')"]
         },
         {
             "Item": "LoveBomb",
@@ -58,8 +68,58 @@
             "Description": "Adds 10 score to a single user of your choosing",
             "Id": 5,
             "Cost": 100,
+            "Type": "Active",
             "RequiresTarget":true,
-            "Exec": "writeScore(msg.guild.id, target.id, score=10)"
+            "AcceptsTarget":true,
+            "Exec": ["writeScore(msg.guild.id, target.id, score=10)"]
+        },
+        {
+            "Item": "Nazar",
+            "Name": "Nazar",
+            "Icon": "<:SSnazar:598958898254446605>",
+            "Description": "Prevents others from using items on the target. Removes Evil Eye (Active)",
+            "Id": 6,
+            "Cost": 100,
+            "Type": "Active",
+            "RequiresTarget":true,
+            "AcceptsTarget":true,
+            "Exec": ["writeScore(msg.guild.id, target.id, inventory={'ActiveNazar':1})", "writeScore(msg.guild.id, target.id, inventory={'ActiveEvilEye':-1})"]
+        },
+        {
+            "Item": "ActiveNazar",
+            "Name": "Nazar (Active)",
+            "Icon": "<:SSactivenazar:599071815800979476>",
+            "Description": "Prevents others from using items on the target. Removes Evil Eye (Active)",
+            "Id": 7,
+            "Cost": -1,
+            "Type": "Passive",
+            "RequiresTarget":true,
+            "AcceptsTarget":true,
+            "Exec": [""]
+        },
+        {
+            "Item": "EvilEye",
+            "Name": "Evil Eye",
+            "Icon": "<:SSevileye:598951570683592771>",
+            "Description": "Votes on the target are worth double the score",
+            "Id": 8,
+            "Cost": 200,
+            "Type": "Active",
+            "RequiresTarget":true,
+            "AcceptsTarget":true,
+            "Exec": ["writeScore(msg.guild.id, target.id, inventory={'ActiveEvilEye':1})"]
+        },
+        {
+            "Item": "ActiveEvilEye",
+            "Name": "Evil Eye (Active)",
+            "Icon": "<:SSactiveevileye:598953266528649246>",
+            "Description": "Votes on the target are worth double the score",
+            "Id": 9,
+            "Cost": -1,
+            "Type": "Passive",
+            "RequiresTarget":true,
+            "AcceptsTarget":true,
+            "Exec": [""]
         }
     ]
 }

@@ -721,7 +721,11 @@ async def on_message(msg: discord.Message):
 
                         target = None
                         if msg.mentions:
-                            target = msg.mentions[0] 
+                            target = msg.mentions[0]
+                        if not itemWanted['AcceptsTarget'] and target:
+                            if target != msg.author:
+                                await say(msg, 'You cannot use that item on someone else!')
+                                return
 
                         if itemWanted['RequiresTarget'] and not target:
                             await say(msg, 'You need to specify a user to use this item on!')
@@ -729,6 +733,11 @@ async def on_message(msg: discord.Message):
 
                         if not target:
                             target = msg.author
+
+                        if await hasItem(msg.guild.id, target.id, 'ActiveNazar') and target is not msg.author:
+                            await say(msg, "This user was protected by a Nazar which caused the %s to vanish!"%(itemWanted['Name']))
+                            await writeScore(msg.guild.id, target.id, inventory={'ActiveNazar':-1})
+                            return
 
                         funcMap = {"say":say, "writeScore":writeScore}
                         localVarsMap = {"msg":msg, "target":target}
@@ -738,10 +747,11 @@ async def on_message(msg: discord.Message):
                                 return inspect.iscoroutinefunction(eval(funcString.split('(', 1)[0], globalsVars, localVars))
                             except:
                                 return False
-                        if isStringFuncCorutine(itemWanted['Exec'], funcMap, localVarsMap):
-                            await eval(itemWanted['Exec'])
-                        else:
-                            eval(itemWanted['Exec'])
+                        for ACE in itemWanted['Exec']:
+                            if isStringFuncCorutine(ACE, funcMap, localVarsMap):
+                                await eval(ACE)
+                            else:
+                                eval(ACE)
 
                         qty = -1
                         await writeScore(msg.guild.id, msg.author.id, inventory={'%s'%(itemWanted['Item']):qty})
@@ -806,19 +816,22 @@ async def on_message(msg: discord.Message):
                     await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
                     return
 
+                elif content == "medium bot":
+                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
+                    return
+
+                ###### Item ######
                 elif await hasItem(server.id, author.id, 'ActiveShield'):
                     await say(msg, "This user was protected by a Shield and was unable to be voted on!")
                     await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
                     return
-
-                elif content == "medium bot":
-                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
-                    return
+                ##################
                 
                 elif content == "mega bad bot" or content == "mega good bot":
                     itemInternalName = 'MegaVote'
                     itemName = itemInternalName
                     ico = '❔'
+                    ###### Item ######
                     if await hasItem(msg.guild.id, msg.author.id, itemInternalName):
                         for item in items:
                             if item['Item'] == itemName:
@@ -831,13 +844,16 @@ async def on_message(msg: discord.Message):
                     else:
                         await say(msg, "You don't have the item required to perform that action!")
                         return
+                    ##################
 
                 else:
                     if 'bad' in content:
+                        ###### Item ######
                         if await hasItem(server.id, author.id, 'ActiveWard'):
                             await say(msg, "This user was protected by a Ward and was unable be negatively voted on!")
                             await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
                             return
+                        ##################
                     await writeScore(server.id, author.id, score=1 if 'good' in content else -1)
                     await writeScore(server.id, msg.author.id, voted=1)
                 
@@ -1434,6 +1450,11 @@ async def hasItem(guild, user, item, qty=1):
     return True if item in inventory and inventory[item] >= qty else False
 
 async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currency=0, inventory={}):
+    ###### Item ######
+    if await hasItem(guild, user, 'ActiveEvilEye'):
+        score *= 2
+    ##################
+
     userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guild, user, str(score), str(gilding), 
         str(voted), str(gilded), str(currency), str(inventory).replace(' ',''))
     existingScores = await readScores()
