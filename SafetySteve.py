@@ -1569,7 +1569,7 @@ async def exchange(msg, args):
                 return True
             confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) and gildings (%s) for %s%s?" % (scoreEntry[2], scoreEntry[3], currencySymbol, str(returnCurrency)))
             if confirmation:
-                await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency)
+                await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), score=-int(scoreEntry[2]), currency=returnCurrency)
             else:
                 return True
         elif args[0] in ['score','points','point','scores']:
