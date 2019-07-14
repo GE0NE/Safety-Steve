@@ -1449,10 +1449,11 @@ async def hasItem(guild, user, item, qty=1):
     inventory = ast.literal_eval(existingScore[7])
     return True if item in inventory and inventory[item] >= qty else False
 
-async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currency=0, inventory={}):
+async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currency=0, inventory={}, ignoreItems=False):
+    if not ignoreItems:
     ###### Item ######
-    if await hasItem(guild, user, 'ActiveEvilEye'):
-        score *= 2
+        if await hasItem(guild, user, 'ActiveEvilEye'):
+            score *= 2
     ##################
 
     userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guild, user, str(score), str(gilding), 
@@ -1569,7 +1570,7 @@ async def exchange(msg, args):
                 return True
             confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) and gildings (%s) for %s%s?" % (scoreEntry[2], scoreEntry[3], currencySymbol, str(returnCurrency)))
             if confirmation:
-                await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), score=-int(scoreEntry[2]), currency=returnCurrency)
+                await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), score=-int(scoreEntry[2]), currency=returnCurrency, ignoreItems=True)
             else:
                 return True
         elif args[0] in ['score','points','point','scores']:
@@ -1580,7 +1581,7 @@ async def exchange(msg, args):
                     return True
                 confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) for %s%s?" % (scoreEntry[2], currencySymbol, str(returnCurrency)))
                 if confirmation:
-                    await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency)
+                    await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency, ignoreItems=True)
                 else:
                     return True
             else:
@@ -1594,7 +1595,7 @@ async def exchange(msg, args):
                         return True
                     confirmation = await confirm(msg, "Are you sure you want to exchange %s score point%s for %s%s?" % (amountQueried, 's' if amountQueried > 1 else '', currencySymbol, str(returnCurrency)))
                     if confirmation:
-                        await writeScore(msg.guild.id, msg.author.id, score=-amountQueried, currency=returnCurrency)
+                        await writeScore(msg.guild.id, msg.author.id, score=-amountQueried, currency=returnCurrency, ignoreItems=True)
                     else:
                         return True
                 except ValueError:
@@ -1607,7 +1608,7 @@ async def exchange(msg, args):
                     return True
                 confirmation = await confirm(msg, "Are you sure you want to exchange all your gildings (%s) for %s%s?" % (scoreEntry[3], currencySymbol, str(returnCurrency)))
                 if confirmation:
-                    await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), currency=returnCurrency)
+                    await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), currency=returnCurrency, ignoreItems=True)
                 else:
                     return True
             else:
@@ -1621,7 +1622,7 @@ async def exchange(msg, args):
                         return True
                     confirmation = await confirm(msg, "Are you sure you want to exchange %s gilding%s for %s%s?" % (amountQueried, 's' if amountQueried > 1 else '', currencySymbol, str(returnCurrency)))
                     if confirmation:
-                        await writeScore(msg.guild.id, msg.author.id, gilding=-amountQueried, currency=returnCurrency)
+                        await writeScore(msg.guild.id, msg.author.id, gilding=-amountQueried, currency=returnCurrency, ignoreItems=True)
                     else:
                         return True
                 except ValueError:
