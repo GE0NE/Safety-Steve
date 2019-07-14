@@ -818,7 +818,6 @@ async def on_message(msg: discord.Message):
 
                 elif content == "medium bot":
                     await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
-                    await writeScore(server.id, msg.author.id, voted=1)
                     return
 
                 ###### Item ######
@@ -840,6 +839,18 @@ async def on_message(msg: discord.Message):
                                 ico = item['Icon']
                                 break
                         await say(msg, "-{} You consumed a {} to use all your remaining votes today ({}) on {}!".format(ico, itemName, str(voteLimit - int(invokerScores[4])), author.mention))
+                        ###### Item ######
+                        if await hasItem(server.id, author.id, 'ActiveShield'):
+                            await say(msg, "This user was protected by a Shield and was unable to be voted on!")
+                            await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
+                            return
+                        ##################
+                        ###### Item ######
+                        if 'bad' in content and await hasItem(server.id, author.id, 'ActiveWard'):
+                            await say(msg, "This user was protected by a Ward and was unable be negatively voted on!")
+                            await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
+                            return
+                        ##################
                         await writeScore(server.id, author.id, score=(voteLimit - int(invokerScores[4])) * (1 if 'good' in content else -1))
                         await writeScore(server.id, msg.author.id, voted=(voteLimit - int(invokerScores[4])), inventory={'MegaVote':-1})
                     else:
