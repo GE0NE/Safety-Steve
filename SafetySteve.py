@@ -818,6 +818,7 @@ async def on_message(msg: discord.Message):
 
                 elif content == "medium bot":
                     await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
+                    await writeScore(server.id, msg.author.id, voted=1)
                     return
 
                 ###### Item ######
