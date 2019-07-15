@@ -1554,9 +1554,9 @@ async def scoreDecay():
         if int(entry[2]) == 0:
             continue
         elif int(entry[2]) > 0:
-            await writeScore(int(entry[0]), int(entry[1]), score=-1)
+            await writeScore(int(entry[0]), int(entry[1]), score=-1, ignoreItems=True)
         else:
-            await writeScore(int(entry[0]), int(entry[1]), score=1)
+            await writeScore(int(entry[0]), int(entry[1]), score=1, ignoreItems=True)
 
 async def exchange(msg, args):
     def pointsToCurrency(points):
@@ -1652,8 +1652,8 @@ async def giveCurrency(msg, otherUser, amount):
         return
     if amount > int(scoreEntry[6]):
         amount = int(scoreEntry[6])
-    await writeScore(msg.guild.id, msg.author.id, currency=-int(amount))
-    await writeScore(msg.guild.id, otherUser.id, currency=int(amount))
+    await writeScore(msg.guild.id, msg.author.id, currency=-int(amount), ignoreItems=True)
+    await writeScore(msg.guild.id, otherUser.id, currency=int(amount), ignoreItems=True)
     await displayCurrency(msg, otherUser)
     return
 
@@ -1807,7 +1807,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
 async def clearDailyRestrictions():
     scores = await readScores()
     for entry in scores:
-        await writeScore(int(entry[0]), int(entry[1]), voted=-100, gilded=-100)
+        await writeScore(int(entry[0]), int(entry[1]), voted=-100, gilded=-100, ignoreItems=True)
 
 async def onNewDay():
     await setDailyGame()
@@ -1884,12 +1884,15 @@ async def checkDailyEvents():
             dateOrdAge = ord(dateAge)
             dateTag = date.get('Tag', '')
             dateType = date['Type']
-            dateChannels = date['Channel'].replace(" ", "").split('#')
+            dateChannels = date.get('Channel', 'None')
             reacts = date.get('React')
             dateFunc = date.get('Func')
             dateActivity = date.get('Activity')
             dateActivityType = date.get('ActivityType')
             formattedDateMessage = None
+
+            if dateChannels:
+                dateChannels = dateChannels.replace(" ", "").split('#')
 
             if reacts:
                 reacts = reacts.split("#")
@@ -1904,8 +1907,8 @@ async def checkDailyEvents():
                 formattedDateMessage = formattedDateMessage.replace("#type", str(dateType))
             
             for dateChannel in dateChannels:
-                channel = client.get_channel(int(userInfo['channel_ids'][dateChannel]))
-                if formattedDateMessage:
+                channel = client.get_channel(int(userInfo['channel_ids'][dateChannel])) if dateChannel != 'None' else ''
+                if formattedDateMessage and channel:
                     reactCondition = await sayInChannelOnce(channel, formattedDateMessage) and reacts
                     async for message in channel.history(limit=1):
                         msg = message
