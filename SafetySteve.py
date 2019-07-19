@@ -1371,7 +1371,7 @@ async def defineGoogle(msg, message):
             async with session.get("https://googledictionaryapi.eu-gb.mybluemix.net/", params={"define": search}) as resp:
                 try:
                     payload = await resp.json()
-                except ValueError:
+                except:
                     await say(msg, "I couldn't define {}.".format(term))
                     return
 
