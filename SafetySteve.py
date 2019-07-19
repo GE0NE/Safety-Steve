@@ -1375,45 +1375,43 @@ async def defineGoogle(msg, message):
                     await say(msg, "I couldn't define {}.".format(term))
                     return
 
-            try:
-                embed=discord.Embed(color=embedColor)
-                embed.set_thumbnail(url="http://icons.iconarchive.com/icons/osullivanluke/orb-os-x/48/Dictionary-icon.png")
-                values = list(payload[0].values())
+            embed=discord.Embed(color=embedColor)
+            embed.set_thumbnail(url="http://icons.iconarchive.com/icons/osullivanluke/orb-os-x/48/Dictionary-icon.png")
+            values = list(payload[0].values())
 
-                word = values[0]
-                ipa = values[1]
+            word = values[0]
+            ipa = values[1]
 
-                embed.add_field(name="{}".format(word), value="{}".format(ipa), inline=False)
-                for pos in list(values[2].keys())[:3]:
-                    postxt = pos
-                    definitionCount = 1
-                    definitions = ""
-                    for entry in values[2][pos][:2]:
+            embed.add_field(name="{}".format(word), value="{}".format(ipa), inline=False)
+            
+            for pos in list(values[3].keys())[:3]:
+                postxt = pos
+                definitionCount = 1
+                definitions = ""
+                for entry in values[3][pos][:2]:
 
-                        definition = ""
-                        if 'definition' in entry:
-                            definition = entry['definition']
+                    definition = ""
+                    if 'definition' in entry:
+                        definition = entry['definition']
 
-                        example = ""
-                        if 'example' in entry:
-                            example = entry['example']
+                    example = ""
+                    if 'example' in entry:
+                        example = entry['example']
 
-                        synonyms = ""
-                        if 'synonyms' in entry:
-                            synonyms = entry['synonyms'][:4]
-                            synonyms = ', '.join(synonyms)
-                            
-                        seperator = "_ _\n" if definitionCount == 1 else ""
-                        definitions += str(definitionCount) + ". " + definition + "\n"
-                        definitionCount += 1
+                    synonyms = ""
+                    if 'synonyms' in entry:
+                        synonyms = entry['synonyms'][:4]
+                        synonyms = ', '.join(synonyms)
+                        
+                    seperator = "_ _\n" if definitionCount == 1 else ""
+                    definitions += str(definitionCount) + ". " + definition + "\n"
+                    definitionCount += 1
 
-                    embed.add_field(name="{}".format(postxt), value="{}".format(definitions), inline=False)
-                    postxt = u'\u200b'
-                embed.set_footer(text="Powered by googledictionaryapi.eu-gb.mybluemix.net")
-                await say(msg, "", embed=embed)
+                embed.add_field(name="{}".format(postxt), value="{}".format(definitions), inline=False)
+                postxt = u'\u200b'
+            embed.set_footer(text="Powered by googledictionaryapi.eu-gb.mybluemix.net")
+            await say(msg, "", embed=embed)
                 
-            except:
-                return
             return 
 
 async def mock(msg, *, text=""):
