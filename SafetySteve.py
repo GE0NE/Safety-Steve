@@ -753,7 +753,7 @@ async def on_message(msg: discord.Message):
                             else:
                                 eval(ACE)
 
-                        if itemWanted['Usable']:
+                        if itemWanted['Usable'] == False:
                             return
                             
                         qty = -1
