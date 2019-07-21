@@ -753,6 +753,9 @@ async def on_message(msg: discord.Message):
                             else:
                                 eval(ACE)
 
+                        if itemWanted['Usable']:
+                            return
+                            
                         qty = -1
                         await writeScore(msg.guild.id, msg.author.id, inventory={'%s'%(itemWanted['Item']):qty})
                         embed = discord.Embed(title="-%s _Used_" % (itemWanted['Icon']), 

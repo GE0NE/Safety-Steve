@@ -11,6 +11,7 @@
             "Type": "Active",
             "RequiresTarget":false,
             "AcceptsTarget":false,
+            "Usable": true,
             "Exec": ["writeScore(msg.guild.id, target.id, inventory={'ActiveShield':1})"]
         },
         {
@@ -23,6 +24,7 @@
             "Type": "Passive",
             "RequiresTarget":false,
             "AcceptsTarget":true,
+            "Usable": false,
             "Exec": [""]
         },
         {
@@ -35,6 +37,7 @@
             "Type": "Active",
             "RequiresTarget":false,
             "AcceptsTarget":true,
+            "Usable": true,
             "Exec": ["writeScore(msg.guild.id, target.id, inventory={'ActiveWard':1})"]
         },
         {
@@ -47,6 +50,7 @@
             "Type": "Passive",
             "RequiresTarget":false,
             "AcceptsTarget":true,
+            "Usable": false,
             "Exec": [""]
         },
         {
@@ -59,6 +63,7 @@
             "Type": "Active",
             "RequiresTarget":false,
             "AcceptsTarget":false,
+            "Usable": false,
             "Exec": ["say(msg, 'Use `mega good bot` or `mega bad bot` to use this item.')"]
         },
         {
@@ -71,6 +76,7 @@
             "Type": "Active",
             "RequiresTarget":true,
             "AcceptsTarget":true,
+            "Usable": true,
             "Exec": ["writeScore(msg.guild.id, target.id, score=10)"]
         },
         {
@@ -83,6 +89,7 @@
             "Type": "Active",
             "RequiresTarget":true,
             "AcceptsTarget":true,
+            "Usable": true,
             "Exec": ["writeScore(msg.guild.id, target.id, inventory={'ActiveNazar':1})", "writeScore(msg.guild.id, target.id, inventory={'ActiveEvilEye':-1})"]
         },
         {
@@ -95,6 +102,7 @@
             "Type": "Passive",
             "RequiresTarget":true,
             "AcceptsTarget":true,
+            "Usable": false,
             "Exec": [""]
         },
         {
@@ -107,6 +115,7 @@
             "Type": "Active",
             "RequiresTarget":true,
             "AcceptsTarget":true,
+            "Usable": true,
             "Exec": ["writeScore(msg.guild.id, target.id, inventory={'ActiveEvilEye':1})"]
         },
         {
@@ -119,6 +128,7 @@
             "Type": "Passive",
             "RequiresTarget":true,
             "AcceptsTarget":true,
+            "Usable": false,
             "Exec": [""]
         }
     ]
