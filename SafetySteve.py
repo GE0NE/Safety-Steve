@@ -1496,7 +1496,7 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currenc
             with open("res/data/user-data.dat","w") as scores:
                 for oldScore in oldScores:
                     if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
-                        if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0' and newCurrency == '0'):
+                        if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0' and newCurrency == '0' and newCurrency == 0 and not newInventory):
                             scores.write(userObj + "\n")
                     else:
                         scores.write(oldScore + "\n")
