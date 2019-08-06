@@ -1719,12 +1719,13 @@ async def confirm(msg, string):
 async def mal(msg, name, mediaType="anime", displayFormat="tv"):
 
     async def notFound():
-        await throwError(msg, "{} couldn't be found on MyAnimeList.".format(name), custom=True, printError=False)
+        await throwError(msg, "{} couldn't be found on MyAnimeList.".format(name), vocalize=True, custom=True, printError=False)
 
     async with msg.channel.typing():
         name = parse.quote_plus(name)
         async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
-            async with session.get("https://api.jikan.moe/search/{0}?q={1}&type={2}&page=1".format(mediaType, name, displayFormat)) as resp:
+            #async with session.get("https://api.jikan.moe/search/{0}?q={1}&type={2}&page=1".format(mediaType, name, displayFormat)) as resp:
+            async with session.get("https://api.jikan.moe/search/{0}?q={1}&page=1".format(mediaType, name)) as resp:
                 result = await resp.json()
                 results = None
                 try:
@@ -1758,14 +1759,29 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                         result_name = html.unescape(result["title"])
                         result_name_english = result["title_english"]
                         result_url = 'https://myanimelist.net/{0}/{1}'.format(mediaType, result_id)
-                        result_type = result["type"]
-                        result_score = str(result["score"])
-                        result_episodes = str(result["episodes"])
-                        result_rank = str(result["rank"])
-                        result_status = result["status"]
-                        result_air_time = result["aired_string"]
-                        result_synopsis = html.unescape(result["synopsis"])
-                        
+                        result_type = result.get("type")
+                        result_score = result.get("score")
+                        result_episodes = result.get("episodes")
+                        result_rank = result.get("rank")
+                        result_status = result.get("status")
+                        result_air_time = result.get("aired_string")
+                        result_synopsis = result.get("synopsis")
+
+                        try:
+                            result_synopsis = html.unescape(result.get("synopsis"))
+                        except:
+                            pass
+
+                        result_name = "Unknown" if result_name is None else result_name
+                        result_name_english = "Unknown" if result_name_english is None else result_name_english
+                        result_url = "Unknown" if result_url is None else result_url
+                        result_type = "Unknown" if result_type is None else result_type
+                        result_score = "?" if result_score is None else str(result_score)
+                        result_episodes = "Unknown" if result_episodes is None else str(result_episodes)
+                        result_rank = "Unknown" if result_rank is None else str(result_rank)
+                        result_status = "Unknown" if result_status is None else result_status
+                        result_air_time = "Unknown" if result_air_time is None else result_air_time
+                        result_synopsis = "No synopsis available" if result_synopsis is None else result_synopsis
                         
                         embed = discord.Embed(description=result_url, colour=embedColor)
                         if result_name_english:
@@ -1783,6 +1799,8 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                         try:
                             synop = result_synopsis[:400].split('.')
                             text = ''
+                            if len(synop)-1 <= 1:
+                                text = result_synopsis
                             for i in range(0, len(synop)-1):
                                 text += synop[i] + '.'
                         except:
