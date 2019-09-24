@@ -1274,17 +1274,15 @@ async def sayIPA(msg, text):
             with requests. Session() as c: 
                 url = 'https://tophonetics.com/'
                 c.get(url)
-                data = dict(text_to_transcribe=text, output_dialect='am') 
+                data = dict(text_to_transcribe=text, output_dialect='am', submit="Show+transcription")
                 page = c.post(url, data=data, headers={"Referer": "https://tophonetics.com/"})
                 soup = BeautifulSoup(page.text, 'html.parser')
-                results = soup.find_all('span', attrs={'class':'transcribed_word'})
-                resultStringList = (result.text for result in results)
-                resultStringConcat = ' '.join(resultStringList)
-                if len(resultStringConcat) < 1:
+                try:
+                    IPA_text = soup.find(id='transcr_output').text
+                except AttributeError:
                     await throwError(msg, "I wasn't able to convert that word!", custom=True, printError=False)
                     return
-                else:
-                    await say(msg, resultStringConcat)
+                await say(msg, IPA_text)
         except:
             await throwError(msg, "I couldn't access `{}`!".format(url), custom=True)
 
