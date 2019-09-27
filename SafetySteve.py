@@ -794,7 +794,7 @@ async def on_message(msg: discord.Message):
             except:
                 continue
 
-    elif content in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
+    elif any(word in content for word in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot'] if content.startswith(word)):
         try:
             targetMessage = None
             server = msg.guild
