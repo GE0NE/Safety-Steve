@@ -2047,6 +2047,10 @@ async def zalgo_ify(text, level=3):
     elif level > 10:
         level = 10
 
+    # Discord strips diacritics when there's too many chars
+    if len(text) > 30:
+        level = 1
+
     for i in range(level):
         text = await zalgo_pass(text)
 
