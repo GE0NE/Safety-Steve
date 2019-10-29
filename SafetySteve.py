@@ -768,7 +768,17 @@ async def on_message(msg: discord.Message):
                     await say(msg, "That is not a valid item you can use! >`%s`"%(itemWanted['Name']))
             
         if command == textCommands[26]['Command']:
-            await say(msg, await zalgo_ify(message))
+            # Get rid of original command text
+            message = message.replace(command, '', 1)
+
+            try:
+                level = int(breakdown[1])
+                message = message.replace(breakdown[1], '', 1)
+            except ValueError:
+                level = 5
+
+            zalgo_message = await zalgo_ify(message, level=level)
+            await say(msg, zalgo_message)
 
         if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
             if await checkNSFW(msg):
