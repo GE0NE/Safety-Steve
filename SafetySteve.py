@@ -767,6 +767,33 @@ async def on_message(msg: discord.Message):
                 else:
                     await say(msg, "That is not a valid item you can use! >`%s`"%(itemWanted['Name']))
             
+        if command == textCommands[26]['Command'] or command in textCommands[26]['Alias'].split('#'):
+            # Get rid of original command text
+            message = message.replace(command, '', 1)
+
+            # Get intensity level if applicable
+            try:
+                level = int(breakdown[1])
+                message = message.replace(breakdown[1], '', 1)
+                potential_text_breakdown_index = 2
+            except (ValueError, IndexError):
+                level = 5
+                potential_text_breakdown_index = 1
+
+            # Hacky. Sees if there's text in a string besides the command
+            # itself and the intensity number, if present.
+            try:
+                breakdown[potential_text_breakdown_index]
+            except IndexError:
+                async for m in msg.channel.history(limit=2):
+                    message = m.content
+
+            zalgo_message = await zalgo_ify(message, level=level)
+            if message == '':
+                await say(msg, "Can't Zalgo an empty message or react.")
+            else:
+                await say(msg, zalgo_message)
+
         if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
             if await checkNSFW(msg):
                 await subreddit(msg, 'zerotwo', True)
@@ -1989,6 +2016,47 @@ def findInfo():
             despacito = voiceCommands[i]
             break
     return
+
+async def zalgo_ify(text, level=3):
+    ''' Takes some normal text and zalgo-ifies it.
+    
+    Text is passed through a diacritic-adding phase as many times as specified
+    (up to ten).
+
+    Args:
+        text (str): The string to be Zalgo-ified.
+        level (int): The number of times the text will be passed through the
+            system.
+
+    Returns:
+        str: Zalgo-ified text.
+    '''
+
+    async def zalgo_pass(text):
+        ''' A single Zolgo-ification passthrough. '''
+
+        # Chars in "Combining Diacritical Marks" Unicode block.
+        combining_chars = [chr(n) for n in range(768, 878)]
+
+        zalgo_text = ''
+        for char in text:
+            combining_char = random.choice(combining_chars)
+            zalgo_text += char + combining_char
+        return zalgo_text
+
+    if level < 0:
+        level = 1
+    elif level > 10:
+        level = 10
+
+    # Discord strips diacritics when there's too many chars
+    if len(text) > 30:
+        level = 1
+
+    for i in range(level):
+        text = await zalgo_pass(text)
+
+    return text
 
 @client.event
 async def on_ready():
