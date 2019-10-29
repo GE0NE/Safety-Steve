@@ -207,7 +207,15 @@
             "Help": "Uses the specified item from your inventory",
             "Params": "<item name>",
             "Examples": "item Shield#item Ward"
-        }
+        },
+
+		{
+            "Command": "zalgo",
+            "Alias": "z#zt#zalgotext#hecomes",
+            "Help": "Repeats text as spooky Z̸̳͓̫̻̩̾̀̈́̎̔̋̈́͗̄͐̋̚a̸̛͕̥̱̯͔̿͝ļ̸̡͔̗̖̪͙͉̝̣̫̻͗͜ͅg̵̢̢̥̠̘̠̘̣̞͑̈́̾̑̅͂͘͘͝ȍ̸̯͈͇̟͍̪̅͊͐̈́̐̒̏̒̈́̇͆̚͜ text. Uses previous comment if no text.",
+            "Params": "[insanity level from 1-10]",
+            "Examples": "zalgo Hello world!"
+		}
     ],
     
     "nsfw_commands":
