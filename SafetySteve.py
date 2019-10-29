@@ -769,7 +769,7 @@ async def on_message(msg: discord.Message):
             
         if command == textCommands[26]['Command'] or command in textCommands[26]['Alias'].split('#'):
             # Get rid of original command text
-            message = message.replace(command, '', 1)
+            message = rawMessage.replace(command, '', 1)
 
             # Get intensity level if applicable
             try:
