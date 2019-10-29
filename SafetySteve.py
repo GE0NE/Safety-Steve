@@ -767,15 +767,27 @@ async def on_message(msg: discord.Message):
                 else:
                     await say(msg, "That is not a valid item you can use! >`%s`"%(itemWanted['Name']))
             
-        if command == textCommands[26]['Command']:
+        if command == textCommands[26]['Command'] or command in textCommands[26]['Alias'].split('#'):
             # Get rid of original command text
             message = message.replace(command, '', 1)
 
+            # Get intensity level if applicable
             try:
                 level = int(breakdown[1])
                 message = message.replace(breakdown[1], '', 1)
-            except ValueError:
+                potential_text_breakdown_index = 2
+            except (ValueError, IndexError):
                 level = 5
+                potential_text_breakdown_index = 1
+
+            # Hacky. Sees if there's text in a string besides the command
+            # itself and the intensity number, if present.
+            try:
+                breakdown[potential_text_breakdown_index]
+            except IndexError:
+                async for m in msg.channel.history(limit=2):
+                    message = m.content
+
 
             zalgo_message = await zalgo_ify(message, level=level)
             await say(msg, zalgo_message)
