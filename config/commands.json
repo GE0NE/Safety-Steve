@@ -213,7 +213,7 @@
             "Command": "zalgo",
             "Alias": "z#zt#zalgotext#hecomes",
             "Help": "Repeats text as spooky Z̸̳͓̫̻̩̾̀̈́̎̔̋̈́͗̄͐̋̚a̸̛͕̥̱̯͔̿͝ļ̸̡͔̗̖̪͙͉̝̣̫̻͗͜ͅg̵̢̢̥̠̘̠̘̣̞͑̈́̾̑̅͂͘͘͝ȍ̸̯͈͇̟͍̪̅͊͐̈́̐̒̏̒̈́̇͆̚͜ text. Uses previous comment if no text.",
-            "Params": "[insanity level from 1-10]",
+            "Params": "[insanity level from 1-10] [text (previous comment if none)]",
             "Examples": "zalgo Hello world!"
 		}
     ],

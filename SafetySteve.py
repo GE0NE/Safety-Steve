@@ -788,9 +788,11 @@ async def on_message(msg: discord.Message):
                 async for m in msg.channel.history(limit=2):
                     message = m.content
 
-
             zalgo_message = await zalgo_ify(message, level=level)
-            await say(msg, zalgo_message)
+            if message == '':
+                await say(msg, "Can't Zalgo an empty message or react.")
+            else:
+                await say(msg, zalgo_message)
 
         if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
             if await checkNSFW(msg):
