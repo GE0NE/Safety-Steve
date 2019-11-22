@@ -429,7 +429,10 @@ async def on_message(msg: discord.Message):
                     messageEmojis = '👍 👎'
                 emojis = messageEmojis.strip().split(" ")
                 poll = await say(msg, question)
-                await msg.delete()
+                try:
+                    await msg.delete()
+                except:
+                    pass
                 for emoji in emojis:
                     try:
                         await react(poll, emoji)
