@@ -215,7 +215,15 @@
             "Help": "Repeats text as spooky Z̸̳͓̫̻̩̾̀̈́̎̔̋̈́͗̄͐̋̚a̸̛͕̥̱̯͔̿͝ļ̸̡͔̗̖̪͙͉̝̣̫̻͗͜ͅg̵̢̢̥̠̘̠̘̣̞͑̈́̾̑̅͂͘͘͝ȍ̸̯͈͇̟͍̪̅͊͐̈́̐̒̏̒̈́̇͆̚͜ text. Uses previous comment if no text.",
             "Params": "[insanity level from 1-10] [text (previous comment if none)]",
             "Examples": "zalgo Hello world!"
-		}
+		},
+
+        {
+            "Command": "clap",
+            "Alias": "c#clapify#emphasize",
+            "Help": "Lets users emphasize WITH 👏 CLAPS 👏 BETWEEN 👏 WORDS",
+            "Params": "[text]",
+            "Examples": "clap People who do this are annoying"
+        }
     ],
     
     "nsfw_commands":
