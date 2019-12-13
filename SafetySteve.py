@@ -797,6 +797,24 @@ async def on_message(msg: discord.Message):
             else:
                 await say(msg, zalgo_message)
 
+        if command == textCommands[27]['Command'] or command in textCommands[27]['Alias'].split('#'):
+            # Get rid of original command text
+            message = rawMessage.replace(command, '', 1)
+
+            if message.isspace() or message == '':
+                async for m in msg.channel.history(limit=2):
+                    message = m.content
+
+            clappy_message = await clapify(message)
+
+            # truncate over 2000 chars
+            clappy_message = (clappy_message[:2000]) if len(clappy_message) > 2000 else clappy_message
+
+            if message.isspace() or message == '':
+                await say(msg, "Can't clapp an empty message or react.")
+            else:
+                await say(msg, clappy_message)
+
         if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
             if await checkNSFW(msg):
                 await subreddit(msg, 'zerotwo', True)
@@ -2060,6 +2078,15 @@ async def zalgo_ify(text, level=3):
         text = await zalgo_pass(text)
 
     return text
+
+async def clapify(text):
+    """ Puts clap emojis between words and makes everything all-caps. """
+
+    # empty split() splits on *any* whitespace
+    words = text.split()
+    clappy_text = " 👏 ".join(words).upper()
+
+    return clappy_text
 
 @client.event
 async def on_ready():
