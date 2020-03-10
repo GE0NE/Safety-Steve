@@ -815,9 +815,11 @@ async def on_message(msg: discord.Message):
             else:
                 await say(msg, clappy_message)
 
+        # now a redundant check as r/zerotwo is now treated as NSFW in the subreddit command
+        # commenting out the check, but leaving the command as a template for future NSFW commands
         if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
-            if await checkNSFW(msg):
-                await subreddit(msg, 'zerotwo', True)
+            #if await checkNSFW(msg):
+            await subreddit(msg, 'zerotwo', True)
             return
 
         if (command == voiceCommands[0]['Command'] or command in voiceCommands[0]['Alias'].split('#')) and isPlaying:
@@ -1019,7 +1021,7 @@ async def subreddit(msg, sub, bypassErrorCheck=False):
     submissionList = []
     async with msg.channel.typing():
         try:
-            if reddit.subreddit(sub).over18:
+            if reddit.subreddit(sub).over18 or sub == 'zerotwo':
                 if not await checkNSFW(msg):
                     return
 
