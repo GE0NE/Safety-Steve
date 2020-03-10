@@ -337,7 +337,7 @@ async def on_message(msg: discord.Message):
             return                                                                                              
 
         if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):
-            await subreddit(msg, 'animemes', True)
+            await subreddit(msg, 'wholesomeanimemes', True)
             return
 
         if command == textCommands[4]['Command'] or command in textCommands[4]['Alias'].split('#'):
