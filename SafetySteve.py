@@ -346,7 +346,7 @@ async def on_message(msg: discord.Message):
 
         if command == textCommands[5]['Command'] or command in textCommands[5]['Alias'].split('#'):
             if len(args) > 30:
-                await say(msg, "Whoah! That's too many letter! Keep it below 30 please.")
+                await say(msg, "Woah! That's too many letters! Keep it below 30 please.")
                 return
             if len(args.strip()) < 1:
                 await helpCommand(textCommands[5]['Command'], msg)
@@ -647,7 +647,7 @@ async def on_message(msg: discord.Message):
                         await writeScore(msg.guild.id, msg.author.id, currency=-qty * int(itemWanted['Cost']), inventory={'%s'%(itemWanted['Item']):qty})
                         await say(msg, "", embed=embed)
                     else:
-                        await throwError(msg, "You don't have enough %s to purchace %s of that item! You have %s%s, and you need %s%s." % (currencySymbol, 
+                        await throwError(msg, "You don't have enough %s to purchase %s of that item! You have %s%s, and you need %s%s." % (currencySymbol, 
                             str(qty), currencySymbol, currentMoney, currencySymbol, str((qty * int(itemWanted['Cost'])))), custom=True, printError=False)
                 else:
                     await throwError(msg, "That's not a valid item! >`%s`<" % (itemSearchString), custom=True, printError=False)
@@ -672,7 +672,7 @@ async def on_message(msg: discord.Message):
                 except:
                     continue
 
-            embed.set_footer(text="use %s%s <item> to purchace" % (invoker, 'shop'), 
+            embed.set_footer(text="use %s%s <item> to purchase" % (invoker, 'shop'), 
                     icon_url="https://i.imgur.com/331gN11.png")
 
             await say(msg, "", embed=embed)
@@ -1102,7 +1102,7 @@ async def stringToEmoji(msg, emote, globalEmotes=False, vocalizeMissing=False):
 
 async def checkNSFW(msg):
     if not msg.channel.is_nsfw():
-        await throwError(msg, "You can't do that here. This channel is not maked as NSFW.", custom=True, printError=False)
+        await throwError(msg, "You can't do that here. This channel is not marked as NSFW.", custom=True, printError=False)
         return False
     return True
 
@@ -1501,7 +1501,7 @@ async def mock(msg, *, text=""):
                 result += char.upper()
 
         if result == "":
-            await say(msg, "Yo, dude! I can't dispatch a blank message! This can happen if you try to mock an embeded message.")
+            await say(msg, "Yo, dude! I can't dispatch a blank message! This can happen if you try to mock an embedded message.")
         else:
             await say(msg, result)
 
