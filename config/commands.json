@@ -36,9 +36,9 @@
         {
             "Command": "reddit",
             "Alias": "trending",
-            "Help": "Gets a random post from the hottest 50 post of the subreddit specified",
-            "Params": "<subreddit>",
-            "Examples": "reddit pics#reddit me_irl"
+            "Help": "Gets a random post from the hottest 50 post of the subreddit specified by default. SFW/NSFW will filter the pool of sumbissions to be either only SFW posts or only NSFW posts. Type will filter by reddit's sorting algorithms. Pool is the amount of posts from which a single post will be selected, the larger the number the more variety, deviation, and time it takes to process.",
+            "Params": "<subreddit> [sfw|nsfw] [type=<hot|top|new|controversial|gilded>] [pool=<1-1000>]",
+            "Examples": "reddit pics#reddit me_irl#reddit anime sfw pool=200#reddit funny nsfw type=controversial pool=70"
         },
         
         {
