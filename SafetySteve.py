@@ -312,7 +312,7 @@ async def on_message(msg: discord.Message):
             else:
                 await say(msg, "You don't have permission to use that command!")
 
-        if command == "func":                                                                 
+        if command == "func":
             if len(args.strip()) >= 1:
                 await handleFunc(msg, args)
             return
@@ -323,7 +323,7 @@ async def on_message(msg: discord.Message):
                 return
             else:
                 await helpCommand(args, msg) 
-                return                                            
+                return
 
         if command == textCommands[1]['Command'] or command in textCommands[1]['Alias'].split('#'):
             await broadcastGitRepo(msg)
@@ -332,16 +332,16 @@ async def on_message(msg: discord.Message):
             if len(args.strip()) < 1:
                 await helpCommand(textCommands[2]['Command'], msg)
                 return
-            await say(msg, args)                                            
-            await msg.delete()                                                                   
-            return                                                                                              
+            await say(msg, args)
+            await msg.delete()
+            return
 
         if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):
-            await subreddit(msg, 'wholesomeanimemes', True)
+            await subreddit(msg, 'animemes', args=argList)
             return
 
         if command == textCommands[4]['Command'] or command in textCommands[4]['Alias'].split('#'):
-            await subreddit(msg, args)
+            await subreddit(msg, argList[0], args=argList[1:] if len(argList) > 1 else [])
             return
 
         if command == textCommands[5]['Command'] or command in textCommands[5]['Alias'].split('#'):
@@ -1013,34 +1013,70 @@ async def linkSubreddit(msg, sub):
         else:
             await react(msg, '😲')
 
-async def subreddit(msg, sub, bypassErrorCheck=False):
+async def subreddit(msg, sub, bypassErrorCheck=False, args=[], filterNSFW=-1, filtertype='hot', pool=50):
+    maxPoolSize = 1000
+    softMaxPoolSize = 500
+
     if not bypassErrorCheck and sub.strip() == "":
         await helpCommand('reddit', msg)
         return
+
+    # ----- Args -----
+    if len(args) > 0:
+        if any(x in args for x in ['filtered', 'filternsfw', 'safe', 'sfw']):
+            filterNSFW = 1
+        if any(x in args for x in ['nsfw', 'nsfwonly', 'lewd']):
+            filterNSFW = 0
+        if any('pool=' in s for s in args):
+            matching = [a for a in args if 'pool=' in a]
+            try:
+                pool=int(matching[0].partition('=')[2]) if matching[0].partition('=')[2] is not '' else pool
+            except TypeError:
+                pool = pool
+        if any('type=' in s for s in args):
+            matching = [a for a in args if 'type=' in a]
+            filtertype=matching[0].partition('=')[2] if matching[0].partition('=')[2] is not '' else filtertype
+    # ----- Args -----
+
     reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
     submissionList = []
-    async with msg.channel.typing():
-        try:
-            if reddit.subreddit(sub).over18 or sub == 'zerotwo':
-                if not await checkNSFW(msg):
-                    return
+    if pool > softMaxPoolSize:
+        if pool > maxPoolSize:
+            pool = maxPoolSize
+            await throwError(msg, "1000 is the maximum pool size! This may take a while...", custom=True, printError=False)
+        else:
+            await throwError(msg, "Pools greater than 500 may take several minutes...", custom=True, printError=False)
+    if filtertype not in ['hot', 'new', 'top', 'controversial', 'gilded']:
+        filtertype = 'hot'
 
-            for submission in reddit.subreddit(sub).hot(limit=50):
+    try:
+        async with msg.channel.typing():
+            sub = str(sub)
+            for s in sub.split('+'):
+                if reddit.subreddit(s).over18:
+                    if not await checkNSFW(msg):
+                        return
+            filt = getattr(reddit.subreddit(sub), filtertype)
+            submissions = filt(limit=pool)
+            for submission in submissions:
                 extensions = ["png","jpg","jpeg","gif"]
                 if any([ext in submission.url[-len(ext):] for ext in extensions]):
                     submissionList.append(submission)
+            if filterNSFW != -1:
+                submissionList = list(filter(lambda x: x.over_18 != filterNSFW, submissionList))
             if len(submissionList) > 0:
-                submission = submissionList[random.randint(1, len(submissionList)-1)]
+                submission = submissionList[random.randint(0, len(submissionList)-1)]
                 embed = discord.Embed(title=submission.title, 
                     url="https://reddit.com{}".format(submission.permalink), color=embedColor)
                 embed.set_image(url=submission.url)
                 embed.set_footer(text=" via reddit.com/r/{}".format(str(submission.subreddit)), 
                     icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
-                await say(msg, "Here's a trending post from r/{}".format(str(submission.subreddit)), embed)
+                await say(msg, "Here's a {} post from r/{}".format(filtertype, str(submission.subreddit)), embed)
+                return
             else:
-                await throwError(msg, "There's nothing in that subreddit!", custom=True)
-        except:
-            await throwError(msg, "reddit.com/r/{} couldn\'t be accessed.".format(sub), custom=True)
+                await throwError(msg, "There's nothing I can post in that subreddit!", custom=True, printError=False)
+    except:
+        await throwError(msg, "reddit.com/r/{} couldn\'t be accessed.".format(sub), custom=True, printError=False)
 
 async def broadcastGitRepo(msg):
     gitMessage = 'Check me out on GitHub, the only -Hub website you visit, I hope...'                                                                                      

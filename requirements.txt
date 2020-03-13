@@ -1,6 +1,6 @@
 discord.py[voice] 1.0.0a+
 PyNaCl 1.2.1+
-praw 6.0.0+
+praw 6.5.1+
 beautifulsoup4 4.6.0+
 urllib3 1.22+
 aiohttp 3.4.4+
