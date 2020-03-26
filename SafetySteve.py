@@ -2104,36 +2104,19 @@ async def respond_to_scp_references(text):
     exist.
 
     Returns an empty str if no proper references found. The following are valid
-    SCP references: "SCP-400", "scp 400", "SCP-400j", "scp-400-ex".
+    SCP references: "SCP-400", "scp 400", "SCP-400j", "scp-400-ex", "scp 69 j",
+    "SCP 01 ex".
     """
-
-    # The regex returns the "400-ex" portion of "SCP-400-ex".
-    scp_numbers = re.findall("(?:scp[- ]([-\w]{1,8}))", text)
+    
+    # Capture the base number and suffix as different groups
+    scp_references = re.findall("(?:scp[- ]([\d]{1,8})(?:[ -]){0,1}(ex|j){0,1}\\b)", text.lower())
     message = ""
 
-    for scp_no in scp_numbers:
-        scp_no = scp_no.lower()
-        suffix = ""
+    for scp_ref in scp_references:
+        id_number = scp_ref[0].zfill(3)  # eg. 69 -> 069
+        suffix = "-" + scp_ref[1] if (scp_ref[1] != "") else ""  # Add dash to suffix if it exists
 
-        # Begin to normalize SCP string for URLs, separate ID number from
-        # suffix.
-        for ending in ('-ex', '-j', 'ex', 'j'):
-            if scp_no.endswith(ending):
-                scp_no = scp_no.replace(ending, "", 1)
-
-                if "-" in ending:
-                    suffix = ending
-                else:
-                    suffix = "-" + ending
-                break
-
-        # At this point, the number ID should only be positive integers. Throws
-        # away things like "read the scp wiki" or "I wrote an scp once".
-        if not scp_no.isdigit():
-            continue
-
-        scp_no = scp_no.zfill(3)  # eg. 69 -> 069
-        formatted = scp_no + suffix
+        formatted = id_number + suffix
 
         # Make and check URL.
         url = "http://www.scp-wiki.net/scp-" + formatted
