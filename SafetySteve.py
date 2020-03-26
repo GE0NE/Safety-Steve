@@ -25,6 +25,7 @@ import traceback
 import git
 import textwrap
 import ast
+import requests
 
 try:
     import discord
@@ -603,9 +604,9 @@ async def on_message(msg: discord.Message):
             await giveCurrency(msg, target, amount)
             return
 
-        if command == textCommands[21]['Command'] or command in textCommands[21]['Alias'].split('#'):
-            await throwError(msg, 'Sorry, dude. This command is still being developed!', custom=True, printError=False)
-            return
+        #if command == textCommands[21]['Command'] or command in textCommands[21]['Alias'].split('#'):
+        #    await throwError(msg, 'Sorry, dude. This command is still being developed!', custom=True, printError=False)
+        #    return
 
         if command == textCommands[22]['Command'] or command in textCommands[22]['Alias'].split('#'):
             if len(args.strip()) < 1:
@@ -970,6 +971,12 @@ async def on_message(msg: discord.Message):
     elif client.user.mentioned_in(msg) and not msg.mention_everyone:
         await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))
         return
+
+    # Not `elif` so it can work with other commands
+    if "scp" in content:
+        response = await respond_to_scp_references(content)
+        if response is not None:
+            await say(msg, response)
 
 
 async def playSound(msg, command, silent=False):
@@ -2087,6 +2094,40 @@ async def clapify(text):
     clappy_text = " 👏 ".join(words).upper()
 
     return clappy_text
+
+async def respond_to_scp_references(text):
+    """ Finds references to SCP in the passed str, either in form "scp <num>"
+    or "scp-<num>". If found, responds with scp-wiki URLs (if they exist).
+    Returns None if no references to SCP found.
+    """
+
+    def format_scp_str(scp_str):
+        for end_str in ["j", "ex"]:
+            if scp_str.endswith(end_str):
+                base_str = scp_str[:-len(end_str)]
+                if base_str.endswith("-"):
+                    base_str = base_str[:-1]
+                break
+        else:
+            base_str = scp_str.zfill()
+            end_str = ""
+        return base_str + end_str
+
+    scp_references = re.findall("(?:scp[- ](\S{1,8}))", text)
+    message = ""
+
+    for scp_ref in scp_references:
+        formatted = format_scp_str(scp_ref)
+
+        url = "http://www.scp-wiki.net/scp-" + formatted
+        if requests.get(url).status_code == 404:
+            message += "SCP-" + formatted + " not in the scp-wiki.\n"
+        else:
+            message += "SCP-" + formatted + ": " + url + "\n"
+    if message == "":
+        message = None
+
+    return message
 
 @client.event
 async def on_ready():
