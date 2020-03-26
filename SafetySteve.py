@@ -604,6 +604,10 @@ async def on_message(msg: discord.Message):
             await giveCurrency(msg, target, amount)
             return
 
+        # ^scp works, but is actually handled more like the subreddit detection, that is to
+        # say it finds references to SCP in messages automatically, so logic for explicitly calling
+        # the command is no longer needed.
+
         #if command == textCommands[21]['Command'] or command in textCommands[21]['Alias'].split('#'):
         #    await throwError(msg, 'Sorry, dude. This command is still being developed!', custom=True, printError=False)
         #    return
@@ -975,7 +979,7 @@ async def on_message(msg: discord.Message):
     # Not `elif` so it can work with other commands
     if "scp" in content:
         response = await respond_to_scp_references(content)
-        if response is not None:
+        if response != "":
             await say(msg, response)
 
 
@@ -2096,38 +2100,50 @@ async def clapify(text):
     return clappy_text
 
 async def respond_to_scp_references(text):
-    """ Finds references to SCP in the passed str, either in form "scp <num>"
-    or "scp-<num>". If found, responds with scp-wiki URLs (if they exist).
-    Returns None if no references to SCP found.
+    """ Find references to SCPs is text, return their wiki entries if they
+    exist.
+
+    Returns an empty str if no proper references found. The following are valid
+    SCP references: "SCP-400", "scp 400", "SCP-400j", "scp-400-ex".
     """
 
-    def format_scp_str(scp_str):
-        for end_str in ["j", "ex"]:
-            if scp_str.endswith(end_str):
-                base_str = scp_str[:-len(end_str)]
-                if base_str.endswith("-"):
-                    base_str = base_str[:-1]
-                break
-        else:
-            base_str = scp_str.zfill()
-            end_str = ""
-        return base_str + end_str
-
-    scp_references = re.findall("(?:scp[- ](\S{1,8}))", text)
+    # The regex returns the "400-ex" portion of "SCP-400-ex".
+    scp_numbers = re.findall("(?:scp[- ]([-\w]{1,8}))", text)
     message = ""
 
-    for scp_ref in scp_references:
-        formatted = format_scp_str(scp_ref)
+    for scp_no in scp_numbers:
+        scp_no = scp_no.lower()
+        suffix = ""
 
+        # Begin to normalize SCP string for URLs, separate ID number from
+        # suffix.
+        for ending in ('-ex', '-j', 'ex', 'j'):
+            if scp_no.endswith(ending):
+                scp_no = scp_no.replace(ending, "", 1)
+
+                if "-" in ending:
+                    suffix = ending
+                else:
+                    suffix = "-" + ending
+                break
+
+        # At this point, the number ID should only be positive integers. Throws
+        # away things like "read the scp wiki" or "I wrote an scp once".
+        if not scp_no.isdigit():
+            continue
+
+        scp_no = scp_no.zfill(3)  # eg. 69 -> 069
+        formatted = scp_no + suffix
+
+        # Make and check URL.
         url = "http://www.scp-wiki.net/scp-" + formatted
         if requests.get(url).status_code == 404:
             message += "SCP-" + formatted + " not in the scp-wiki.\n"
         else:
             message += "SCP-" + formatted + ": " + url + "\n"
-    if message == "":
-        message = None
 
     return message
+
 
 @client.event
 async def on_ready():
