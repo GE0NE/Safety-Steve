@@ -1808,12 +1808,12 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
     async with msg.channel.typing():
         name = parse.quote_plus(name)
         async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
-            #async with session.get("https://api.jikan.moe/search/{0}?q={1}&type={2}&page=1".format(mediaType, name, displayFormat)) as resp:
-            async with session.get("https://api.jikan.moe/search/{0}?q={1}&page=1".format(mediaType, name)) as resp:
+            #async with session.get("https://api.jikan.moe/v3/search/{0}?q={1}&type={2}&page=1".format(mediaType, name, displayFormat)) as resp:
+            async with session.get("https://api.jikan.moe/v3/search/{0}?q={1}&page=1".format(mediaType, name)) as resp:
                 result = await resp.json()
                 results = None
                 try:
-                    results = result["result"]
+                    results = result["results"]
                 except:
                     pass
             try:
@@ -1823,7 +1823,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
             except:
                 pass
             if not results:
-                await throwError(msg, "{} couldn't be found on MyAnimeList.".format(name), custom=True, printError=False)
+                await notFound()
                 return
             else:
                 try:
@@ -1831,7 +1831,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                     result_id = top_result["mal_id"]
                     result_image = top_result["image_url"]                
                     
-                    async with session.get("https://api.jikan.moe/{0}/{1}".format(mediaType, result_id)) as resp:
+                    async with session.get("https://api.jikan.moe/v3/{0}/{1}".format(mediaType, result_id)) as resp:
                         result = await resp.json()
                     try:
                         if result["error"]:
@@ -1884,7 +1884,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
                             synop = result_synopsis[:400].split('.')
                             text = ''
                             if len(synop)-1 <= 1:
-                                text = result_synopsis
+                                text = synop[0]
                             for i in range(0, len(synop)-1):
                                 text += synop[i] + '.'
                         except:
