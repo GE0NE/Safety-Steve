@@ -172,7 +172,7 @@
         {
             "Command": "scp",
             "Alias": "",
-            "Help": "Displays the given scp from scp-wiki.net",
+            "Help": "Displays the given scp from scp-wiki.net.",
             "Params": "<scp number>",
             "Examples": "scp 682#scp 420-j"
         },

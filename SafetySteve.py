@@ -25,6 +25,7 @@ import traceback
 import git
 import textwrap
 import ast
+import requests
 
 try:
     import discord
@@ -603,9 +604,13 @@ async def on_message(msg: discord.Message):
             await giveCurrency(msg, target, amount)
             return
 
-        if command == textCommands[21]['Command'] or command in textCommands[21]['Alias'].split('#'):
-            await throwError(msg, 'Sorry, dude. This command is still being developed!', custom=True, printError=False)
-            return
+        # ^scp works, but is actually handled more like the subreddit detection, that is to
+        # say it finds references to SCP in messages automatically, so logic for explicitly calling
+        # the command is no longer needed.
+
+        #if command == textCommands[21]['Command'] or command in textCommands[21]['Alias'].split('#'):
+        #    await throwError(msg, 'Sorry, dude. This command is still being developed!', custom=True, printError=False)
+        #    return
 
         if command == textCommands[22]['Command'] or command in textCommands[22]['Alias'].split('#'):
             if len(args.strip()) < 1:
@@ -972,6 +977,12 @@ async def on_message(msg: discord.Message):
     elif client.user.mentioned_in(msg) and not msg.mention_everyone:
         await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))
         return
+
+    # Not `elif` so it can work with other commands
+    if "scp" in content:
+        response = await respond_to_scp_references(content)
+        if response != "":
+            await say(msg, response)
 
 
 async def playSound(msg, command, silent=False):
@@ -2125,6 +2136,35 @@ async def clapify(text):
     clappy_text = " 👏 ".join(words).upper()
 
     return clappy_text
+
+async def respond_to_scp_references(text):
+    """ Find references to SCPs is text, return their wiki entries if they
+    exist.
+
+    Returns an empty str if no proper references found. The following are valid
+    SCP references: "SCP-400", "scp 400", "SCP-400j", "scp-400-ex", "scp 69 j",
+    "SCP 01 ex".
+    """
+    
+    # Capture the base number and suffix as different groups
+    scp_references = re.findall("(?:scp[- ]([\d]{1,8})(?:[ -]){0,1}(ex|j){0,1}\\b)", text.lower())
+    message = ""
+
+    for scp_ref in scp_references:
+        id_number = scp_ref[0].zfill(3)  # eg. 69 -> 069
+        suffix = "-" + scp_ref[1] if (scp_ref[1] != "") else ""  # Add dash to suffix if it exists
+
+        formatted = id_number + suffix
+
+        # Make and check URL.
+        url = "http://www.scp-wiki.net/scp-" + formatted
+        if requests.get(url).status_code == 404:
+            message += "SCP-" + formatted + " not in the scp-wiki.\n"
+        else:
+            message += "SCP-" + formatted + ": " + url + "\n"
+
+    return message
+
 
 @client.event
 async def on_ready():
