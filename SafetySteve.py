@@ -468,7 +468,7 @@ async def on_message(msg: discord.Message):
                 embed = discord.Embed(title="Scores:", description="_ _")
                 for scoreEntry in scores:
                     try:
-                        user = await client.get_user_info(scoreEntry[1])
+                        user = client.get_user(int(scoreEntry[1]))
                         score = scoreEntry[2]
                         if score != '0':
                             displayName = user.display_name
@@ -850,6 +850,8 @@ async def on_message(msg: discord.Message):
                 continue
 
     elif content in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
+        protected = 0
+        votescast = 1
         try:
             targetMessage = None
             server = msg.guild
@@ -878,13 +880,7 @@ async def on_message(msg: discord.Message):
                     await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
                     return
 
-                ###### Item ######
-                elif await hasItem(server.id, author.id, 'ActiveShield'):
-                    await say(msg, "This user was protected by a Shield and was unable to be voted on!")
-                    await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
-                    return
-                ##################
-                
+                ###### Item ######                
                 elif content == "mega bad bot" or content == "mega good bot":
                     itemInternalName = 'MegaVote'
                     itemName = itemInternalName
@@ -898,37 +894,51 @@ async def on_message(msg: discord.Message):
                                 break
                         await say(msg, "-{} You consumed a {} to use all your remaining votes today ({}) on {}!".format(ico, itemName, str(voteLimit - int(invokerScores[4])), author.mention))
                         ###### Item ######
-                        if await hasItem(server.id, author.id, 'ActiveShield'):
-                            await say(msg, "This user was protected by a Shield and was unable to be voted on!")
-                            await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
-                            return
+                        for i in range(0, voteLimit - int(invokerScores[4])):
+                            ###### Item ######
+                            if 'bad' in content:
+                                if await hasItem(server.id, author.id, 'ActiveWard'):
+                                    await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
+                                    protected += 1
+                                    continue
+
+                            if await hasItem(server.id, author.id, 'ActiveShield'):
+                                await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
+                                protected += 1
+
+                        await say(msg, "This user was protected by an item and was unable to be voted on! (x{})".format(protected) if protected > 1 else "")
                         ##################
-                        ###### Item ######
-                        if 'bad' in content and await hasItem(server.id, author.id, 'ActiveWard'):
-                            await say(msg, "This user was protected by a Ward and was unable be negatively voted on!")
-                            await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
-                            return
-                        ##################
-                        await writeScore(server.id, author.id, score=(voteLimit - int(invokerScores[4])) * (1 if 'good' in content else -1))
-                        await writeScore(server.id, msg.author.id, voted=(voteLimit - int(invokerScores[4])), inventory={'MegaVote':-1})
+                        await writeScore(server.id, author.id, score=(max(voteLimit - int(invokerScores[4]) - protected, 0) * (1 if 'good' in content else -1)))
+                        await writeScore(server.id, msg.author.id, inventory={'MegaVote':-1})
+                        votescast = voteLimit - int(invokerScores[4])
                     else:
                         await say(msg, "You don't have the item required to perform that action!")
                         return
-                    ##################
 
-                else:
-                    if 'bad' in content:
-                        ###### Item ######
-                        if await hasItem(server.id, author.id, 'ActiveWard'):
-                            await say(msg, "This user was protected by a Ward and was unable be negatively voted on!")
-                            await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
-                            return
-                        ##################
+                ##################
+                elif await hasItem(server.id, author.id, 'ActiveShield') and not protected:
+                    await say(msg, "This user was protected by a Shield and was unable to be voted on!")
+                    await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
+                    protected = 1
+                ##################
+
+                elif 'bad' in content and not protected:
+                    ###### Item ######
+                    if await hasItem(server.id, author.id, 'ActiveWard'):
+                        await say(msg, "This user was protected by a Ward and was unable be negatively voted on!")
+                        await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
+                        protected = 1
+                ##################
+
+                if not protected:
                     await writeScore(server.id, author.id, score=1 if 'good' in content else -1)
-                    await writeScore(server.id, msg.author.id, voted=1)
-                
-                targetScores = await readScores(guild=server.id, userID=author.id)
-                await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
+
+                await writeScore(server.id, msg.author.id, voted=votescast)
+
+                if max(votescast - protected, 0) != 0:
+                    targetScores = await readScores(guild=server.id, userID=author.id)
+                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
+
         except Exception as e:
             await throwError(msg, error=e, sayTraceback=True, printTraceback=True)
             return
