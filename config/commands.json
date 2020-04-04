@@ -174,7 +174,7 @@
             "Alias": "",
             "Help": "Displays the given scp from scp-wiki.net.",
             "Params": "<scp number>",
-            "Examples": "scp 682#scp 420-j"
+            "Examples": "scp 682#scp 420-j#scp 083 d"
         },
         
         {
