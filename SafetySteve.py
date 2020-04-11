@@ -2168,7 +2168,7 @@ async def respond_to_scp_references(text):
     """
     package = ""
     # Capture the base number and suffix as different groups
-    scp_references = re.findall("(^| )scp[ -]?(\d*)-?([a-z0-9:]*)", text.lower())
+    scp_references = re.findall("(^| )scp[ -]?(\d+)-?([a-z0-9:]*)", text.lower())
     message = ""
 
     for scp_ref in scp_references:
