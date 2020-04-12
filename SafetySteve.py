@@ -729,6 +729,9 @@ async def on_message(msg: discord.Message):
                         target = None
                         if msg.mentions:
                             target = msg.mentions[0]
+                            if target == msg.author and itemWanted['Item'] == "LoveBomb":
+                                await say(msg, 'You cannot Love Bomb yourself! Nice try though.')
+                                return
                         if not itemWanted['AcceptsTarget'] and target:
                             if target != msg.author:
                                 await say(msg, 'You cannot use that item on someone else!')
