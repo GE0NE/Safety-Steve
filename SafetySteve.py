@@ -854,6 +854,7 @@ async def on_message(msg: discord.Message):
     elif content in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
         protected = 0
         votescast = 1
+        deltascore = 1
         try:
             targetMessage = None
             server = msg.guild
@@ -907,10 +908,11 @@ async def on_message(msg: discord.Message):
                             if await hasItem(server.id, author.id, 'ActiveShield'):
                                 await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
                                 protected += 1
-
-                        await say(msg, "This user was protected by an item and was unable to be voted on! (x{})".format(protected) if protected > 1 else "")
+                        
+                        if protected:
+                            await say(msg, "This user was protected by an item and was unable to be voted on!{}".format(" (x{})".format(protected) if protected > 1 else ""))
                         ##################
-                        await writeScore(server.id, author.id, score=(max(voteLimit - int(invokerScores[4]) - protected, 0) * (1 if 'good' in content else -1)))
+                        deltascore = max(voteLimit - int(invokerScores[4]) - protected, 0)
                         await writeScore(server.id, msg.author.id, inventory={'MegaVote':-1})
                         votescast = voteLimit - int(invokerScores[4])
                     else:
@@ -932,8 +934,7 @@ async def on_message(msg: discord.Message):
                         protected = 1
                 ##################
 
-                if not protected:
-                    await writeScore(server.id, author.id, score=1 if 'good' in content else -1)
+                await writeScore(server.id, author.id, score=deltascore * (1 if 'good' in content else -1))
 
                 await writeScore(server.id, msg.author.id, voted=votescast)
 
