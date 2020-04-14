@@ -84,7 +84,7 @@ except FileNotFoundError:
     with open('config/user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
         json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": ""},
-            "channel_ids":{"lobby": ""},"admins":[""]}, f, indent = 4, ensure_ascii = False)
+            "channel_ids":{"lobby": ""},"security":{"allowremoteshutdown": False,"admins":[]}}, f, indent = 4, ensure_ascii = False)
         sys.exit("user info file created. "
             "Please fill out the user-info.json file and restart the bot.");
 
@@ -217,7 +217,7 @@ embedColor = int(config['embed_color'], 0)
 channels = userInfo['channel_ids']
 
 # Admins
-admins = userInfo['admins']
+admins = userInfo['security']['admins']
 
 # Birthdays
 dates = date_list['dates']
@@ -254,7 +254,7 @@ client = discord.Client(description=desc, max_messages=100)
 async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False, printError=True, fatal=False):
     if printError:
         print("ERROR:\n{}".format(error))
-    if vocalize:
+    if vocalize and msg:
         if error:
             await say(msg, "Woah! Something bad happened! ```\n{}\n```".format(error) if not custom else error)
         if sayTraceback:
@@ -2249,8 +2249,15 @@ async def pullFromRepo(msgLogCxt = None):
 async def restart(msgLogCxt = None):
     await setPlaying("Restarting...")
     if msgLogCxt:
-        await say(msgLogCxt, "Restarting. This may take a while.")
-    os.execl(sys.executable, sys.executable, * sys.argv)
+        await throwError(msgLogCxt, "Restarting. This may take a while.", vocalize=True, custom=True, printError=False)
+    if userInfo['security']['allowremoteshutdown']:
+        try:
+            os.system('sudo reboot now')
+        except:
+            await throwError(msgLogCxt, e, vocalize=True, printError=False)
+            await throwError(msgLogCxt, "Ensure you are running me with administrator privileges.", vocalize=True, custom=True, printError=False)
+    else:
+        os.execl(sys.executable, sys.executable, * sys.argv)
 
 def run_client(Client, *args, **kwargs):
     loop = asyncio.get_event_loop()
