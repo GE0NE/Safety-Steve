@@ -2250,12 +2250,12 @@ async def restart(msgLogCxt = None):
     await setPlaying("Restarting...")
     if msgLogCxt:
         await throwError(msgLogCxt, "Restarting. This may take a while.", vocalize=True, custom=True, printError=False)
-    if userInfo['security']['allowremoteshutdown']:
+    if userInfo['security']['allowremoteshutdown'] and platform.system() == 'Linux':
         try:
             os.system('sudo reboot now')
         except:
             await throwError(msgLogCxt, e, vocalize=True, printError=False)
-            await throwError(msgLogCxt, "Ensure you are running me with administrator privileges.", vocalize=True, custom=True, printError=False)
+            await throwError(msgLogCxt, "Ensure you are running me with administrator privileges on a Linux-based system.", vocalize=True, custom=True, printError=False)
     else:
         os.execl(sys.executable, sys.executable, * sys.argv)
 
