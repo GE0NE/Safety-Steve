@@ -1086,31 +1086,31 @@ async def subreddit(msg, sub, bypassErrorCheck=False, args=[], filterNSFW=-1, fi
         filtertype = 'hot'
 
     try:
-        async with msg.channel.typing():
-            sub = str(sub)
-            for s in sub.split('+'):
-                if reddit.subreddit(s).over18:
-                    if not await checkNSFW(msg):
-                        return
-            filt = getattr(reddit.subreddit(sub), filtertype)
-            submissions = filt(limit=pool)
-            for submission in submissions:
-                extensions = ["png","jpg","jpeg","gif"]
-                if any([ext in submission.url[-len(ext):] for ext in extensions]):
-                    submissionList.append(submission)
-            if filterNSFW != -1:
-                submissionList = list(filter(lambda x: x.over_18 != filterNSFW, submissionList))
-            if len(submissionList) > 0:
-                submission = submissionList[random.randint(0, len(submissionList)-1)]
-                embed = discord.Embed(title=submission.title, 
-                    url="https://reddit.com{}".format(submission.permalink), color=embedColor)
-                embed.set_image(url=submission.url)
-                embed.set_footer(text=" via reddit.com/r/{}".format(str(submission.subreddit)), 
-                    icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
-                await say(msg, "Here's a {} post from r/{}".format(filtertype, str(submission.subreddit)), embed)
-                return
-            else:
-                await throwError(msg, "There's nothing I can post in that subreddit!", custom=True, printError=False)
+        await msg.channel.trigger_typing()
+        sub = str(sub)
+        for s in sub.split('+'):
+            if reddit.subreddit(s).over18:
+                if not await checkNSFW(msg):
+                    return
+        filt = getattr(reddit.subreddit(sub), filtertype)
+        submissions = filt(limit=pool)
+        for submission in submissions:
+            extensions = ["png","jpg","jpeg","gif"]
+            if any([ext in submission.url[-len(ext):] for ext in extensions]):
+                submissionList.append(submission)
+        if filterNSFW != -1:
+            submissionList = list(filter(lambda x: x.over_18 != filterNSFW, submissionList))
+        if len(submissionList) > 0:
+            submission = submissionList[random.randint(0, len(submissionList)-1)]
+            embed = discord.Embed(title=submission.title, 
+                url="https://reddit.com{}".format(submission.permalink), color=embedColor)
+            embed.set_image(url=submission.url)
+            embed.set_footer(text=" via reddit.com/r/{}".format(str(submission.subreddit)), 
+                icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
+            await say(msg, "Here's a {} post from r/{}".format(filtertype, str(submission.subreddit)), embed)
+            return
+        else:
+            await throwError(msg, "There's nothing I can post in that subreddit!", custom=True, printError=False)
     except:
         await throwError(msg, "reddit.com/r/{} couldn\'t be accessed.".format(sub), custom=True, printError=False)
 
@@ -1391,22 +1391,22 @@ async def setPlaying(name, activitytype=0):
     return
 
 async def sayIPA(msg, text):
-    async with msg.channel.typing():
-        try:
-            with requests. Session() as c: 
-                url = 'https://tophonetics.com/'
-                c.get(url)
-                data = dict(text_to_transcribe=text, output_dialect='am', submit="Show+transcription")
-                page = c.post(url, data=data, headers={"Referer": "https://tophonetics.com/"})
-                soup = BeautifulSoup(page.text, 'html.parser')
-                try:
-                    IPA_text = soup.find(id='transcr_output').text
-                except AttributeError:
-                    await throwError(msg, "I wasn't able to convert that word!", custom=True, printError=False)
-                    return
-                await say(msg, IPA_text)
-        except:
-            await throwError(msg, "I couldn't access `{}`!".format(url), custom=True)
+    await msg.channel.trigger_typing()
+    try:
+        with requests. Session() as c: 
+            url = 'https://tophonetics.com/'
+            c.get(url)
+            data = dict(text_to_transcribe=text, output_dialect='am', submit="Show+transcription")
+            page = c.post(url, data=data, headers={"Referer": "https://tophonetics.com/"})
+            soup = BeautifulSoup(page.text, 'html.parser')
+            try:
+                IPA_text = soup.find(id='transcr_output').text
+            except AttributeError:
+                await throwError(msg, "I wasn't able to convert that word!", custom=True, printError=False)
+                return
+            await say(msg, IPA_text)
+    except:
+        await throwError(msg, "I couldn't access `{}`!".format(url), custom=True)
 
 async def defineUrban(msg, message=None, term='', num=1, edit=None):
 
@@ -1427,8 +1427,8 @@ async def defineUrban(msg, message=None, term='', num=1, edit=None):
             return
         search = "\""+term+"\""
         if not edit:
-            async with msg.channel.typing():
-                result = await getPayload()
+            await msg.channel.trigger_typing()
+            result = await getPayload()
         else:
             result = await getPayload()
         if not result["list"]:
@@ -1487,55 +1487,55 @@ async def defineUrban(msg, message=None, term='', num=1, edit=None):
         return 
 
 async def defineGoogle(msg, message):
-    async with msg.channel.typing():
-        async with aiohttp.ClientSession() as session:
-            term = message.strip()
-            search = term.split(" ")[0]
-            async with session.get("https://googledictionaryapi.eu-gb.mybluemix.net/", params={"define": search}) as resp:
-                try:
-                    payload = await resp.json(content_type=None)
-                except:
-                    await say(msg, "I couldn't define {}.".format(term))
-                    return
+    await msg.channel.trigger_typing()
+    async with aiohttp.ClientSession() as session:
+        term = message.strip()
+        search = term.split(" ")[0]
+        async with session.get("https://googledictionaryapi.eu-gb.mybluemix.net/", params={"define": search}) as resp:
+            try:
+                payload = await resp.json(content_type=None)
+            except:
+                await say(msg, "I couldn't define {}.".format(term))
+                return
 
-            embed=discord.Embed(color=embedColor)
-            embed.set_thumbnail(url="http://icons.iconarchive.com/icons/osullivanluke/orb-os-x/48/Dictionary-icon.png")
-            values = list(payload[0].values())
+        embed=discord.Embed(color=embedColor)
+        embed.set_thumbnail(url="http://icons.iconarchive.com/icons/osullivanluke/orb-os-x/48/Dictionary-icon.png")
+        values = list(payload[0].values())
 
-            word = values[0]
-            ipa = values[1]
+        word = values[0]
+        ipa = values[1]
 
-            embed.add_field(name="{}".format(word), value="{}".format(ipa), inline=False)
+        embed.add_field(name="{}".format(word), value="{}".format(ipa), inline=False)
+        
+        for pos in list(values[3].keys())[:3]:
+            postxt = pos
+            definitionCount = 1
+            definitions = ""
+            for entry in values[3][pos][:2]:
+
+                definition = ""
+                if 'definition' in entry:
+                    definition = entry['definition']
+
+                example = ""
+                if 'example' in entry:
+                    example = entry['example']
+
+                synonyms = ""
+                if 'synonyms' in entry:
+                    synonyms = entry['synonyms'][:4]
+                    synonyms = ', '.join(synonyms)
+                    
+                seperator = "_ _\n" if definitionCount == 1 else ""
+                definitions += str(definitionCount) + ". " + definition + "\n"
+                definitionCount += 1
+
+            embed.add_field(name="{}".format(postxt), value="{}".format(definitions), inline=False)
+            postxt = u'\u200b'
+        embed.set_footer(text="Powered by googledictionaryapi.eu-gb.mybluemix.net")
+        await say(msg, "", embed=embed)
             
-            for pos in list(values[3].keys())[:3]:
-                postxt = pos
-                definitionCount = 1
-                definitions = ""
-                for entry in values[3][pos][:2]:
-
-                    definition = ""
-                    if 'definition' in entry:
-                        definition = entry['definition']
-
-                    example = ""
-                    if 'example' in entry:
-                        example = entry['example']
-
-                    synonyms = ""
-                    if 'synonyms' in entry:
-                        synonyms = entry['synonyms'][:4]
-                        synonyms = ', '.join(synonyms)
-                        
-                    seperator = "_ _\n" if definitionCount == 1 else ""
-                    definitions += str(definitionCount) + ". " + definition + "\n"
-                    definitionCount += 1
-
-                embed.add_field(name="{}".format(postxt), value="{}".format(definitions), inline=False)
-                postxt = u'\u200b'
-            embed.set_footer(text="Powered by googledictionaryapi.eu-gb.mybluemix.net")
-            await say(msg, "", embed=embed)
-                
-            return 
+        return 
 
 async def mock(msg, *, text=""):
             #check for string or message id
@@ -1841,107 +1841,107 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
     async def notFound():
         await throwError(msg, "{} couldn't be found on MyAnimeList.".format(name), vocalize=True, custom=True, printError=False)
 
-    async with msg.channel.typing():
-        name = parse.quote_plus(name)
-        async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
-            #async with session.get("https://api.jikan.moe/v3/search/{0}?q={1}&type={2}&page=1".format(mediaType, name, displayFormat)) as resp:
-            async with session.get("https://api.jikan.moe/v3/search/{0}?q={1}&page=1".format(mediaType, name)) as resp:
-                result = await resp.json()
-                results = None
-                try:
-                    results = result["results"]
-                except:
-                    pass
+    await msg.channel.trigger_typing()
+    name = parse.quote_plus(name)
+    async with aiohttp.ClientSession(headers={"User-Agent": "{}".format(client.user)}) as session:
+        #async with session.get("https://api.jikan.moe/v3/search/{0}?q={1}&type={2}&page=1".format(mediaType, name, displayFormat)) as resp:
+        async with session.get("https://api.jikan.moe/v3/search/{0}?q={1}&page=1".format(mediaType, name)) as resp:
+            result = await resp.json()
+            results = None
             try:
-                if result["error"]:
-                    await notFound()
-                    return
+                results = result["results"]
             except:
                 pass
-            if not results:
+        try:
+            if result["error"]:
                 await notFound()
                 return
-            else:
+        except:
+            pass
+        if not results:
+            await notFound()
+            return
+        else:
+            try:
+                top_result = results[0]
+                result_id = top_result["mal_id"]
+                result_image = top_result["image_url"]                
+                
+                async with session.get("https://api.jikan.moe/v3/{0}/{1}".format(mediaType, result_id)) as resp:
+                    result = await resp.json()
                 try:
-                    top_result = results[0]
-                    result_id = top_result["mal_id"]
-                    result_image = top_result["image_url"]                
-                    
-                    async with session.get("https://api.jikan.moe/v3/{0}/{1}".format(mediaType, result_id)) as resp:
-                        result = await resp.json()
+                    if result["error"]:
+                        await notFound()
+                        return
+                except:
+                    pass
+                try:
+                    result_name = html.unescape(result["title"])
+                    result_name_english = result["title_english"]
+                    result_url = 'https://myanimelist.net/{0}/{1}'.format(mediaType, result_id)
+                    result_type = result.get("type")
+                    result_score = result.get("score")
+                    result_episodes = result.get("episodes")
+                    result_rank = result.get("rank")
+                    result_status = result.get("status")
+                    result_air_time = result.get("aired_string")
+                    result_synopsis = result.get("synopsis")
+
                     try:
-                        if result["error"]:
-                            await notFound()
-                            return
+                        result_synopsis = html.unescape(result.get("synopsis"))
                     except:
                         pass
+
+                    result_name = "Unknown" if result_name is None else result_name
+                    result_name_english = "Unknown" if result_name_english is None else result_name_english
+                    result_url = "Unknown" if result_url is None else result_url
+                    result_type = "Unknown" if result_type is None else result_type
+                    result_score = "?" if result_score is None else str(result_score)
+                    result_episodes = "Unknown" if result_episodes is None else str(result_episodes)
+                    result_rank = "Unknown" if result_rank is None else str(result_rank)
+                    result_status = "Unknown" if result_status is None else result_status
+                    result_air_time = "Unknown" if result_air_time is None else result_air_time
+                    result_synopsis = "No synopsis available" if result_synopsis is None else result_synopsis
+                    
+                    embed = discord.Embed(description=result_url, colour=embedColor)
+                    if result_name_english:
+                        result_name_english = html.unescape(result_name_english)
+                    else:
+                        result_name_english = result_name
+                    embed.add_field(name='English Title', value=result_name_english)
+                    embed.add_field(name='Rank', value='#' + result_rank)
+                    embed.add_field(name='Type', value=result_type)
+                    episodes = 'Unknown' if result_episodes == '0' else result_episodes
+                    embed.add_field(name='Episodes', value=episodes)
+                    score = '?' if result_score == 0 else str(result_score) + '/10'
+                    embed.add_field(name='Score', value=score)
+                    embed.add_field(name='Status', value=result_status)
                     try:
-                        result_name = html.unescape(result["title"])
-                        result_name_english = result["title_english"]
-                        result_url = 'https://myanimelist.net/{0}/{1}'.format(mediaType, result_id)
-                        result_type = result.get("type")
-                        result_score = result.get("score")
-                        result_episodes = result.get("episodes")
-                        result_rank = result.get("rank")
-                        result_status = result.get("status")
-                        result_air_time = result.get("aired_string")
-                        result_synopsis = result.get("synopsis")
-
-                        try:
-                            result_synopsis = html.unescape(result.get("synopsis"))
-                        except:
-                            pass
-
-                        result_name = "Unknown" if result_name is None else result_name
-                        result_name_english = "Unknown" if result_name_english is None else result_name_english
-                        result_url = "Unknown" if result_url is None else result_url
-                        result_type = "Unknown" if result_type is None else result_type
-                        result_score = "?" if result_score is None else str(result_score)
-                        result_episodes = "Unknown" if result_episodes is None else str(result_episodes)
-                        result_rank = "Unknown" if result_rank is None else str(result_rank)
-                        result_status = "Unknown" if result_status is None else result_status
-                        result_air_time = "Unknown" if result_air_time is None else result_air_time
-                        result_synopsis = "No synopsis available" if result_synopsis is None else result_synopsis
-                        
-                        embed = discord.Embed(description=result_url, colour=embedColor)
-                        if result_name_english:
-                            result_name_english = html.unescape(result_name_english)
-                        else:
-                            result_name_english = result_name
-                        embed.add_field(name='English Title', value=result_name_english)
-                        embed.add_field(name='Rank', value='#' + result_rank)
-                        embed.add_field(name='Type', value=result_type)
-                        episodes = 'Unknown' if result_episodes == '0' else result_episodes
-                        embed.add_field(name='Episodes', value=episodes)
-                        score = '?' if result_score == 0 else str(result_score) + '/10'
-                        embed.add_field(name='Score', value=score)
-                        embed.add_field(name='Status', value=result_status)
-                        try:
-                            synop = result_synopsis[:400].split('.')
-                            text = ''
-                            if len(synop)-1 <= 1:
-                                text = synop[0]
-                            for i in range(0, len(synop)-1):
-                                text += synop[i] + '.'
-                        except:
-                            text = result_synopsis
-                        embed.add_field(name='Synopsis', value=text + '..   [More »]({})'.format(result_url))
-                        embed.add_field(name='Airing Time:', value=result_air_time.replace('?', 'Unknown'))
-                        embed.set_thumbnail(url=result_image)
-                        embed.set_author(name=result_name,
-                                      icon_url='https://myanimelist.cdn-dena.com/img/sp/icon/apple-touch-icon-256.png')
-                        embed.set_footer(text='Powered by api.jikan.moe')
-                        await say(msg, "", embed=embed)
-
-                    except IndexError:
-                        await notFound()
+                        synop = result_synopsis[:400].split('.')
+                        text = ''
+                        if len(synop)-1 <= 1:
+                            text = synop[0]
+                        for i in range(0, len(synop)-1):
+                            text += synop[i] + '.'
                     except:
-                        return
+                        text = result_synopsis
+                    embed.add_field(name='Synopsis', value=text + '..   [More »]({})'.format(result_url))
+                    embed.add_field(name='Airing Time:', value=result_air_time.replace('?', 'Unknown'))
+                    embed.set_thumbnail(url=result_image)
+                    embed.set_author(name=result_name,
+                                  icon_url='https://myanimelist.cdn-dena.com/img/sp/icon/apple-touch-icon-256.png')
+                    embed.set_footer(text='Powered by api.jikan.moe')
+                    await say(msg, "", embed=embed)
+
                 except IndexError:
                     await notFound()
-                except Exception:
+                except:
                     return
-            return 
+            except IndexError:
+                await notFound()
+            except Exception:
+                return
+        return 
 
 async def clearDailyRestrictions():
     scores = await readScores()
@@ -2044,9 +2044,9 @@ async def checkDailyEvents():
                 formattedDateMessage = formattedDateMessage.replace("#age", str(dateOrdAge))
                 formattedDateMessage = formattedDateMessage.replace("#tag", str(dateTag))
                 formattedDateMessage = formattedDateMessage.replace("#type", str(dateType))
-            
+
             for dateChannel in dateChannels:
-                channel = client.get_channel(int(userInfo['channel_ids'][dateChannel])) if dateChannel != 'None' else ''
+                channel = client.get_channel(int(userInfo['channel_ids'][dateChannel] if not dateChannel.isdigit() else dateChannel)) if dateChannel != 'None' else ''
                 if formattedDateMessage and channel:
                     reactCondition = await sayInChannelOnce(channel, formattedDateMessage) and reacts
                     async for message in channel.history(limit=1):
@@ -2056,7 +2056,7 @@ async def checkDailyEvents():
                         for emojis in reacts:
                             await react(msg, emojis)
                 if dateFunc:
-                    data = {"id": 0,"size": 0,"":""}
+                    data = {'id':0,'attachments':[],'embeds':[],'edited_timestamp':0,'type':discord.MessageType.default,'pinned':False,'mention_everyone':False,'tts': False,'content':''}
                     dummyMessage = discord.Message(state=None, channel=channel, data=data)
                     dummyMessage.author = client.user
                     dummyMessage.content = ""
