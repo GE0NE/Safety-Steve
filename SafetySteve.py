@@ -934,7 +934,8 @@ async def on_message(msg: discord.Message):
                         protected = 1
                 ##################
 
-                await writeScore(server.id, author.id, score=deltascore * (1 if 'good' in content else -1))
+                if not protected >= votescast:
+                    await writeScore(server.id, author.id, score=deltascore * (1 if 'good' in content else -1))
 
                 await writeScore(server.id, msg.author.id, voted=votescast)
 
