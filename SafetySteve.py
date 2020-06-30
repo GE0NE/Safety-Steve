@@ -929,7 +929,7 @@ async def on_message(msg: discord.Message):
                 elif 'bad' in content and not protected:
                     ###### Item ######
                     if await hasItem(server.id, author.id, 'ActiveWard'):
-                        await say(msg, "This user was protected by a Ward and was unable be negatively voted on!")
+                        await say(msg, "This user was protected by a Ward and was unable to be negatively voted on!")
                         await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
                         protected = 1
                 ##################
