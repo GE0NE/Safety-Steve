@@ -851,7 +851,7 @@ async def on_message(msg: discord.Message):
             except:
                 continue
 
-    elif content in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
+    elif content in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot', 'good real people apart of a social media management team addressing your concerns']:
         protected = 0
         votescast = 1
         deltascore = 1
