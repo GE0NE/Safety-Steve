@@ -376,7 +376,7 @@ async def on_message(msg: discord.Message):
                 else:
                     embed = discord.Embed(title="Config")
                     embed.add_field(name=argList[0], value=config[argList[0]][1], inline=False)
-                    embed.add_field(name="Value", value=configs[argList[0]][0], inline=False)
+                    embed.add_field(name="Value", value=configs[argList[0]], inline=False)
                     await say(msg, "", embed=embed)
                     return
             else:
@@ -1100,7 +1100,14 @@ async def setServerConfig(guildID, configKey, newValue, type=0, msg=None):
     elif type == 1:
         if(isinstance(serverConfigsFile['configs'][configKey], list)):
             if newValue not in oldValue:
-                serverConfigsFile['configs'][configKey].append(newValue)
+                try:
+                    newValueList = shlex.split(newValue)
+                except ValueError:
+                    newValueList = newValue.split()
+                if any(elem in newValueList for elem in serverConfigsFile['configs'][configKey]):
+                    await throwError(msg, 'You cannot add a that value to that config because it already exsists', custom=True, printError=False)
+                    return
+                serverConfigsFile['configs'][configKey].extend(newValueList)
             else:
                 await throwError(msg, 'You cannot add a that value to that config because it already exsists', custom=True, printError=False)
                 return
@@ -1110,7 +1117,13 @@ async def setServerConfig(guildID, configKey, newValue, type=0, msg=None):
     elif type == -1:
         if(isinstance(serverConfigsFile['configs'][configKey], list)):
             try:
-                serverConfigsFile['configs'][configKey].remove(newValue)
+                try:
+                    newValueList = shlex.split(newValue)
+                except ValueError:
+                    newValueList = newValue.split()
+                if not set(newValueList).issubset(serverConfigsFile['configs'][configKey]):
+                    raise ValueError
+                serverConfigsFile['configs'][configKey] = [x for x in serverConfigsFile['configs'][configKey] if x not in set(newValueList)]
             except ValueError:
                 await throwError(msg, 'You cannot remove that value because it doesn\'t already exist in that list', custom=True, printError=False)
                 return
