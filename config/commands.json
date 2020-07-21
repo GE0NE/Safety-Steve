@@ -10,6 +10,14 @@
         },
         
         {
+            "Command": "config",
+            "Alias": "conf",
+            "Help": "Changes server-side properties",
+            "Params": "<<config to change> <'=' | <'+' | '-'>> <new value>> | <values [config name] | description [config name]>",
+            "Examples": "config description#config values#config invoker = $#config vote_limit = 5#config bad_words + tartar"
+        },
+        
+        {
             "Command": "git",
             "Alias": "hub",
             "Help": "Sends a link to the bot's github repository",
@@ -209,13 +217,13 @@
             "Examples": "item Shield#item Ward"
         },
 
-		{
+        {
             "Command": "zalgo",
             "Alias": "z#zt#zalgotext#hecomes",
             "Help": "Repeats text as spooky Z̸̳͓̫̻̩̾̀̈́̎̔̋̈́͗̄͐̋̚a̸̛͕̥̱̯͔̿͝ļ̸̡͔̗̖̪͙͉̝̣̫̻͗͜ͅg̵̢̢̥̠̘̠̘̣̞͑̈́̾̑̅͂͘͘͝ȍ̸̯͈͇̟͍̪̅͊͐̈́̐̒̏̒̈́̇͆̚͜ text. Uses previous comment if no text.",
             "Params": "[insanity level from 1-10] [text (previous comment if none)]",
             "Examples": "zalgo Hello world!"
-		},
+        },
 
         {
             "Command": "clap",

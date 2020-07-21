@@ -52,30 +52,37 @@ except ImportError:
 from bs4 import BeautifulSoup
 
 try:
-    with open('config/config.json', encoding='utf8') as f:                                                             
+    with open('config/default-config.json', encoding='utf8') as f:                                                             
         config = json.load(f)
 except FileNotFoundError:
-    with open('config/config.json', 'w', encoding='utf8') as f:
+    with open('config/default-config.json', 'w', encoding='utf8') as f:
         config = {}
         json.dump({
             "description": "I keep us safe from evil words!",
-            "name": "Safety Steve", "invoker": "^", "creator": "GEONE",
+            "name": "Safety Steve", "creator": "GEONE",
             "git_link": "https://github.com/GE0NE/Safety-Steve",
             "fileformat": ".mp3", "sunday_game": "Minecraft: Christian Edition",
             "monday_game": "Minecraft: Safety Edition", "tuesday_game": "Nekopara",
             "wednesday_game": "It is Wednesday, my dudes!",
             "thursday_game": "Minecraft: Extra Safe Edition (NSFW)",
             "friday_game": "Waifu Sex Simulator",
-            "saturday_game": "Minecraft: Safety Edition",
-            "vote_limit": 3,
-            "gild_limit": 1,
-            "embed_color": "0xeee657",
-            "response": "Hey! No bad words, please. This is a Christian server!",
-            "bad_words": ["heck"], "bad_word_exceptions": ["check", "checked", "checking", "checks"],
+            "saturday_game": "Minecraft: Safety Edition", "embed_color": "0xeee657",
+            "guild_admins": [[],"Users who can manage configs for this guild (mention)"],
+            "invoker": ["^","Used as the prefix for commands (str)"],
+            "vote_limit": [3,"How many times per day each user may vote using the good/bad bot command (int)"],
+            "gild_limit": [1,"How many times per day each user may award a gild using the gild command (int)"],
+            "point_value_in_currency": [10,"How much currency each point can be exchanged for using the exchange commmand (int)"],
+            "gilding_value_in_currency": [50,"How much currency each gilding can be exchanged for using the exchange commmand (int)"],
+            "currency_symbol": ["¤","The currency symbol (str)"],
+            "weekly_score_decay": [1,"How many points each user's score will decay by every week (int)"],
+            "bad_word_response": ["Hey! No bad words, please. This is a Christian server!","The respose to a bad word being said (str)"],
+            "bad_words": [["heck","frick","fick","golly","gosh","jeeper","darn","drat","tarnation"],"The list of bad words the bot will respond to (list)"],
+            "bad_words_exceptions": [["check","fickle","quadratic","hydrat"],
+            "A list of words/prefixes that contain one of the bad words that the bot will ignore (list)"],
             "reaction_words": [{"word": "wednesday", "reaction": "🐸"}, {"word": "skeltal", "reaction": "💀#🎺"},
             {"word": "doot", "reaction": "🎺"}]}, f, indent = 4, ensure_ascii = False)
-        sys.exit("config file created. "
-            "Please fill out the config.json file and restart the bot.");
+        sys.exit("default-config file created. "
+            "Please fill out the default-config.json file and restart the bot.");
 
 try:
     with open('config/user-info.json', encoding='utf8') as f:
@@ -135,20 +142,13 @@ except FileNotFoundError:
         sys.exit("items file created. "
             "Optionally fill out the items.json file and restart the bot.");
 
-
 # Bot info
 desc = config['description']
-invoker = config['invoker']
 generalInfo = userInfo['general_info']
 userID = generalInfo['user_id']
 mention = generalInfo['mention']
 discordToken = generalInfo['discord_token']
 name = config['name']
-
-# Settings
-pointValueInCurrency = config['point_value_in_currency']
-gildingValueInCurrency = config['gilding_value_in_currency']
-currencySymbol = config['currency_symbol']
 
 # Commands
 textCommands = commandsFile['text_commands']
@@ -198,26 +198,14 @@ commandHelp = textCommandHelp + voiceCommandHelp + nsfwCommandHelp
 commandParams = textCommandParams + voiceCommandParams + nsfwCommandParams
 commandAlias = textCommandAlias + voiceCommandAlias + nsfwCommandAlias
 
-# Bad words and the response to them
-wordBlacklist = config['bad_words']
-wordWhitelist = config['bad_words_exceptions']
-badWordResponse = config['response']
-
 # Word Responses
 reactionWords = config['reaction_words']
-
-# Restrictions
-voteLimit = config['vote_limit']
-gildLimit = config['gild_limit']
 
 # Formatting
 embedColor = int(config['embed_color'], 0)
 
 # Channel IDs
 channels = userInfo['channel_ids']
-
-# Admins
-admins = userInfo['security']['admins']
 
 # Birthdays
 dates = date_list['dates']
@@ -285,8 +273,9 @@ async def on_message(msg: discord.Message):
     if msg.author.bot:
         return
 
-    if content.startswith(invoker):
-        rawMessage = rawContent[len(invoker):].strip()
+    serverInvoker = await getServerConfig(msg.guild.id, ['configs', 'invoker'])
+    if content.startswith(serverInvoker):
+        rawMessage = rawContent[len(serverInvoker):].strip()
         message = rawMessage.lower()
         breakdown = message.split(" ")
         rawBreakdown = rawMessage.split(" ")
@@ -300,23 +289,29 @@ async def on_message(msg: discord.Message):
         if command == '':
             return
 
+        #------- Bot developer commands -------
         if command == "restart":
-            if str(msg.author.id) in admins:
+            if isBotAdmin(msg.author.mention):
                 await restart(msg)
             else:
-                await say(msg, "You don't have permission to use that command!")
-
+                await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
+            return
 
         if command == "pull":
-            if str(msg.author.id) in admins:
+            if isBotAdmin(msg.author.mention):
                 await pullFromRepo(msg)
             else:
-                await say(msg, "You don't have permission to use that command!")
+                await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
+            return
 
         if command == "func":
-            if len(args.strip()) >= 1:
-                await handleFunc(msg, args)
+            if isBotAdmin(msg.author.mention):
+                if len(args.strip()) >= 1:
+                    await handleFunc(msg, args)
+            else:
+                await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
             return
+        #--------------------------------------
 
         if command == textCommands[0]['Command'] or command in textCommands[0]['Alias'].split('#'):
             if not args:
@@ -327,35 +322,98 @@ async def on_message(msg: discord.Message):
                 return
 
         if command == textCommands[1]['Command'] or command in textCommands[1]['Alias'].split('#'):
-            await broadcastGitRepo(msg)
+            if not await isGuildAdmin(msg.guild.id, msg.author.mention):
+                await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
+                return
+
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[1]['Command'], msg)
+                return
+
+            configs = await getServerConfig(msg.guild.id, ['configs'])
+            if argList[0] in ['value', 'values', 'list']:
+                if len(argList) > 1 and argList[1] in configs:
+                    embed = discord.Embed(title="Config")
+                    embed.add_field(name=argList[1], value=configs[argList[1]], inline=False)
+                    await say(msg, "", embed=embed)
+                    return
+                elif len(argList) > 1:
+                    await throwError(msg, "That is not a valid config", custom=True, printError=False)
+                    return
+                else:
+                    embed = discord.Embed(title="Configs")
+                    for conf in dict(configs):
+                        embed.add_field(name=conf, value=configs[conf], inline=True)
+                    await say(msg, "", embed=embed)
+                    return
+
+            if argList[0] in ['description', 'descriptions', 'help']:
+                if len(argList) > 1 and argList[1] in configs:
+                    embed = discord.Embed(title="Config")
+                    embed.add_field(name=argList[1], value=config[argList[1]][1], inline=False)
+                    await say(msg, "", embed=embed)
+                    return
+                elif len(argList) > 1:
+                    await throwError(msg, "That is not a valid config", custom=True, printError=False)
+                    return
+                else:
+                    embed = discord.Embed(title="Configs")
+                    for conf in dict(configs):
+                        embed.add_field(name=conf, value=config[conf][1], inline=False)
+                    await say(msg, "", embed=embed)
+                    return
+
+            if argList[0] in configs:
+                if len(argList) > 2:
+                    if argList[1] in ['+','-','=']:
+                        if argList[1] == '+':
+                            await setServerConfig(msg.guild.id, argList[0], str(' '.join(rawBreakdown[1:][2:])), 1, msg=msg)
+                        if argList[1] == '-':
+                            await setServerConfig(msg.guild.id, argList[0], str(' '.join(rawBreakdown[1:][2:])), -1, msg=msg)
+                        if argList[1] == '=':
+                            await setServerConfig(msg.guild.id, argList[0], str(' '.join(rawBreakdown[1:][2:])), msg=msg)
+                    return
+                else:
+                    embed = discord.Embed(title="Config")
+                    embed.add_field(name=argList[0], value=config[argList[0]][1], inline=False)
+                    embed.add_field(name="Value", value=configs[argList[0]][0], inline=False)
+                    await say(msg, "", embed=embed)
+                    return
+            else:
+                await throwError(msg, "That is not a valid config", custom=True, printError=False)
+                return
+            return
 
         if command == textCommands[2]['Command'] or command in textCommands[2]['Alias'].split('#'):
+            await broadcastGitRepo(msg)
+
+        if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):
             if len(args.strip()) < 1:
-                await helpCommand(textCommands[2]['Command'], msg)
+                await helpCommand(textCommands[3]['Command'], msg)
                 return
             await say(msg, args)
             await msg.delete()
             return
 
-        if command == textCommands[3]['Command'] or command in textCommands[3]['Alias'].split('#'):
+        if command == textCommands[4]['Command'] or command in textCommands[4]['Alias'].split('#'):
             await subreddit(msg, 'animemes', args=argList)
             return
 
-        if command == textCommands[4]['Command'] or command in textCommands[4]['Alias'].split('#'):
+        if command == textCommands[5]['Command'] or command in textCommands[5]['Alias'].split('#'):
             await subreddit(msg, argList[0], args=argList[1:] if len(argList) > 1 else [])
             return
 
-        if command == textCommands[5]['Command'] or command in textCommands[5]['Alias'].split('#'):
+        if command == textCommands[6]['Command'] or command in textCommands[6]['Alias'].split('#'):
             if len(args) > 30:
                 await say(msg, "Woah! That's too many letters! Keep it below 30 please.")
                 return
             if len(args.strip()) < 1:
-                await helpCommand(textCommands[5]['Command'], msg)
+                await helpCommand(textCommands[6]['Command'], msg)
                 return
             await sayAscii(msg, args)
             return
 
-        if command == textCommands[6]['Command'] or command in textCommands[6]['Alias'].split('#'):
+        if command == textCommands[7]['Command'] or command in textCommands[7]['Alias'].split('#'):
             if len(args.strip()) < 1:
                 await setDailyGame()
                 return
@@ -368,10 +426,10 @@ async def on_message(msg: discord.Message):
             await setPlaying(args, typeindex)
             return
 
-        if command == textCommands[7]['Command'] or command in textCommands[7]['Alias'].split('#'):
+        if command == textCommands[8]['Command'] or command in textCommands[8]['Alias'].split('#'):
             await say(msg, "`༼ つ ◕_ ◕ ༽つ GIVE BAN ༼ つ ◕_ ◕ ༽つ`")
 
-        if command == textCommands[8]['Command'] or command in textCommands[8]['Alias'].split('#'):
+        if command == textCommands[9]['Command'] or command in textCommands[9]['Alias'].split('#'):
             usernamesFile = open("res/data/usernames.txt", "r")
             usernamesRaw = usernamesFile.read()
             usernames = usernamesRaw.split('\n')
@@ -409,17 +467,17 @@ async def on_message(msg: discord.Message):
                     nices[1], nices[2], nices[3], nices[4])
             await say(msg, thread)
 
-        if command == textCommands[9]['Command'] or command in textCommands[9]['Alias'].split('#'):
+        if command == textCommands[10]['Command'] or command in textCommands[10]['Alias'].split('#'):
             text = args.strip()
             if len(text) < 1:
-                await helpCommand(textCommands[9]['Command'], msg)
+                await helpCommand(textCommands[10]['Command'], msg)
                 return
             await sayIPA(msg, text)
 
-        if command == textCommands[10]['Command'] or command in textCommands[10]['Alias'].split('#'): 
+        if command == textCommands[11]['Command'] or command in textCommands[11]['Alias'].split('#'): 
             try:
                 if len(args.strip()) < 1:
-                    await helpCommand(textCommands[10]['Command'], msg)
+                    await helpCommand(textCommands[11]['Command'], msg)
                     return
                 question = args.split("[")[0]
                 messageFormatted = " ".join(args.split())
@@ -441,28 +499,28 @@ async def on_message(msg: discord.Message):
                         continue
                 return
             except:
-                await helpCommand(textCommands[10]['Command'], msg)
-                return
-
-        if command == textCommands[11]['Command'] or command in textCommands[11]['Alias'].split('#'):
-            if len(args.strip()) < 1:
                 await helpCommand(textCommands[11]['Command'], msg)
                 return
-            await defineUrban(msg, args)
-            return
 
         if command == textCommands[12]['Command'] or command in textCommands[12]['Alias'].split('#'):
             if len(args.strip()) < 1:
                 await helpCommand(textCommands[12]['Command'], msg)
                 return
-            await defineGoogle(msg, args)
+            await defineUrban(msg, args)
             return
 
         if command == textCommands[13]['Command'] or command in textCommands[13]['Alias'].split('#'):
-            await mock(msg, text=args.strip())
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[13]['Command'], msg)
+                return
+            await defineGoogle(msg, args)
             return
 
         if command == textCommands[14]['Command'] or command in textCommands[14]['Alias'].split('#'):
+            await mock(msg, text=args.strip())
+            return
+
+        if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
             if not argList:
                 scores = await readScores(msg.guild.id)
                 embed = discord.Embed(title="Scores:", description="_ _")
@@ -487,7 +545,8 @@ async def on_message(msg: discord.Message):
                     if msg.mentions:
                         target = msg.mentions[0]
                     targetScores = await readScores(msg.guild.id, target.id)
-                    await say(msg, "{} voted {} time{} today.".format("You've" if target is msg.author else target.mention+' has', targetScores[4], '' if targetScores[4] == '1' else 's'))
+                    await say(msg, "{} voted {} time{} today.".format("You've" if target is msg.author else target.mention + 
+                        ' has', targetScores[4], '' if targetScores[4] == '1' else 's'))
                     return
                 else:
                     if msg.mentions:
@@ -500,14 +559,15 @@ async def on_message(msg: discord.Message):
                         await say(msg, "{}'s score is {}.".format(target.mention, targetScores[2]))
             return
 
-        if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
+        if command == textCommands[16]['Command'] or command in textCommands[16]['Alias'].split('#'):
             server = msg.guild
             invokerMessage = None
             author = None
             invokerScores = await readScores(guild=server.id, userID=msg.author.id)
 
-            if invokerScores[0] and int(invokerScores[5]) >= gildLimit:
-                await say(msg, "You have already gilded someone {}today!".format((str(gildLimit) + ' times ') if gildLimit != 1 else ''))
+            serverGildLimit = await getServerConfig(msg.guild.id, ['configs', 'gild_limit'])
+            if invokerScores[0] and int(invokerScores[5]) >= serverGildLimit:
+                await say(msg, "You have already gilded someone {}today!".format((str(serverGildLimit) + ' times ') if serverGildLimit != 1 else ''))
                 return
 
             if len(args.strip()) < 1:
@@ -532,7 +592,7 @@ async def on_message(msg: discord.Message):
             embed.set_thumbnail(url="https://i.imgur.com/UWWoFxe.png")
             await say(msg, "{}".format(author.mention), embed=embed)
 
-        if command == textCommands[16]['Command'] or command in textCommands[16]['Alias'].split('#'):
+        if command == textCommands[17]['Command'] or command in textCommands[17]['Alias'].split('#'):
             target = None
             nick = None
 
@@ -555,22 +615,22 @@ async def on_message(msg: discord.Message):
             await say(msg, "", embed=embed)
             return
 
-        if command == textCommands[17]['Command'] or command in textCommands[17]['Alias'].split('#'):
+        if command == textCommands[18]['Command'] or command in textCommands[18]['Alias'].split('#'):
             if len(args.strip()) < 1:
-                await helpCommand(textCommands[17]['Command'], msg)
+                await helpCommand(textCommands[18]['Command'], msg)
                 return
             await mal(msg, args.strip())
             return
 
-        if command == textCommands[18]['Command'] or command in textCommands[18]['Alias'].split('#'):
+        if command == textCommands[19]['Command'] or command in textCommands[19]['Alias'].split('#'):
             if not argList:
-                await helpCommand(textCommands[18]['Command'], msg)
+                await helpCommand(textCommands[19]['Command'], msg)
                 return
             success = await exchange(msg, argList)
             if not success:
-                await helpCommand(textCommands[18]['Command'], msg)
+                await helpCommand(textCommands[19]['Command'], msg)
 
-        if command == textCommands[19]['Command'] or command in textCommands[19]['Alias'].split('#'):
+        if command == textCommands[20]['Command'] or command in textCommands[20]['Alias'].split('#'):
             if msg.mentions:
                 target = msg.mentions[0] 
             else:
@@ -581,11 +641,11 @@ async def on_message(msg: discord.Message):
                 await displayCurrency(msg, target)
             return
 
-        if command == textCommands[20]['Command'] or command in textCommands[20]['Alias'].split('#'):
+        if command == textCommands[21]['Command'] or command in textCommands[21]['Alias'].split('#'):
             if msg.mentions and len(argList) >= 2:
                 target = msg.mentions[0]
             else:
-                await helpCommand(textCommands[20]['Command'], msg)
+                await helpCommand(textCommands[21]['Command'], msg)
                 return
 
             scoreEntry = await readScores(msg.guild.id, msg.author.id)
@@ -599,25 +659,25 @@ async def on_message(msg: discord.Message):
                 if str(argList[1]) == 'all':
                     amount = int(scoreEntry[6])
                 else:
-                    await helpCommand(textCommands[20]['Command'], msg)
+                    await helpCommand(textCommands[21]['Command'], msg)
                     return
             await giveCurrency(msg, target, amount)
-            return
-
-        if command == textCommands[21]['Command'] or command in textCommands[21]['Alias'].split('#'):
-            if len(args.strip()) < 1:
-                await helpCommand(textCommands[21]['Command'], msg)
-                return
-            await scp(msg, '-'.join(rawBreakdown) if len(breakdown) > 1 else '')
             return
 
         if command == textCommands[22]['Command'] or command in textCommands[22]['Alias'].split('#'):
             if len(args.strip()) < 1:
                 await helpCommand(textCommands[22]['Command'], msg)
                 return
+            await scp(msg, '-'.join(rawBreakdown) if len(breakdown) > 1 else '')
+            return
+
+        if command == textCommands[23]['Command'] or command in textCommands[23]['Alias'].split('#'):
+            if len(args.strip()) < 1:
+                await helpCommand(textCommands[23]['Command'], msg)
+                return
             stringbuilder = ""
             for arg in argList:
-                emote = await stringToEmoji(msg, arg, globalEmotes=True)#str(msg.author.id) in admins)
+                emote = await stringToEmoji(msg, arg, globalEmotes=True)
                 if isinstance(emote, discord.Emoji):
                     stringbuilder = stringbuilder + "<{}:{}:{}>".format('a' if emote.animated else '', emote.name, emote.id)
                 elif isinstance(emote, str):
@@ -625,9 +685,10 @@ async def on_message(msg: discord.Message):
             await say(msg, stringbuilder)
             return
 
-        if command == textCommands[23]['Command'] or command in textCommands[23]['Alias'].split('#'):
+        if command == textCommands[24]['Command'] or command in textCommands[24]['Alias'].split('#'):
             helpList = ['help','info','about','descriptions','description']
             if argList and ' '.join(argList).lower() not in helpList:
+                serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
                 existingScore = await readScores(msg.guild.id, msg.author.id)
                 currency = int(existingScore[6])
                 itemSearchString = ' '.join(argList).lower()
@@ -651,8 +712,9 @@ async def on_message(msg: discord.Message):
                         await writeScore(msg.guild.id, msg.author.id, currency=-qty * int(itemWanted['Cost']), inventory={'%s'%(itemWanted['Item']):qty})
                         await say(msg, "", embed=embed)
                     else:
-                        await throwError(msg, "You don't have enough %s to purchase %s of that item! You have %s%s, and you need %s%s." % (currencySymbol, 
-                            str(qty), currencySymbol, currentMoney, currencySymbol, str((qty * int(itemWanted['Cost'])))), custom=True, printError=False)
+                        await throwError(msg, "You don't have enough %s to purchase %s of that item! You have %s%s, and you need %s%s." % (serverCurrencySymbol, 
+                            str(qty), serverCurrencySymbol, currentMoney, serverCurrencySymbol, 
+                            str((qty * int(itemWanted['Cost'])))), custom=True, printError=False)
                 else:
                     await throwError(msg, "That's not a valid item! >`%s`<" % (itemSearchString), custom=True, printError=False)
                 return
@@ -663,6 +725,7 @@ async def on_message(msg: discord.Message):
                     name = item
                     price = shop[item]
                     ico = '❔'
+                    serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
                     for i in items:
                         if i['Item'] == name:
                             name = i['Name']
@@ -670,19 +733,19 @@ async def on_message(msg: discord.Message):
                             desc = i['Description']
                             break
                     if ' '.join(argList).lower() in helpList:
-                        embed.add_field(name='_%s%s_ - %s' % (currencySymbol, str(price), name+ico), value='_%s_' % (desc), inline=False)
+                        embed.add_field(name='_%s%s_ - %s' % (serverCurrencySymbol, str(price), name+ico), value='_%s_' % (desc), inline=False)
                     else:
-                        embed.add_field(name=name+ico, value='_%s%s_' % (currencySymbol, str(price)), inline=True)
+                        embed.add_field(name=name+ico, value='_%s%s_' % (serverCurrencySymbol, str(price)), inline=True)
                 except:
                     continue
 
-            embed.set_footer(text="use %s%s <item> to purchase" % (invoker, 'shop'), 
+            embed.set_footer(text="use %s%s <item> to purchase" % (serverInvoker, 'shop'), 
                     icon_url="https://i.imgur.com/331gN11.png")
 
             await say(msg, "", embed=embed)
             return
 
-        if command == textCommands[24]['Command'] or command in textCommands[24]['Alias'].split('#'):
+        if command == textCommands[25]['Command'] or command in textCommands[25]['Alias'].split('#'):
             existingScore = await readScores(msg.guild.id, msg.author.id)
             inventory = ast.literal_eval(existingScore[7])
             embed = discord.Embed(title="Inventory:", description="_ _")
@@ -702,9 +765,9 @@ async def on_message(msg: discord.Message):
             await say(msg, "", embed=embed)
             return
 
-        if command == textCommands[25]['Command'] or command in textCommands[25]['Alias'].split('#'):
+        if command == textCommands[26]['Command'] or command in textCommands[26]['Alias'].split('#'):
             if len(args.strip()) < 1:
-                await helpCommand(textCommands[25]['Command'], msg)
+                await helpCommand(textCommands[26]['Command'], msg)
                 return
             if argList:
                 itemSearchString = ' '.join(argList).lower()
@@ -773,11 +836,11 @@ async def on_message(msg: discord.Message):
                         await say(msg, "", embed=embed)
 
                     else:
-                        await say(msg, "You don't have that item! >`%s`"%(itemWanted['Name']))
+                        await throwError(msg, "You don't have that item! >`%s`"%(itemWanted['Name']), custom=True, printError=False)
                 else:
-                    await say(msg, "That is not a valid item you can use! >`%s`"%(itemWanted['Name']))
+                    await throwError(msg, "That is not a valid item you can use! >`%s`"%(itemWanted['Name']), custom=True, printError=False)
             
-        if command == textCommands[26]['Command'] or command in textCommands[26]['Alias'].split('#'):
+        if command == textCommands[27]['Command'] or command in textCommands[27]['Alias'].split('#'):
             # Get rid of original command text
             message = rawMessage.replace(command, '', 1)
 
@@ -804,7 +867,7 @@ async def on_message(msg: discord.Message):
             else:
                 await say(msg, zalgo_message)
 
-        if command == textCommands[27]['Command'] or command in textCommands[27]['Alias'].split('#'):
+        if command == textCommands[28]['Command'] or command in textCommands[28]['Alias'].split('#'):
             # Get rid of original command text
             message = rawMessage.replace(command, '', 1)
 
@@ -838,15 +901,15 @@ async def on_message(msg: discord.Message):
             if message == voiceCommands[i]['Command'] or command in voiceCommands[i]['Alias'].split('#'):
                 await playSound(msg, voiceCommands[i])
 
-    elif any([badword in content for badword in wordBlacklist]):
+    elif any([badword in content for badword in await getServerConfig(msg.guild.id, ['configs', 'bad_words'])]):
         for word in content.split():
             try:
-                for goodword in wordWhitelist:
+                for goodword in await getServerConfig(msg.guild.id, ['configs', 'bad_words_exceptions']):
                     if goodword in word:
                         raise Exception()
-                for badword in wordBlacklist:
+                for badword in await getServerConfig(msg.guild.id, ['configs', 'bad_words']):
                     if badword in word:
-                        await say(msg, '{}: {}'.format(msg.author.mention, badWordResponse))
+                        await say(msg, '{}: {}'.format(msg.author.mention, await getServerConfig(msg.guild.id, ['configs', 'bad_word_response'])))
                         return
             except:
                 continue
@@ -864,6 +927,7 @@ async def on_message(msg: discord.Message):
                 targetMessage = targetMessageTemp
 
             if targetMessage is not None:
+                serverVoteLimit = await getServerConfig(msg.guild.id, ['configs', 'vote_limit'])
                 deltaTime = datetime.datetime.now() - targetMessage.created_at
                 minutesSincePost = divmod(deltaTime.total_seconds(), 60)[0]
                 if minutesSincePost > (60*16):
@@ -875,8 +939,8 @@ async def on_message(msg: discord.Message):
                     await say(msg, "You can't vote positively for yourself!")
                     return
 
-                elif int(invokerScores[4]) >= voteLimit:
-                    await say(msg, "You can only vote {} per day!".format((str(voteLimit) + ' times') if voteLimit > 1 else 'once'))
+                elif int(invokerScores[4]) >=  serverVoteLimit:
+                    await say(msg, "You can only vote {} per day!".format((str(serverVoteLimit) + ' times') if serverVoteLimit > 1 else 'once'))
                     return
 
                 elif content == "medium bot":
@@ -895,9 +959,10 @@ async def on_message(msg: discord.Message):
                                 itemName = item['Name']
                                 ico = item['Icon']
                                 break
-                        await say(msg, "-{} You consumed a {} to use all your remaining votes today ({}) on {}!".format(ico, itemName, str(voteLimit - int(invokerScores[4])), author.mention))
+                        await say(msg, "-{} You consumed a {} to use all your remaining votes today ({}) on {}!".format(ico, itemName, 
+                            str(serverVoteLimit - int(invokerScores[4])), author.mention))
                         ###### Item ######
-                        for i in range(0, voteLimit - int(invokerScores[4])):
+                        for i in range(0, serverVoteLimit - int(invokerScores[4])):
                             ###### Item ######
                             if 'bad' in content:
                                 if await hasItem(server.id, author.id, 'ActiveWard'):
@@ -910,11 +975,12 @@ async def on_message(msg: discord.Message):
                                 protected += 1
                         
                         if protected:
-                            await say(msg, "This user was protected by an item and was unable to be voted on!{}".format(" (x{})".format(protected) if protected > 1 else ""))
+                            await say(msg, 
+                                "This user was protected by an item and was unable to be voted on!{}".format(" (x{})".format(protected) if protected > 1 else ""))
                         ##################
-                        deltascore = max(voteLimit - int(invokerScores[4]) - protected, 0)
+                        deltascore = max(serverVoteLimit - int(invokerScores[4]) - protected, 0)
                         await writeScore(server.id, msg.author.id, inventory={'MegaVote':-1})
-                        votescast = voteLimit - int(invokerScores[4])
+                        votescast = serverVoteLimit - int(invokerScores[4])
                     else:
                         await say(msg, "You don't have the item required to perform that action!")
                         return
@@ -989,13 +1055,130 @@ async def on_message(msg: discord.Message):
         return
 
     elif client.user.mentioned_in(msg) and not msg.mention_everyone:
-        await say(msg, 'Use {}{} for a list of commands'.format(invoker, textCommands[0]['Command']))
+        await say(msg, 'Use {}{} for a list of commands'.format(serverInvoker, textCommands[0]['Command']))
         return
 
     # Not `elif` so it can work with other commands
     if "scp" in content:
         await scp(msg, content)
 
+async def setServerConfig(guildID, configKey, newValue, type=0, msg=None):
+    """Modifies a config value in the guild's server's config file
+
+    Parameters
+            ----------
+            msg : Discord.message, optional
+                The message context to be used for replying (default is None)
+            guildID : int or str
+                The guild id to fetch configs from
+            configKey : str
+                The key to retrieve the value from
+            newValue : int, str, list
+                Value to append-to/remove-from/replace the old config value
+            type : int (0, 1, -1), optional
+                Represents the operation for the new value to interact with the old one. 
+                0 is replace, 1 is add-to, and -1 is remove-from (default is 0)
+    """
+    oldValue = await getServerConfig(guildID, ['configs', configKey])
+    newValue = newValue.replace('@!','@')
+    with open('config/server_configs/%s.json' % (guildID), encoding='utf8') as f:
+        serverConfigsFile = json.load(f)
+    if type == 0:
+        if not isinstance(serverConfigsFile['configs'][configKey], list) and isinstance(config[configKey][0], int) and newValue.isdigit():
+            serverConfigsFile['configs'][configKey] = int(newValue)
+        elif not isinstance(serverConfigsFile['configs'][configKey], list) and isinstance(config[configKey][0], int):
+            await throwError(msg, 'This config value must be a positive integer', custom=True, printError=False)
+            return
+        elif isinstance(serverConfigsFile['configs'][configKey], list):
+            try:
+                newValueList = shlex.split(newValue)
+            except ValueError:
+                newValueList = newValue.split()
+            serverConfigsFile['configs'][configKey] = newValueList
+        else:
+            serverConfigsFile['configs'][configKey] = newValue
+    elif type == 1:
+        if(isinstance(serverConfigsFile['configs'][configKey], list)):
+            if newValue not in oldValue:
+                serverConfigsFile['configs'][configKey].append(newValue)
+            else:
+                await throwError(msg, 'You cannot add a that value to that config because it already exsists', custom=True, printError=False)
+                return
+        else:
+            await throwError(msg, 'You cannot add a new value to that config because it\'s not a list', custom=True, printError=False)
+            return
+    elif type == -1:
+        if(isinstance(serverConfigsFile['configs'][configKey], list)):
+            try:
+                serverConfigsFile['configs'][configKey].remove(newValue)
+            except ValueError:
+                await throwError(msg, 'You cannot remove that value because it doesn\'t already exist in that list', custom=True, printError=False)
+                return
+        else:
+            await throwError(msg, 'You cannot remove a value from that config because it\'s not a list', custom=True, printError=False)
+            return
+    with open('config/server_configs/%s.json' % (guildID), 'w', encoding='utf8') as f:
+        json.dump(serverConfigsFile, f, indent=4)
+    embed = discord.Embed(title="Config was changed", color=embedColor)
+    embed.add_field(name=configKey, value=config[configKey][1], inline=False)
+    embed.add_field(name="From", value=oldValue, inline=False)
+    embed.add_field(name="To", value=serverConfigsFile['configs'][configKey], inline=False)
+    await say(msg, "", embed=embed)
+    return
+
+async def getServerConfig(guildID, configKeys, maxRecursiveAttempts=3, recursiveAttempts=0):
+    """Retreves a config value from the guild's server's config file
+
+    Parameters
+            ----------
+            guildID : int or str
+                The guild id to fetch configs from
+            configKeys : list
+                A list containing the keys to retrieve the value from
+            recursiveAttempts : int, optional
+                Internal value to track the current recursion level (default is 0)
+            maxRecursiveAttempts : int, optional
+                Maximum levels of recursion attempts to read the config file (default is 3)
+    """
+    if recursiveAttempts > maxRecursiveAttempts or not configKeys or (isinstance(guildID, str) and not guildID.isdigit()):
+        return None
+    try:
+        with open('config/server_configs/%s.json' % (guildID), encoding='utf8') as f:
+            serverConfigsFile = json.load(f)
+            # create the directory if it doesn't exist
+    except FileNotFoundError:
+        if not os.path.exists(os.path.dirname('config/server_configs/')):
+            try:
+                os.makedirs(os.path.dirname('config/server_configs/'))
+            except OSError as e:
+                throwError(None, error=e, fatal=True)
+        with open('config/server_configs/%s.json' % (guildID), 'w', encoding='utf8') as f:
+            serverConfigsFile = {}
+            json.dump({'guild_id': guildID, 'guild_name': client.get_guild(int(guildID)).name, 
+                'configs': {'guild_admins': [client.get_guild(int(guildID)).owner.mention.replace('@!','@')],
+                'invoker': config['invoker'][0], 'vote_limit': config['vote_limit'][0], 'gild_limit': config['gild_limit'][0], 
+                'point_value_in_currency': config['point_value_in_currency'][0], 'gilding_value_in_currency': config['gilding_value_in_currency'][0],
+                'currency_symbol': config['currency_symbol'][0], 'weekly_score_decay': config['weekly_score_decay'][0], 
+                'bad_word_response': config['bad_word_response'][0], 'bad_words': config['bad_words'][0],
+                'bad_words_exceptions': config['bad_words_exceptions'][0]}}, f, indent = 4)
+        return await getServerConfig(guildID, configKeys, recursiveAttempts + 1)
+    if not isinstance(configKeys, list):
+        configKeys = [configKeys]
+    recursiveValueSearch = serverConfigsFile
+    try:
+        for key in configKeys:
+            recursiveValueSearch = recursiveValueSearch[key]
+        return recursiveValueSearch
+    except KeyError:
+        await throwError(None, 'The server config value at key(s) %s could not be found' % (configKeys), custom=True, vocalize=False, printError=True)
+        return None
+
+async def isGuildAdmin(guildID, userMention):
+    guildAdmins = await getServerConfig(guildID, ['configs','guild_admins'])
+    return userMention.replace('@!','@') in guildAdmins
+
+async def isBotAdmin(userMention):
+    return userMention.replace('@!','@') in userInfo['security']['admins']
 
 async def scp(msg, content):
     response = await respond_to_scp_references(content)
@@ -1017,7 +1200,7 @@ async def playSound(msg, command, silent=False):
     global isPlaying
     if isPlaying:
         if not silent:
-            await say(msg, 'I\'m already playing a sound! Please wait your turn.')
+            await throwError(msg, 'I\'m already playing a sound! Please wait your turn.', custom=True, printError=False)
         return
     if msg.author.voice and msg.author.voice.channel:
         try:
@@ -1290,7 +1473,7 @@ async def handleFunc(msg, filename, channel=None):
 
 async def help(msg):
     embed = discord.Embed(title=name, description=desc, color=embedColor)                                
-    embed.add_field(name="🥕 Prefix", value="```" + invoker + "```", inline=False)
+    embed.add_field(name="🥕 Prefix", value="```" + await getServerConfig(msg.guild.id, ['configs', 'invoker']) + "```", inline=False)
     if len(", ".join(textCommandList)) > 1000:
         tcSplitList = textwrap.wrap(", ".join(textCommandList), 1000)
         embed.add_field(name='🔤 Text Commands', value=tcSplitList[0], inline=False)
@@ -1327,14 +1510,14 @@ async def helpCommand(command, msg):
     if command not in commandList and command not in commandAlias:
         await say(msg, "That's not a command I know or it is an alias.")
         return
-                    
+    serverInvoker = await getServerConfig(msg.guild.id, ['configs', 'invoker'])
     embed = discord.Embed(title="Command:", description=command, color=embedColor)
     embed.add_field(name="Description:", value=commandHelp[commandList.index(command)], inline=False)
-    embed.add_field(name="Usage:", value="```" + invoker + command + " " + commandParams[commandList.index(command)] + "```", inline=False)
+    embed.add_field(name="Usage:", value="```" + serverInvoker + command + " " + commandParams[commandList.index(command)] + "```", inline=False)
     if ('-e' in args or 'example' in args or 'all' in args) and command in textCommandList:
         examples = []
         for example in textCommandExample[commandList.index(command)]:
-            examples.append(invoker + example)
+            examples.append(serverInvoker + example)
         if not examples:
             examples.append('None')
         embed.add_field(name="Examples:", value="```\n" + '\n'.join(examples) + "```", inline=False)
@@ -1342,7 +1525,7 @@ async def helpCommand(command, msg):
         aliases = []
         for alias in commandAlias[commandList.index(command)]:
             if alias:
-                aliases.append(invoker + alias)
+                aliases.append(serverInvoker + alias)
         if not aliases:
             aliases.append('None')
         embed.add_field(name="Alias:", value=', '.join(aliases), inline=False)
@@ -1411,6 +1594,8 @@ async def sayIPA(msg, text):
 
 async def defineUrban(msg, message=None, term='', num=1, edit=None):
 
+    serverInvoker = await getServerConfig(msg.guild.id, ['configs', 'invoker'])
+
     async def getPayload():
         async with session.get("http://api.urbandictionary.com/v0/define", params={"term": search}) as resp:
             return await resp.json()
@@ -1447,7 +1632,7 @@ async def defineUrban(msg, message=None, term='', num=1, edit=None):
                 number = str(int(number) + 1)
                 if num < len(result["list"]):
                     embed.set_footer(text="{} results were found. To see a different result, use {}{} {} -p {}.".format( 
-                        len(result["list"]), invoker, textCommands[11]['Command'], term, number))
+                        len(result["list"]), serverInvoker, textCommands[11]['Command'], term, number))
                 else:
                     embed.set_footer(text="{} results were found.".format(len(result["list"])))
                 definition = edit
@@ -1481,7 +1666,7 @@ async def defineUrban(msg, message=None, term='', num=1, edit=None):
                     return
 
             except IndexError:
-                await say(msg, "That result doesn't exist! Try {}{} {}.".format(invoker, textCommands[11]['Command'], term))
+                await say(msg, "That result doesn't exist! Try {}{} {}.".format(serverInvoker, textCommands[11]['Command'], term))
 
             except Exception as e:
                 await throwError(msg, e, vocalize=False)
@@ -1590,9 +1775,23 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currenc
             score *= 2
     ##################
 
+    # Create file if it doesn't already exist
+    try:
+        with open("res/data/server_data/%s.dat" % (guild), encoding='utf8') as f:
+            pass
+    except FileNotFoundError:
+        # Create the directory is it doesn't already exist
+        if not os.path.exists(os.path.dirname('res/data/server_data/')):
+            try:
+                os.makedirs(os.path.dirname('res/data/server_data/'))
+            except OSError as e:
+                throwError(None, error=e, fatal=True)
+        with open("res/data/server_data/%s.dat" % (guild), 'w', encoding='utf8') as f:
+            pass
+
     userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guild, user, str(score), str(gilding), 
         str(voted), str(gilded), str(currency), str(inventory).replace(' ',''))
-    existingScores = await readScores()
+    existingScores = await readScores(guild)
     for existingScore in existingScores:
         if int(existingScore[0]) == guild and int(existingScore[1]) == user:
             oldUserObj = userObj
@@ -1612,25 +1811,26 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currenc
             newInventory = str(newInventory).replace(' ','')
             userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guild, user, newScore, newGilding,
                 newVoted, newGilded, newCurrency, newInventory)
-            oldScores = await getScores()
+            oldScores = await getScores(guild)
             oldScores = oldScores.split("\n")[:-1]
-            with open("res/data/user-data.dat","w") as scores:
+            with open("res/data/server_data/%s.dat" % (guild),"w") as scores:
                 for oldScore in oldScores:
                     if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
-                        if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0' and newCurrency == '0' and newCurrency == 0 and not newInventory):
+                        if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0' and newCurrency == '0' \
+                            and newCurrency == 0 and not newInventory):
                             scores.write(userObj + "\n")
                     else:
                         scores.write(oldScore + "\n")
                 scores.close()
                 return
-    with open("res/data/user-data.dat","a") as scores:
+    with open("res/data/server_data/%s.dat" % (guild), "a") as scores:
         scores.write(userObj + "\n")
         scores.close()
     return
 
-async def readScores(guild=None, userID=None):
+async def readScores(guild, userID=None):
     blankEntry = ['0','0','0','0','0','0','0','{}']
-    data = await getScores()
+    data = await getScores(guild)
     if not data:
         return blankEntry if userID is not None else [blankEntry]
     entries = data.split("\n")[:-1]
@@ -1656,39 +1856,56 @@ async def readScores(guild=None, userID=None):
             return guildEntries
     return sorted(entries, key=lambda x: x[0])
 
-async def getScores(iteration=0):
+async def getScores(guild, iteration=0):
     try:
-        with open("res/data/user-data.dat","r") as scores:
+        with open("res/data/server_data/%s.dat" % (guild),"r") as scores:
             data = scores.read()
             scores.close()
             return data
     except FileNotFoundError as e:
+        # Create the directory is it doesn't already exist
+        if not os.path.exists(os.path.dirname('res/data/server_data/')):
+            try:
+                os.makedirs(os.path.dirname('res/data/server_data/'))
+            except OSError as e:
+                throwError(msg, error=e, fatal=True)
         if iteration <= 1:
-            with open("res/data/user-data.dat","w+") as scores:
+            with open("res/data/server_data/%s.dat" % (guild),"w+") as scores:
                 scores.close()
-                await getScores(iteration=iteration+1)
+                await getScores(guild, iteration=iteration+1)
         else:
             throwError(msg, e)
 
-async def scoreDecay():
-    scores = await readScores()
-    for entry in scores:
-        if int(entry[2]) == 0:
-            continue
-        elif int(entry[2]) > 0:
-            await writeScore(int(entry[0]), int(entry[1]), score=-1, ignoreItems=True)
-        else:
-            await writeScore(int(entry[0]), int(entry[1]), score=1, ignoreItems=True)
+async def scoreDecayGuild(guildID):
+    scores = await readScores(guildID)
+    for i in range(0, await getServerConfig(guildID, ['configs', 'weekly_score_decay'])):
+        for entry in scores:
+            if int(entry[2]) == 0:
+                continue
+            elif int(entry[2]) > 0:
+                await writeScore(int(entry[0]), int(entry[1]), score=-1, ignoreItems=True)
+            else:
+                await writeScore(int(entry[0]), int(entry[1]), score=1, ignoreItems=True)
+
+async def scoreDecay(msg=None):
+    if not msg:
+        for guild in client.guilds:
+            await scoreDecayGuild(guild.id)
+    else:
+        await scoreDecayGuild(msg.guild.id)
 
 async def exchange(msg, args):
+    serverPointValueInCurrency = await getServerConfig(msg.guild.id, ['configs', 'point_value_in_currency'])
+    serverGildingValueInCurrency = await getServerConfig(msg.guild.id, ['configs', 'gilding_value_in_currency'])
+
     def pointsToCurrency(points):
         if points <= 0:
             return 0
-        return points * pointValueInCurrency
+        return points * serverPointValueInCurrency
     def gildingsToCurrency(gildings):
         if gildings <= 0:
             return 0
-        return gildings * gildingValueInCurrency
+        return gildings * serverGildingValueInCurrency
     async def notEnoughToExchange(_type):
         await throwError(msg, "You cannot exchange your %s; you have negative or 0 %s." % (_type, _type), custom=True, printError=False)
         return
@@ -1697,12 +1914,14 @@ async def exchange(msg, args):
     amountQueried = 0
     scoreEntry = await readScores(msg.guild.id, msg.author.id)
     if args:
+        serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
         if args[0] == 'all':
             returnCurrency = pointsToCurrency(int(scoreEntry[2])) + gildingsToCurrency(int(scoreEntry[3]))
             if returnCurrency <= 0:
                 await notEnoughToExchange('points and gildings')
                 return True
-            confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) and gildings (%s) for %s%s?" % (scoreEntry[2], scoreEntry[3], currencySymbol, str(returnCurrency)))
+            confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) and gildings (%s) for %s%s?" % \
+                (scoreEntry[2], scoreEntry[3], serverCurrencySymbol, str(returnCurrency)))
             if confirmation:
                 await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), score=-int(scoreEntry[2]), currency=returnCurrency, ignoreItems=True)
             else:
@@ -1713,7 +1932,8 @@ async def exchange(msg, args):
                 if returnCurrency <= 0:
                     await notEnoughToExchange('points')
                     return True
-                confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) for %s%s?" % (scoreEntry[2], currencySymbol, str(returnCurrency)))
+                confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) for %s%s?" % \
+                    (scoreEntry[2], serverCurrencySymbol, str(returnCurrency)))
                 if confirmation:
                     await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency, ignoreItems=True)
                 else:
@@ -1727,7 +1947,8 @@ async def exchange(msg, args):
                     if returnCurrency <= 0:
                         await notEnoughToExchange('points')
                         return True
-                    confirmation = await confirm(msg, "Are you sure you want to exchange %s score point%s for %s%s?" % (amountQueried, 's' if amountQueried > 1 else '', currencySymbol, str(returnCurrency)))
+                    confirmation = await confirm(msg, "Are you sure you want to exchange %s score point%s for %s%s?" % \
+                        (amountQueried, 's' if amountQueried > 1 else '', serverCurrencySymbol, str(returnCurrency)))
                     if confirmation:
                         await writeScore(msg.guild.id, msg.author.id, score=-amountQueried, currency=returnCurrency, ignoreItems=True)
                     else:
@@ -1740,7 +1961,8 @@ async def exchange(msg, args):
                 if returnCurrency <= 0:
                     await notEnoughToExchange('gildings')
                     return True
-                confirmation = await confirm(msg, "Are you sure you want to exchange all your gildings (%s) for %s%s?" % (scoreEntry[3], currencySymbol, str(returnCurrency)))
+                confirmation = await confirm(msg, "Are you sure you want to exchange all your gildings (%s) for %s%s?" % \
+                    (scoreEntry[3], serverCurrencySymbol, str(returnCurrency)))
                 if confirmation:
                     await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), currency=returnCurrency, ignoreItems=True)
                 else:
@@ -1754,7 +1976,8 @@ async def exchange(msg, args):
                     if returnCurrency <= 0:
                         await notEnoughToExchange('gildings')
                         return True
-                    confirmation = await confirm(msg, "Are you sure you want to exchange %s gilding%s for %s%s?" % (amountQueried, 's' if amountQueried > 1 else '', currencySymbol, str(returnCurrency)))
+                    confirmation = await confirm(msg, "Are you sure you want to exchange %s gilding%s for %s%s?" % \
+                        (amountQueried, 's' if amountQueried > 1 else '', serverCurrencySymbol, str(returnCurrency)))
                     if confirmation:
                         await writeScore(msg.guild.id, msg.author.id, gilding=-amountQueried, currency=returnCurrency, ignoreItems=True)
                     else:
@@ -1784,10 +2007,11 @@ async def displayCurrency(msg, target):
     nick = target.nick
     nick = displayName if nick is None else nick
 
-    scores = await readScores(guild=msg.guild.id, userID=target.id)
+    scores = await readScores(msg.guild.id, userID=target.id)
     currency = scores[6]
+    serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
     embed = discord.Embed(title="{}:".format("You have" if target == msg.author else nick + " has"), 
-        description="_{}{}_".format(currencySymbol, currency), 
+        description="_{}{}_".format(serverCurrencySymbol, currency), 
         color=embedColor)
     embed.set_thumbnail(url="https://i.imgur.com/BVRyJEr.png")
     await say(msg, "", embed=embed)
@@ -1796,6 +2020,7 @@ async def displayCurrency(msg, target):
 async def displayEveryonesCurrency(msg):
     scores = await readScores(msg.guild.id)
     embed = discord.Embed(title="Balance:", description="_ _")
+    serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
     for scoreEntry in scores:
         try:
             user = await client.get_user_info(scoreEntry[1])
@@ -1806,7 +2031,7 @@ async def displayEveryonesCurrency(msg):
                 nick = displayName if nick is None else nick
                 sanitizedDisplayName = displayName.replace('_','\_')
                 displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
-                embed.add_field(name=nick, value="{}{}{}".format(displayName, currencySymbol, balance), inline=True)
+                embed.add_field(name=nick, value="{}{}{}".format(displayName, serverCurrencySymbol, balance), inline=True)
         except:
             continue
     await say(msg, "", embed=embed)
@@ -1945,9 +2170,10 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
         return 
 
 async def clearDailyRestrictions():
-    scores = await readScores()
-    for entry in scores:
-        await writeScore(int(entry[0]), int(entry[1]), voted=-100, gilded=-100, ignoreItems=True)
+    for guild in client.guilds:
+        scores = await readScores(guild)
+        for entry in scores:
+            await writeScore(int(entry[0]), int(entry[1]), voted=-999, gilded=-999, ignoreItems=True)
 
 async def onNewDay():
     await setDailyGame()
@@ -2002,7 +2228,8 @@ async def reloadDates():
             json.dump({'dates': [{"Name": "Safety Steve", "Day": 1, "Month": 4, "Year": 2018, 
                 "Tag": "<@430061939805257749>", "Type": "birthday", "Message": "Happy #age #type, #tag!",
                 "Channel": "lobby", "React": "🎉#🎂#🎊#🍰"}]}, f, indent = 4)
-            await throwError(None, error="dates.json could not be reloaded because the file does not exsist! dates.json file created.", vocalize=False, custom=True, printError=True)
+            await throwError(None, error="dates.json could not be reloaded because the file does not exsist! dates.json file created.", 
+                vocalize=False, custom=True, printError=True)
     dates = date_list['dates']
 
 async def checkDailyEvents():
@@ -2047,7 +2274,8 @@ async def checkDailyEvents():
                 formattedDateMessage = formattedDateMessage.replace("#type", str(dateType))
 
             for dateChannel in dateChannels:
-                channel = client.get_channel(int(userInfo['channel_ids'][dateChannel] if not dateChannel.isdigit() else dateChannel)) if dateChannel != 'None' else ''
+                channel = client.get_channel(int(userInfo['channel_ids'][dateChannel] if not dateChannel.isdigit() \
+                    else dateChannel)) if dateChannel != 'None' else ''
                 if formattedDateMessage and channel:
                     reactCondition = await sayInChannelOnce(channel, formattedDateMessage) and reacts
                     async for message in channel.history(limit=1):
@@ -2057,7 +2285,8 @@ async def checkDailyEvents():
                         for emojis in reacts:
                             await react(msg, emojis)
                 if dateFunc:
-                    data = {'id':0,'attachments':[],'embeds':[],'edited_timestamp':0,'type':discord.MessageType.default,'pinned':False,'mention_everyone':False,'tts': False,'content':''}
+                    data = {'id':0,'attachments':[],'embeds':[],'edited_timestamp':0,'type':discord.MessageType.default, \
+                        'pinned':False,'mention_everyone':False,'tts': False,'content':''}
                     dummyMessage = discord.Message(state=None, channel=channel, data=data)
                     dummyMessage.author = client.user
                     dummyMessage.content = ""
@@ -2256,7 +2485,8 @@ async def restart(msgLogCxt = None):
             os.system('sudo reboot now')
         except:
             await throwError(msgLogCxt, e, vocalize=True, printError=False)
-            await throwError(msgLogCxt, "Ensure you are running me with administrator privileges on a Linux-based system.", vocalize=True, custom=True, printError=False)
+            await throwError(msgLogCxt, "Ensure you are running me with administrator privileges on a Linux-based system.", \
+                vocalize=True, custom=True, printError=False)
     else:
         os.execl(sys.executable, sys.executable, * sys.argv)
 
