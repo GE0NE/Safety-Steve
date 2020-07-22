@@ -2367,7 +2367,7 @@ async def checkDailyEvents():
 def writeLog(e, crash=False):
     logTime = datetime.datetime.now()
     filename = 'res/data/logs/log-{}.txt'.format(str(logTime).replace(' ','').replace(':','-')) if crash else 'res/data/logs/log.txt'
-    with open(filename, 'a') as log:
+    with open(filename, 'a+') as log:
         log.write("Time: " + str(logTime) + "\n")
         log.write("-\/-----------------------------\/-" + "\n")
         log.write(str(e)+"\n")

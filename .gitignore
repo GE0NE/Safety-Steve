@@ -5,5 +5,4 @@ config/server_configs/*
 res/data/clock.dat
 res/data/user-data.dat
 res/data/logs/*
-!res/data/logs/log.txt
 res/data/server_data/*
