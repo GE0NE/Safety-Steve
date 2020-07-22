@@ -298,16 +298,71 @@ async def on_message(msg: discord.Message):
             return
 
         if command == "pull":
-            if isBotAdmin(msg.author.mention):
+            if await isBotAdmin(msg.author.mention):
                 await pullFromRepo(msg)
             else:
                 await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
             return
 
         if command == "func":
-            if isBotAdmin(msg.author.mention):
+            if await isBotAdmin(msg.author.mention):
                 if len(args.strip()) >= 1:
                     await handleFunc(msg, args)
+            else:
+                await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
+            return
+
+        if command == "eval":
+            if not argList:
+                await throwError(msg, "Command must have parameters that can evaluate to python", custom=True, printError=False)
+                return
+
+            def insert_returns(body):
+                # insert return stmt if the last expression is a expression statement
+                if isinstance(body[-1], ast.Expr):
+                    body[-1] = ast.Return(body[-1].value)
+                    ast.fix_missing_locations(body[-1])
+
+                # for if statements, we insert returns into the body and the orelse
+                if isinstance(body[-1], ast.If):
+                    insert_returns(body[-1].body)
+                    insert_returns(body[-1].orelse)
+
+                # for with blocks, again we insert returns into the body
+                if isinstance(body[-1], ast.With):
+                    insert_returns(body[-1].body)
+
+            if await isBotAdmin(msg.author.mention):
+                if len(args.strip()) >= 1:
+                    try:
+                        fn_name = "_eval_expr"
+
+                        cmd = rawMessage[len('eval'):].strip("` ")
+
+                        # add a layer of indentation
+                        cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
+
+                        # wrap in async def body
+                        body = f"async def {fn_name}():\n{cmd}"
+
+                        parsed = ast.parse(body)
+                        body = parsed.body[0].body
+
+                        insert_returns(body)
+
+                        env = {
+                            'client': client,
+                            'discord': discord,
+                            'config': config,
+                            'msg': msg,
+                            '__import__': __import__
+                        }
+                        exec(compile(parsed, filename="<ast>", mode="exec"), env)
+
+                        result = (await eval(f"{fn_name}()", env))
+                        await say(msg, result)
+                    except Exception as e:
+                        await throwError(msg, e, custom=True, sayTraceback=True)
             else:
                 await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
             return
@@ -1790,7 +1845,7 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currenc
 
     # Create file if it doesn't already exist
     try:
-        with open("res/data/server_data/%s.dat" % (guild), encoding='utf8') as f:
+        with open("res/data/server_data/%s.dat" % (guild.id), encoding='utf8') as f:
             pass
     except FileNotFoundError:
         # Create the directory is it doesn't already exist
