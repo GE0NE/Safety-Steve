@@ -1845,7 +1845,7 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currenc
 
     # Create file if it doesn't already exist
     try:
-        with open("res/data/server_data/%s.dat" % (guild.id), encoding='utf8') as f:
+        with open("res/data/server_data/%s.dat" % (guild), encoding='utf8') as f:
             pass
     except FileNotFoundError:
         # Create the directory is it doesn't already exist

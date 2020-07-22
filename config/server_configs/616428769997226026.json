@@ -1,0 +1,34 @@
+{
+    "guild_id": 616428769997226026,
+    "guild_name": "testi_II",
+    "configs": {
+        "guild_admins": [
+            "<@231894557044899850>"
+        ],
+        "invoker": "^",
+        "vote_limit": 3,
+        "gild_limit": 1,
+        "point_value_in_currency": 10,
+        "gilding_value_in_currency": 50,
+        "currency_symbol": "\u00a4",
+        "weekly_score_decay": 1,
+        "bad_word_response": "Hey! No bad words, please. This is a Christian server!",
+        "bad_words": [
+            "heck",
+            "frick",
+            "fick",
+            "golly",
+            "gosh",
+            "jeeper",
+            "darn",
+            "drat",
+            "tarnation"
+        ],
+        "bad_words_exceptions": [
+            "check",
+            "fickle",
+            "quadratic",
+            "hydrat"
+        ]
+    }
+}
