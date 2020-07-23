@@ -229,24 +229,32 @@ gitLink = config['git_link']
 fileExt = config['fileformat']
 bubbleFont = fonts['bubble_letters']
 bubbleFontMask = fonts['bubble_mask']
-voice = None
-player = None
-isPlaying = False
-
-# Important Voice Commands
-despacito = None
 
 # The client
 client = discord.Client(description=desc, max_messages=100)
 
-async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, printTraceback=False, printError=True, fatal=False):
+async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, 
+    printTraceback=False, tracebackOverride='', printError=True, fatal=False):
+
+    def open_layer(layer):
+      if layer.tb_next == None:
+        return layer
+      else:
+        return open_layer(layer.tb_next)
+
     if printError:
         print("ERROR:\n{}".format(error))
     if vocalize and msg:
         if error:
             await say(msg, "Woah! Something bad happened! ```\n{}\n```".format(error) if not custom else error)
-        if sayTraceback:
-            dump = "```{}```".format(''.join(traceback.format_stack()).replace("`", "\`"))
+        if sayTraceback and not custom:
+            error = open_layer(error.__traceback__)
+            tb = ''.join(traceback.format_tb(error))
+            # Correct line numbers for exec traceback
+            if tracebackOverride:
+                tb = re.sub(r'line (\d+)', lambda m: 'line {0}'.format(int(m.group(1)) - 1), tb)
+            dump = "```{}{}```".format(tb.replace("`", "\`"), tracebackOverride.split('\n')[error.tb_lineno - 2] if 
+                tracebackOverride and len(tracebackOverride.split('\n')) >= error.tb_lineno - 2 else '')
             await say(msg, dump)
     if printTraceback:
         print("Traceback:")
@@ -258,9 +266,6 @@ async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=
 
 @client.event
 async def on_message(msg: discord.Message):
-    global voice
-    global player
-    global isPlaying
 
     rawContent = msg.content
     content = rawContent.lower()
@@ -332,6 +337,14 @@ async def on_message(msg: discord.Message):
                 if isinstance(body[-1], ast.With):
                     insert_returns(body[-1].body)
 
+            def strip_empty_lines(s):
+                lines = s.splitlines()
+                while lines and not lines[0].strip():
+                    lines.pop(0)
+                while lines and not lines[-1].strip():
+                    lines.pop()
+                return '\n'.join(lines)
+
             if await isBotAdmin(msg.author.mention):
                 if len(args.strip()) >= 1:
                     try:
@@ -340,7 +353,7 @@ async def on_message(msg: discord.Message):
                         cmd = rawMessage[len('eval'):].strip("` ")
 
                         # add a layer of indentation
-                        cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
+                        cmd = strip_empty_lines("\n".join(f"    {i}" for i in cmd.splitlines()))
 
                         # wrap in async def body
                         body = f"async def {fn_name}():\n{cmd}"
@@ -355,14 +368,27 @@ async def on_message(msg: discord.Message):
                             'discord': discord,
                             'config': config,
                             'msg': msg,
+                            'embedColor' : embedColor,
+                            'getVoiceClient' : getVoiceClient,
+                            'isPlaying' : isPlaying,
+                            'say' : say,
+                            'subreddit' : subreddit,
+                            'scoreDecay' : scoreDecay,
+                            'readScores' : readScores,
+                            'react' : react,
+                            'throwError' : throwError,
+                            'getServerConfig' : getServerConfig,
+                            'voiceCommands' : voiceCommands,
+                            'textCommands' : textCommands,
+                            'playSound' : playSound,
                             '__import__': __import__
                         }
-                        exec(compile(parsed, filename="<ast>", mode="exec"), env)
+                        exec(compile(parsed, filename="<input>", mode="exec"), env)
 
                         result = (await eval(f"{fn_name}()", env))
                         await say(msg, result)
                     except Exception as e:
-                        await throwError(msg, e, custom=True, sayTraceback=True)
+                        await throwError(msg, e, sayTraceback=True, tracebackOverride=cmd)
             else:
                 await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
             return
@@ -936,7 +962,7 @@ async def on_message(msg: discord.Message):
             clappy_message = (clappy_message[:2000]) if len(clappy_message) > 2000 else clappy_message
 
             if message.isspace() or message == '':
-                await say(msg, "Can't clapp an empty message or react.")
+                await throwError(msg, "Can't clap an empty message or react.", custom=True, printError=False)
             else:
                 await say(msg, clappy_message)
 
@@ -947,14 +973,18 @@ async def on_message(msg: discord.Message):
             await subreddit(msg, 'zerotwo', True)
             return
 
-        if (command == voiceCommands[0]['Command'] or command in voiceCommands[0]['Alias'].split('#')) and isPlaying:
-            isPlaying = False
-            await voice.disconnect()
+        if (command == voiceCommands[0]['Command'] or command in voiceCommands[0]['Alias'].split('#')):
+            vc = getVoiceClient(msg.guild)
+            if vc:
+                await vc.disconnect()
+            else:
+                await throwError(msg, "I'm not in a voice channel!", custom=True, printError=False)
             return
 
         for i in range(1, len(voiceCommands)):
             if message == voiceCommands[i]['Command'] or command in voiceCommands[i]['Alias'].split('#'):
                 await playSound(msg, voiceCommands[i])
+                return
 
     elif any([badword in content for badword in await getServerConfig(msg.guild.id, ['configs', 'bad_words'])]):
         for word in content.split():
@@ -1106,7 +1136,7 @@ async def on_message(msg: discord.Message):
         'this is so sad. alexa, play despacito.', 'this is so sad, play despacito.', \
         'this is so sad. play despacito.', 'this is so sad alexa play despacito.']:
         await say(msg, 'ɴᴏᴡ ᴘʟᴀʏɪɴɢ: Despacito\n─────⚪────────────────────────────\n◄◄⠀▐▐ ⠀►►⠀⠀ ⠀ 1:17 / 3:48 ⠀ ───○ 🔊⠀ ᴴᴰ ⚙ ❐ ⊏⊐')
-        await playSound(msg, despacito, True)
+        await playSound(msg, voiceCommands[80], True)
         return
 
     elif client.user.mentioned_in(msg) and not msg.mention_everyone:
@@ -1116,6 +1146,13 @@ async def on_message(msg: discord.Message):
     # Not `elif` so it can work with other commands
     if "scp" in content:
         await scp(msg, content)
+
+def isPlaying(guild):
+    vs = getVoiceClient(guild)
+    return vs and vs.is_playing()
+
+def getVoiceClient(guild):
+    return guild.voice_client
 
 async def setServerConfig(guildID, configKey, newValue, type=0, msg=None):
     """Modifies a config value in the guild's server's config file
@@ -1263,25 +1300,28 @@ async def scp(msg, content):
             await say(msg, "", embed=embed)
 
 async def playSound(msg, command, silent=False):
-    global voice
-    global player
-    global isPlaying
-    if isPlaying:
+    if isPlaying(msg.guild):
         if not silent:
             await throwError(msg, 'I\'m already playing a sound! Please wait your turn.', custom=True, printError=False)
         return
-    if msg.author.voice and msg.author.voice.channel:
+    elif msg.author.voice and msg.author.voice.channel:
         try:
+            channel = msg.author.voice.channel
+            voice = get(client.voice_clients, guild=msg.guild)
+
+            if not voice:
+                voice = await channel.connect()
+
             sounds = command['SoundFile'].split("#")
             sound = random.choice(sounds)
-            voice = await msg.author.voice.channel.connect()
-            voice.play(discord.FFmpegPCMAudio('res/sound/' + sound + fileExt))
-            isPlaying = True
-            client.loop.create_task(donePlaying(voice, player))
+            
+            player = discord.FFmpegPCMAudio('res/sound/' + sound + fileExt)
+            voice.play(player)
+            client.loop.create_task(donePlaying(msg.guild))
         except Exception as e:
             if not silent:
                 await throwError(msg, 'There was an issue playing the sound file 🙁', custom=True)
-            pass
+            return
     else:
         if not silent:
             await throwError(msg, 'You\'re not in a voice channel!', custom=True, printError=False)
@@ -2367,12 +2407,19 @@ async def checkDailyEvents():
 def writeLog(e, crash=False):
     logTime = datetime.datetime.now()
     filename = 'res/data/logs/log-{}.txt'.format(str(logTime).replace(' ','').replace(':','-')) if crash else 'res/data/logs/log.txt'
-    with open(filename, 'a+') as log:
+    if not os.path.exists(os.path.dirname(filename)):
+        try:
+            os.makedirs(os.path.dirname(filename))
+        except OSError as e:
+            throwError(None, error=e, fatal=True)
+            return
+    with open(filename, 'a+', encoding='utf8') as log:
         log.write("Time: " + str(logTime) + "\n")
         log.write("-\/-----------------------------\/-" + "\n")
         log.write(str(e)+"\n")
         log.write("-/\-----------------------------/\-" + "\n")
         log.write("\n")
+    return
 
 async def sayInChannelOnce(channel, message, embed=None):
     today = datetime.datetime.combine(date.today(), datetime.time())
@@ -2382,13 +2429,12 @@ async def sayInChannelOnce(channel, message, embed=None):
     await sayInChannel(channel, message, embed)
     return True
 
-async def donePlaying(voice, player):
-    global isPlaying
-    while isPlaying:
-        if not voice.is_playing():
-            await voice.disconnect()
-            isPlaying = False
-        await asyncio.sleep(0.5)
+async def donePlaying(guild, waitTime=0.5):
+    voiceClient = getVoiceClient(guild)
+    while voiceClient and voiceClient.is_connected():
+        if not voiceClient.is_playing():
+            await voiceClient.disconnect()
+        await asyncio.sleep(waitTime)
 
 def clearTerminal():
     if platform.system() == 'Windows':
@@ -2402,12 +2448,6 @@ def ord(n):
     return "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])
 
 def findInfo():
-    global voiceCommands
-    global despacito
-    for i in range(1, len(voiceCommands)):
-        if voiceCommands[i]['Command'] == 'despacito':
-            despacito = voiceCommands[i]
-            break
     return
 
 async def zalgo_ify(text, level=3):
