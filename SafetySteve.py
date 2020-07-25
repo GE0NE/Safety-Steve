@@ -1871,21 +1871,21 @@ async def mock(msg, *, text=""):
         else:
             await say(msg, result)
 
-async def hasItem(guild, user, item, qty=1):
-    existingScore = await readScores(guild, user)
+async def hasItem(guildID, user, item, qty=1):
+    existingScore = await readScores(guildID, user)
     inventory = ast.literal_eval(existingScore[7])
     return True if item in inventory and inventory[item] >= qty else False
 
-async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currency=0, inventory={}, ignoreItems=False):
+async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, currency=0, inventory={}, ignoreItems=False):
     if not ignoreItems:
     ###### Item ######
-        if await hasItem(guild, user, 'ActiveEvilEye'):
+        if await hasItem(guildID, user, 'ActiveEvilEye'):
             score *= 2
     ##################
 
     # Create file if it doesn't already exist
     try:
-        with open("res/data/server_data/%s.dat" % (guild), encoding='utf8') as f:
+        with open("res/data/server_data/%s.dat" % (guildID), encoding='utf8') as f:
             pass
     except FileNotFoundError:
         # Create the directory is it doesn't already exist
@@ -1894,14 +1894,14 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currenc
                 os.makedirs(os.path.dirname('res/data/server_data/'))
             except OSError as e:
                 throwError(None, error=e, fatal=True)
-        with open("res/data/server_data/%s.dat" % (guild), 'w', encoding='utf8') as f:
+        with open("res/data/server_data/%s.dat" % (guildID), 'w', encoding='utf8') as f:
             pass
 
-    userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guild, user, str(score), str(gilding), 
+    userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guildID, user, str(score), str(gilding), 
         str(voted), str(gilded), str(currency), str(inventory).replace(' ',''))
-    existingScores = await readScores(guild)
+    existingScores = await readScores(guildID)
     for existingScore in existingScores:
-        if int(existingScore[0]) == guild and int(existingScore[1]) == user:
+        if int(existingScore[0]) == guildID and int(existingScore[1]) == user:
             oldUserObj = userObj
             newScore = str(int(existingScore[2]) + score)
             newGilding = str(int(existingScore[3]) + gilding) if (int(existingScore[3]) + gilding) > 0 else '0'
@@ -1917,11 +1917,11 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currenc
                 if newInventory[list(inventory.keys())[0]] <= 0:
                     del newInventory[list(inventory.keys())[0]]
             newInventory = str(newInventory).replace(' ','')
-            userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guild, user, newScore, newGilding,
+            userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guildID, user, newScore, newGilding,
                 newVoted, newGilded, newCurrency, newInventory)
-            oldScores = await getScores(guild)
+            oldScores = await getScores(guildID)
             oldScores = oldScores.split("\n")[:-1]
-            with open("res/data/server_data/%s.dat" % (guild),"w") as scores:
+            with open("res/data/server_data/%s.dat" % (guildID),"w") as scores:
                 for oldScore in oldScores:
                     if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
                         if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0' and newCurrency == '0' \
@@ -1931,14 +1931,14 @@ async def writeScore(guild, user, score=0, gilding=0, voted=0, gilded=0, currenc
                         scores.write(oldScore + "\n")
                 scores.close()
                 return
-    with open("res/data/server_data/%s.dat" % (guild), "a") as scores:
+    with open("res/data/server_data/%s.dat" % (guildID), "a") as scores:
         scores.write(userObj + "\n")
         scores.close()
     return
 
-async def readScores(guild, userID=None):
+async def readScores(guildID, userID=None):
     blankEntry = ['0','0','0','0','0','0','0','{}']
-    data = await getScores(guild)
+    data = await getScores(guildID)
     if not data:
         return blankEntry if userID is not None else [blankEntry]
     entries = data.split("\n")[:-1]
@@ -1947,9 +1947,9 @@ async def readScores(guild, userID=None):
         entries[i] = entries[i].split(' ')
         for j in range(0, len(entries[i])):
             entries[i][j] = entries[i][j].split('=')[1]
-        if guild is not None and int(entries[i][0]) == guild:
+        if guildID is not None and int(entries[i][0]) == guildID:
             guildEntries.append(entries[i])
-    if guild is not None:
+    if guildID is not None:
         if userID is not None:
             found = None
             for entry in guildEntries:
@@ -1964,9 +1964,9 @@ async def readScores(guild, userID=None):
             return guildEntries
     return sorted(entries, key=lambda x: x[0])
 
-async def getScores(guild, iteration=0):
+async def getScores(guildID, iteration=0):
     try:
-        with open("res/data/server_data/%s.dat" % (guild),"r") as scores:
+        with open("res/data/server_data/%s.dat" % (guildID),"r") as scores:
             data = scores.read()
             scores.close()
             return data
@@ -1978,9 +1978,9 @@ async def getScores(guild, iteration=0):
             except OSError as e:
                 throwError(msg, error=e, fatal=True)
         if iteration <= 1:
-            with open("res/data/server_data/%s.dat" % (guild),"w+") as scores:
+            with open("res/data/server_data/%s.dat" % (guildID),"w+") as scores:
                 scores.close()
-                await getScores(guild, iteration=iteration+1)
+                await getScores(guildID, iteration=iteration+1)
         else:
             throwError(msg, e)
 
@@ -2279,7 +2279,7 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
 
 async def clearDailyRestrictions():
     for guild in client.guilds:
-        scores = await readScores(guild)
+        scores = await readScores(guild.id)
         for entry in scores:
             await writeScore(int(entry[0]), int(entry[1]), voted=-999, gilded=-999, ignoreItems=True)
 
