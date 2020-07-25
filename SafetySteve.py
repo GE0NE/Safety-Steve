@@ -1701,7 +1701,7 @@ async def getIPA(text):
             page = c.post(url, data=data, headers={"Referer": "https://tophonetics.com/"})
             soup = BeautifulSoup(page.text, 'html.parser')
             try:
-                IPA_text = soup.find(id='transcr_output').text
+                IPA_text = "/%s/" % (soup.find(id='transcr_output').text)
             except AttributeError:
                 pass
     except:
@@ -1809,24 +1809,23 @@ async def defineGoogle(msg, message):
         ipa = values.get('phonetic', await getIPA(word))
 
         embed.add_field(name="{}".format(word), value="{}".format(ipa), inline=False)
-        
-        definitionCount = 1
-        definitions = ""
 
         for entry in values.get('meanings', []):  
-          for defin in entry.get('definitions', []):
+            partOfSpeech = entry.get('partOfSpeech', 'Unknown')
+            definitions = ""
+            definitionCount = 1
+            for defin in entry.get('definitions', [])[:3]:
+                definition = defin.get('definition', 'Unknown')
+                example = defin.get('example', '')
+                synonyms = ', '.join(defin.get('synonyms', [])[:4])
+                  
+                seperator = "_ _\n" if definitionCount == 1 else ""
+                definitions += str(definitionCount) + ". " + definition + "\n" + ('_%s_' % (synonyms) + "\n" if synonyms else '')
+                definitionCount += 1
 
-            definition = defin.get('definition', '')
-            example = defin.get('example', '')
-            synonyms = ', '.join(defin.get('synonyms', [])[:4])
-              
-            seperator = "_ _\n" if definitionCount == 1 else ""
-            definitions += str(definitionCount) + ". " + definition + "\n"
-            definitionCount += 1
-
-        embed.add_field(name="WORD", value="{}".format(definitions), inline=False)
+            embed.add_field(name=partOfSpeech, value="{}".format(definitions), inline=False)
         embed.set_footer(text="Powered by dictionaryapi.dev")
-        
+
         if not values.get('failure', False):
             await say(msg, "", embed=embed)
             return
