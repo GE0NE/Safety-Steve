@@ -1684,6 +1684,15 @@ async def setPlaying(name, activitytype=0):
 
 async def sayIPA(msg, text):
     await msg.channel.trigger_typing()
+    IPA_text = await getIPA(text)
+    if IPA_text == '':
+        await throwError(msg, "I wasn't able to convert that word!", custom=True, printError=False)
+    elif IPA_text == None:
+        await throwError(msg, "I couldn't access `{}`!".format(url), custom=True)
+    await say(msg, IPA_text)
+
+async def getIPA(text):
+    IPA_text = ''
     try:
         with requests. Session() as c: 
             url = 'https://tophonetics.com/'
@@ -1694,11 +1703,10 @@ async def sayIPA(msg, text):
             try:
                 IPA_text = soup.find(id='transcr_output').text
             except AttributeError:
-                await throwError(msg, "I wasn't able to convert that word!", custom=True, printError=False)
-                return
-            await say(msg, IPA_text)
+                pass
     except:
-        await throwError(msg, "I couldn't access `{}`!".format(url), custom=True)
+        return None
+    return IPA_text
 
 async def defineUrban(msg, message=None, term='', num=1, edit=None):
 
@@ -1785,49 +1793,45 @@ async def defineGoogle(msg, message):
     async with aiohttp.ClientSession() as session:
         term = message.strip()
         search = term.split(" ")[0]
-        async with session.get("https://googledictionaryapi.eu-gb.mybluemix.net/", params={"define": search}) as resp:
+        async with session.get("https://api.dictionaryapi.dev/api/v2/entries/en/%s" % (search)) as resp:
             try:
                 payload = await resp.json(content_type=None)
+                if isinstance(payload, dict):
+                    raise Exception
             except:
-                await say(msg, "I couldn't define {}.".format(term))
-                return
+                payload = [{'failure': True}]
 
         embed=discord.Embed(color=embedColor)
         embed.set_thumbnail(url="http://icons.iconarchive.com/icons/osullivanluke/orb-os-x/48/Dictionary-icon.png")
-        values = list(payload[0].values())
 
-        word = values[0]
-        ipa = values[1]
+        values = payload[0]
+        word = values.get('word', '')
+        ipa = values.get('phonetic', await getIPA(word))
 
         embed.add_field(name="{}".format(word), value="{}".format(ipa), inline=False)
         
-        for pos in list(values[3].keys())[:3]:
-            postxt = pos
-            definitionCount = 1
-            definitions = ""
-            for entry in values[3][pos][:2]:
+        definitionCount = 1
+        definitions = ""
 
-                definition = ""
-                if 'definition' in entry:
-                    definition = entry['definition']
+        for entry in values.get('meanings', []):  
+          for defin in entry.get('definitions', []):
 
-                example = ""
-                if 'example' in entry:
-                    example = entry['example']
+            definition = defin.get('definition', '')
+            example = defin.get('example', '')
+            synonyms = ', '.join(defin.get('synonyms', [])[:4])
+              
+            seperator = "_ _\n" if definitionCount == 1 else ""
+            definitions += str(definitionCount) + ". " + definition + "\n"
+            definitionCount += 1
 
-                synonyms = ""
-                if 'synonyms' in entry:
-                    synonyms = entry['synonyms'][:4]
-                    synonyms = ', '.join(synonyms)
-                    
-                seperator = "_ _\n" if definitionCount == 1 else ""
-                definitions += str(definitionCount) + ". " + definition + "\n"
-                definitionCount += 1
-
-            embed.add_field(name="{}".format(postxt), value="{}".format(definitions), inline=False)
-            postxt = u'\u200b'
-        embed.set_footer(text="Powered by googledictionaryapi.eu-gb.mybluemix.net")
-        await say(msg, "", embed=embed)
+        embed.add_field(name="WORD", value="{}".format(definitions), inline=False)
+        embed.set_footer(text="Powered by dictionaryapi.dev")
+        
+        if not values.get('failure', False):
+            await say(msg, "", embed=embed)
+            return
+        else:
+            await say(msg, "I couldn't define {}.".format(term))
             
         return 
 
