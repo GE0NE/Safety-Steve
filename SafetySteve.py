@@ -644,7 +644,7 @@ async def on_message(msg: discord.Message):
             server = msg.guild
             invokerMessage = None
             author = None
-            invokerScores = await readScores(guild=server.id, userID=msg.author.id)
+            invokerScores = await readScores(server.id, userID=msg.author.id)
 
             serverGildLimit = await getServerConfig(msg.guild.id, ['configs', 'gild_limit'])
             if invokerScores[0] and int(invokerScores[5]) >= serverGildLimit:
@@ -667,7 +667,7 @@ async def on_message(msg: discord.Message):
             await writeScore(server.id, msg.author.id, gilded=1)
             if invokerMessage is not None:
                 await react(invokerMessage, "🔶")
-            targetScores = await readScores(guild=server.id, userID=author.id)
+            targetScores = await readScores(server.id, userID=author.id)
             embed = discord.Embed(title="_{} time{}_".format(targetScores[3], '' if targetScores[3] == '1' else 's'), 
                 description="**You've been gilded!**", color=0xFFDF00)
             embed.set_thumbnail(url="https://i.imgur.com/UWWoFxe.png")
@@ -687,7 +687,7 @@ async def on_message(msg: discord.Message):
             nick = target.nick
             nick = displayName if nick is None else nick
 
-            scores = await readScores(guild=msg.guild.id, userID=target.id)
+            scores = await readScores(msg.guild.id, userID=target.id)
             gilded = scores[3]
             embed = discord.Embed(title="{} been gilded:".format("You have" if target == msg.author else nick + " has"), 
                 description="_{} time{}_".format(gilded, 's' if int(gilded) != 1 else ''), 
@@ -1006,7 +1006,7 @@ async def on_message(msg: discord.Message):
         try:
             targetMessage = None
             server = msg.guild
-            invokerScores = await readScores(guild=server.id, userID=msg.author.id)
+            invokerScores = await readScores(server.id, userID=msg.author.id)
 
             async for targetMessageTemp in msg.channel.history(limit=2):
                 targetMessage = targetMessageTemp
@@ -1091,7 +1091,7 @@ async def on_message(msg: discord.Message):
                 await writeScore(server.id, msg.author.id, voted=votescast)
 
                 if max(votescast - protected, 0) != 0:
-                    targetScores = await readScores(guild=server.id, userID=author.id)
+                    targetScores = await readScores(server.id, userID=author.id)
                     await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
 
         except Exception as e:
