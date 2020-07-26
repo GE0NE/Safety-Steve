@@ -163,10 +163,10 @@
         
         {
             "Command": "balance",
-            "Alias": "currency#money",
+            "Alias": "bal#currency#money",
             "Help": "Displays specified user's currency balance, or everyone's balance. No params displays your balance",
-            "Params": "[user mention | all]",
-            "Examples": "balance#balance @Safety-Steve#balance all"
+            "Params": "[user mention | all | top [number of users to display]]",
+            "Examples": "balance#balance @Safety-Steve#balance all#bal top 5"
         },
         
         {

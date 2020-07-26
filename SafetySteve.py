@@ -375,6 +375,7 @@ async def on_message(msg: discord.Message):
                             'subreddit' : subreddit,
                             'scoreDecay' : scoreDecay,
                             'readScores' : readScores,
+                            'writeScore': writeScore,
                             'react' : react,
                             'throwError' : throwError,
                             'getServerConfig' : getServerConfig,
@@ -604,6 +605,7 @@ async def on_message(msg: discord.Message):
         if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
             if not argList:
                 scores = await readScores(msg.guild.id)
+                print(scores)
                 embed = discord.Embed(title="Scores:", description="_ _")
                 for scoreEntry in scores:
                     try:
@@ -718,6 +720,8 @@ async def on_message(msg: discord.Message):
                 target = msg.author
             if argList and argList[0] == 'all':
                 await displayEveryonesCurrency(msg)
+            elif argList and argList[0] == 'top':
+                await displayTopCurrency(msg, int(argList[1]) if len(argList) > 1 and argList[1].isdigit() else 3)
             else:
                 await displayCurrency(msg, target)
             return
@@ -1964,14 +1968,18 @@ async def readScores(guildID, userID=None):
             else:
                 return blankEntry
         else:
-            return guildEntries
-    return sorted(entries, key=lambda x: x[0])
+            return sorted(guildEntries, key=lambda x:int(x[6]))
+    return sorted(entries, key=lambda x:int(x[6]))
 
 async def getScores(guildID, iteration=0):
     try:
         with open("res/data/server_data/%s.dat" % (guildID),"r") as scores:
             data = scores.read()
             scores.close()
+            try:
+                data.sort(key=lambda score:int(data[6]), reverse=True)
+            except:
+                pass
             return data
     except FileNotFoundError as e:
         # Create the directory is it doesn't already exist
@@ -2130,11 +2138,15 @@ async def displayCurrency(msg, target):
 
 async def displayEveryonesCurrency(msg):
     scores = await readScores(msg.guild.id)
+    try:
+        scores.sort(key=lambda score:int(score[6]), reverse=True)
+    except:
+        pass
     embed = discord.Embed(title="Balance:", description="_ _")
     serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
     for scoreEntry in scores:
         try:
-            user = await client.get_user_info(scoreEntry[1])
+            user = await client.fetch_user(scoreEntry[1])
             balance = scoreEntry[6]
             if balance != '0':
                 displayName = user.display_name
@@ -2143,6 +2155,30 @@ async def displayEveryonesCurrency(msg):
                 sanitizedDisplayName = displayName.replace('_','\_')
                 displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
                 embed.add_field(name=nick, value="{}{}{}".format(displayName, serverCurrencySymbol, balance), inline=True)
+        except:
+            continue
+    await say(msg, "", embed=embed)
+    return
+
+async def displayTopCurrency(msg, amount=3):
+    scores = await readScores(msg.guild.id)
+    try:
+        scores.sort(key=lambda score:int(score[6]), reverse=True)
+    except:
+        pass
+    embed = discord.Embed(title="Balance:", description="_ _")
+    serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
+    for scoreEntry in scores[:amount]:
+        try:
+            user = await client.fetch_user(scoreEntry[1])
+            balance = scoreEntry[6]
+            if balance != '0':
+                displayName = user.display_name
+                nick = msg.guild.get_member(user.id).nick
+                nick = displayName if nick is None else nick
+                sanitizedDisplayName = displayName.replace('_','\_')
+                displayName = "_AKA {}_\n".format(sanitizedDisplayName) if nick != displayName else ''
+                embed.add_field(name=nick, value="{}{}{}".format(displayName, serverCurrencySymbol, balance), inline=False)
         except:
             continue
     await say(msg, "", embed=embed)
