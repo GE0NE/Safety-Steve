@@ -605,7 +605,6 @@ async def on_message(msg: discord.Message):
         if command == textCommands[15]['Command'] or command in textCommands[15]['Alias'].split('#'):
             if not argList:
                 scores = await readScores(msg.guild.id)
-                print(scores)
                 embed = discord.Embed(title="Scores:", description="_ _")
                 for scoreEntry in scores:
                     try:
@@ -1948,27 +1947,22 @@ async def readScores(guildID, userID=None):
     data = await getScores(guildID)
     if not data:
         return blankEntry if userID is not None else [blankEntry]
-    entries = data.split("\n")[:-1]
-    guildEntries = []
-    for i in range(0, len(entries)):
-        entries[i] = entries[i].split(' ')
-        for j in range(0, len(entries[i])):
-            entries[i][j] = entries[i][j].split('=')[1]
-        if guildID is not None and int(entries[i][0]) == guildID:
-            guildEntries.append(entries[i])
-    if guildID is not None:
-        if userID is not None:
-            found = None
-            for entry in guildEntries:
-                if int(entry[1]) == userID:
-                    found = entry
-                    break
-            if found is not None:
-                return found
-            else:
-                return blankEntry
+    # Confusing as hell list comprehention
+    # creates a list of lists. For each entry, it makes all the values into an element in a list and strips the key and '=' sign
+    entries = [y.split(' ') for y in data.split("\n")[:-1]]
+    guildEntries = [[x.split('=')[1] for x in entries[j]] for j in range(0, len(entries))]
+    if userID is not None:
+        found = None
+        for entry in guildEntries:
+            if int(entry[1]) == userID:
+                found = entry
+                break
+        if found is not None:
+            return found
         else:
-            return sorted(guildEntries, key=lambda x:int(x[6]))
+            return blankEntry
+    else:
+        return sorted(guildEntries, key=lambda x:int(x[6]))
     return sorted(entries, key=lambda x:int(x[6]))
 
 async def getScores(guildID, iteration=0):
