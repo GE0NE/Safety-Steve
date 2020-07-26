@@ -608,8 +608,8 @@ async def on_message(msg: discord.Message):
                 embed = discord.Embed(title="Scores:", description="_ _")
                 for scoreEntry in scores:
                     try:
-                        user = client.get_user(int(scoreEntry[1]))
-                        score = scoreEntry[2]
+                        user = client.get_user(int(scoreEntry[0]))
+                        score = scoreEntry[1]
                         if score != '0':
                             displayName = user.display_name
                             nick = msg.guild.get_member(user.id).nick
@@ -628,17 +628,17 @@ async def on_message(msg: discord.Message):
                         target = msg.mentions[0]
                     targetScores = await readScores(msg.guild.id, target.id)
                     await say(msg, "{} voted {} time{} today.".format("You've" if target is msg.author else target.mention + 
-                        ' has', targetScores[4], '' if targetScores[4] == '1' else 's'))
+                        ' has', targetScores[3], '' if targetScores[3] == '1' else 's'))
                     return
                 else:
                     if msg.mentions:
                         target = msg.mentions[0]
                         targetScores = await readScores(msg.guild.id, target.id)
-                        await say(msg, "{}'s score is {}.".format(target.mention, targetScores[2]))
+                        await say(msg, "{}'s score is {}.".format(target.mention, targetScores[1]))
                     elif argList[0] in ['me','myself','self']:
                         target = msg.author
                         targetScores = await readScores(msg.guild.id, target.id)
-                        await say(msg, "{}'s score is {}.".format(target.mention, targetScores[2]))
+                        await say(msg, "{}'s score is {}.".format(target.mention, targetScores[1]))
             return
 
         if command == textCommands[16]['Command'] or command in textCommands[16]['Alias'].split('#'):
@@ -648,7 +648,7 @@ async def on_message(msg: discord.Message):
             invokerScores = await readScores(server.id, userID=msg.author.id)
 
             serverGildLimit = await getServerConfig(msg.guild.id, ['configs', 'gild_limit'])
-            if invokerScores[0] and int(invokerScores[5]) >= serverGildLimit:
+            if int(invokerScores[4]) >= serverGildLimit:
                 await say(msg, "You have already gilded someone {}today!".format((str(serverGildLimit) + ' times ') if serverGildLimit != 1 else ''))
                 return
 
@@ -669,7 +669,7 @@ async def on_message(msg: discord.Message):
             if invokerMessage is not None:
                 await react(invokerMessage, "🔶")
             targetScores = await readScores(server.id, userID=author.id)
-            embed = discord.Embed(title="_{} time{}_".format(targetScores[3], '' if targetScores[3] == '1' else 's'), 
+            embed = discord.Embed(title="_{} time{}_".format(targetScores[2], '' if targetScores[3] == '1' else 's'), 
                 description="**You've been gilded!**", color=0xFFDF00)
             embed.set_thumbnail(url="https://i.imgur.com/UWWoFxe.png")
             await say(msg, "{}".format(author.mention), embed=embed)
@@ -689,7 +689,7 @@ async def on_message(msg: discord.Message):
             nick = displayName if nick is None else nick
 
             scores = await readScores(msg.guild.id, userID=target.id)
-            gilded = scores[3]
+            gilded = scores[2]
             embed = discord.Embed(title="{} been gilded:".format("You have" if target == msg.author else nick + " has"), 
                 description="_{} time{}_".format(gilded, 's' if int(gilded) != 1 else ''), 
                 color=gradient[int(gilded) if int(gilded) < 6 else 5])
@@ -741,7 +741,7 @@ async def on_message(msg: discord.Message):
                     return
             except ValueError:
                 if str(argList[1]) == 'all':
-                    amount = int(scoreEntry[6])
+                    amount = int(scoreEntry[5])
                 else:
                     await helpCommand(textCommands[21]['Command'], msg)
                     return
@@ -1027,7 +1027,7 @@ async def on_message(msg: discord.Message):
                     await say(msg, "You can't vote positively for yourself!")
                     return
 
-                elif int(invokerScores[4]) >=  serverVoteLimit:
+                elif int(invokerScores[3]) >=  serverVoteLimit:
                     await say(msg, "You can only vote {} per day!".format((str(serverVoteLimit) + ' times') if serverVoteLimit > 1 else 'once'))
                     return
 
@@ -1048,9 +1048,9 @@ async def on_message(msg: discord.Message):
                                 ico = item['Icon']
                                 break
                         await say(msg, "-{} You consumed a {} to use all your remaining votes today ({}) on {}!".format(ico, itemName, 
-                            str(serverVoteLimit - int(invokerScores[4])), author.mention))
+                            str(serverVoteLimit - int(invokerScores[3])), author.mention))
                         ###### Item ######
-                        for i in range(0, serverVoteLimit - int(invokerScores[4])):
+                        for i in range(0, serverVoteLimit - int(invokerScores[3])):
                             ###### Item ######
                             if 'bad' in content:
                                 if await hasItem(server.id, author.id, 'ActiveWard'):
@@ -1066,9 +1066,9 @@ async def on_message(msg: discord.Message):
                             await say(msg, 
                                 "This user was protected by an item and was unable to be voted on!{}".format(" (x{})".format(protected) if protected > 1 else ""))
                         ##################
-                        deltascore = max(serverVoteLimit - int(invokerScores[4]) - protected, 0)
+                        deltascore = max(serverVoteLimit - int(invokerScores[3]) - protected, 0)
                         await writeScore(server.id, msg.author.id, inventory={'MegaVote':-1})
-                        votescast = serverVoteLimit - int(invokerScores[4])
+                        votescast = serverVoteLimit - int(invokerScores[3])
                     else:
                         await say(msg, "You don't have the item required to perform that action!")
                         return
@@ -1095,7 +1095,7 @@ async def on_message(msg: discord.Message):
 
                 if max(votescast - protected, 0) != 0:
                     targetScores = await readScores(server.id, userID=author.id)
-                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[2]))
+                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[1]))
 
         except Exception as e:
             await throwError(msg, error=e, sayTraceback=True, printTraceback=True)
@@ -1879,7 +1879,7 @@ async def mock(msg, *, text=""):
 
 async def hasItem(guildID, user, item, qty=1):
     existingScore = await readScores(guildID, user)
-    inventory = ast.literal_eval(existingScore[7])
+    inventory = ast.literal_eval(existingScore[6])
     return True if item in inventory and inventory[item] >= qty else False
 
 async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, currency=0, inventory={}, ignoreItems=False):
@@ -1903,18 +1903,18 @@ async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, curre
         with open("res/data/server_data/%s.dat" % (guildID), 'w', encoding='utf8') as f:
             pass
 
-    userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guildID, user, str(score), str(gilding), 
+    userObj = "USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(user, str(score), str(gilding), 
         str(voted), str(gilded), str(currency), str(inventory).replace(' ',''))
     existingScores = await readScores(guildID)
     for existingScore in existingScores:
-        if int(existingScore[0]) == guildID and int(existingScore[1]) == user:
+        if int(existingScore[0]) == user:
             oldUserObj = userObj
-            newScore = str(int(existingScore[2]) + score)
-            newGilding = str(int(existingScore[3]) + gilding) if (int(existingScore[3]) + gilding) > 0 else '0'
-            newVoted = str(int(existingScore[4]) + voted) if (int(existingScore[4]) + voted) > 0 else '0'
-            newGilded = str(int(existingScore[5]) + gilded) if (int(existingScore[5]) + gilded) > 0 else '0'
-            newCurrency = str(int(existingScore[6]) + currency) if (int(existingScore[6]) + currency) > 0 else '0'
-            newInventory = ast.literal_eval(existingScore[7])
+            newScore = str(int(existingScore[1]) + score)
+            newGilding = str(int(existingScore[2]) + gilding) if (int(existingScore[2]) + gilding) > 0 else '0'
+            newVoted = str(int(existingScore[3]) + voted) if (int(existingScore[3]) + voted) > 0 else '0'
+            newGilded = str(int(existingScore[4]) + gilded) if (int(existingScore[4]) + gilded) > 0 else '0'
+            newCurrency = str(int(existingScore[5]) + currency) if (int(existingScore[5]) + currency) > 0 else '0'
+            newInventory = ast.literal_eval(existingScore[6])
             if inventory:
                 if list(inventory.keys())[0] in newInventory:
                     newInventory[list(inventory.keys())[0]] += list(inventory.values())[0]
@@ -1923,15 +1923,15 @@ async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, curre
                 if newInventory[list(inventory.keys())[0]] <= 0:
                     del newInventory[list(inventory.keys())[0]]
             newInventory = str(newInventory).replace(' ','')
-            userObj = "GUILD={} USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(guildID, user, newScore, newGilding,
+            userObj = "USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(user, newScore, newGilding,
                 newVoted, newGilded, newCurrency, newInventory)
             oldScores = await getScores(guildID)
             oldScores = oldScores.split("\n")[:-1]
             with open("res/data/server_data/%s.dat" % (guildID),"w") as scores:
                 for oldScore in oldScores:
-                    if oldScore.split(' ')[0] == oldUserObj.split(' ')[0] and oldScore.split(' ')[1] == oldUserObj.split(' ')[1]:
+                    if oldScore.split(' ')[0] == oldUserObj.split(' ')[0]:
                         if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0' and newCurrency == '0' \
-                            and newCurrency == 0 and not newInventory):
+                            and newInventory):
                             scores.write(userObj + "\n")
                     else:
                         scores.write(oldScore + "\n")
@@ -1943,7 +1943,7 @@ async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, curre
     return
 
 async def readScores(guildID, userID=None):
-    blankEntry = ['0','0','0','0','0','0','0','{}']
+    blankEntry = ['0','0','0','0','0','0','{}']
     data = await getScores(guildID)
     if not data:
         return blankEntry if userID is not None else [blankEntry]
@@ -1951,10 +1951,11 @@ async def readScores(guildID, userID=None):
     # creates a list of lists. For each entry, it makes all the values into an element in a list and strips the key and '=' sign
     entries = [y.split(' ') for y in data.split("\n")[:-1]]
     guildEntries = [[x.split('=')[1] for x in entries[j]] for j in range(0, len(entries))]
+    guildEntries.sort(key=lambda score:int(score[1]), reverse=True)
     if userID is not None:
         found = None
         for entry in guildEntries:
-            if int(entry[1]) == userID:
+            if int(entry[0]) == userID:
                 found = entry
                 break
         if found is not None:
@@ -1962,18 +1963,14 @@ async def readScores(guildID, userID=None):
         else:
             return blankEntry
     else:
-        return sorted(guildEntries, key=lambda x:int(x[6]))
-    return sorted(entries, key=lambda x:int(x[6]))
+        return guildEntries
+    return entries
 
 async def getScores(guildID, iteration=0):
     try:
         with open("res/data/server_data/%s.dat" % (guildID),"r") as scores:
             data = scores.read()
             scores.close()
-            try:
-                data.sort(key=lambda score:int(data[6]), reverse=True)
-            except:
-                pass
             return data
     except FileNotFoundError as e:
         # Create the directory is it doesn't already exist
@@ -1993,12 +1990,12 @@ async def scoreDecayGuild(guildID):
     scores = await readScores(guildID)
     for i in range(0, await getServerConfig(guildID, ['configs', 'weekly_score_decay'])):
         for entry in scores:
-            if int(entry[2]) == 0:
+            if int(entry[1]) == 0:
                 continue
-            elif int(entry[2]) > 0:
-                await writeScore(int(entry[0]), int(entry[1]), score=-1, ignoreItems=True)
+            elif int(entry[1]) > 0:
+                await writeScore(int(guildID), int(entry[0]), score=-1, ignoreItems=True)
             else:
-                await writeScore(int(entry[0]), int(entry[1]), score=1, ignoreItems=True)
+                await writeScore(int(guildID), int(entry[0]), score=1, ignoreItems=True)
 
 async def scoreDecay(msg=None):
     if not msg:
@@ -2029,33 +2026,33 @@ async def exchange(msg, args):
     if args:
         serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
         if args[0] == 'all':
-            returnCurrency = pointsToCurrency(int(scoreEntry[2])) + gildingsToCurrency(int(scoreEntry[3]))
+            returnCurrency = pointsToCurrency(int(scoreEntry[1])) + gildingsToCurrency(int(scoreEntry[2]))
             if returnCurrency <= 0:
                 await notEnoughToExchange('points and gildings')
                 return True
             confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) and gildings (%s) for %s%s?" % \
-                (scoreEntry[2], scoreEntry[3], serverCurrencySymbol, str(returnCurrency)))
+                (scoreEntry[1], scoreEntry[2], serverCurrencySymbol, str(returnCurrency)))
             if confirmation:
-                await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), score=-int(scoreEntry[2]), currency=returnCurrency, ignoreItems=True)
+                await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[2]), score=-int(scoreEntry[1]), currency=returnCurrency, ignoreItems=True)
             else:
                 return True
         elif args[0] in ['score','points','point','scores']:
             if len(args) <= 1 or (len(args) > 1 and args[1] == 'all'):
-                returnCurrency = pointsToCurrency(int(scoreEntry[2]))
+                returnCurrency = pointsToCurrency(int(scoreEntry[1]))
                 if returnCurrency <= 0:
                     await notEnoughToExchange('points')
                     return True
                 confirmation = await confirm(msg, "Are you sure you want to exchange all your score points (%s) for %s%s?" % \
-                    (scoreEntry[2], serverCurrencySymbol, str(returnCurrency)))
+                    (scoreEntry[1], serverCurrencySymbol, str(returnCurrency)))
                 if confirmation:
-                    await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[2]), currency=returnCurrency, ignoreItems=True)
+                    await writeScore(msg.guild.id, msg.author.id, score=-int(scoreEntry[1]), currency=returnCurrency, ignoreItems=True)
                 else:
                     return True
             else:
                 try:
                     amountQueried = int(args[1])
-                    if amountQueried > int(scoreEntry[2]):
-                        amountQueried = int(scoreEntry[2])
+                    if amountQueried > int(scoreEntry[1]):
+                        amountQueried = int(scoreEntry[1])
                     returnCurrency = pointsToCurrency(amountQueried)
                     if returnCurrency <= 0:
                         await notEnoughToExchange('points')
@@ -2070,21 +2067,21 @@ async def exchange(msg, args):
                     await unknownValue(args[1])
         elif args[0] in ['gildings','gild','gilding','gold']:
             if len(args) <= 1 or (len(args) > 1 and args[1] == 'all'):
-                returnCurrency = gildingsToCurrency(int(scoreEntry[3]))
+                returnCurrency = gildingsToCurrency(int(scoreEntry[2]))
                 if returnCurrency <= 0:
                     await notEnoughToExchange('gildings')
                     return True
                 confirmation = await confirm(msg, "Are you sure you want to exchange all your gildings (%s) for %s%s?" % \
-                    (scoreEntry[3], serverCurrencySymbol, str(returnCurrency)))
+                    (scoreEntry[2], serverCurrencySymbol, str(returnCurrency)))
                 if confirmation:
-                    await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[3]), currency=returnCurrency, ignoreItems=True)
+                    await writeScore(msg.guild.id, msg.author.id, gilding=-int(scoreEntry[2]), currency=returnCurrency, ignoreItems=True)
                 else:
                     return True
             else:
                 try:
                     amountQueried = int(args[1])
-                    if amountQueried > int(scoreEntry[3]):
-                        amountQueried = int(scoreEntry[3])
+                    if amountQueried > int(scoreEntry[2]):
+                        amountQueried = int(scoreEntry[2])
                     returnCurrency = gildingsToCurrency(amountQueried)
                     if returnCurrency <= 0:
                         await notEnoughToExchange('gildings')
@@ -2105,14 +2102,28 @@ async def exchange(msg, args):
 
 async def giveCurrency(msg, otherUser, amount):
     scoreEntry = await readScores(msg.guild.id, msg.author.id)
-    if int(scoreEntry[6]) < 1:
+    if int(scoreEntry[5]) < 1:
         await throwError(msg, "You're broke, my dude! You can't give anything!", custom=True, printError=False)
         return
-    if amount > int(scoreEntry[6]):
-        amount = int(scoreEntry[6])
+    if amount > int(scoreEntry[5]):
+        amount = int(scoreEntry[5])
     await writeScore(msg.guild.id, msg.author.id, currency=-int(amount), ignoreItems=True)
     await writeScore(msg.guild.id, otherUser.id, currency=int(amount), ignoreItems=True)
-    await displayCurrency(msg, otherUser)
+
+    displayName = otherUser.display_name
+    nick = otherUser.nick
+    nick = displayName if nick is None else nick
+
+    scores = await readScores(msg.guild.id, userID=otherUser.id)
+    currency = scores[5]
+    serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
+    embed = discord.Embed(title="{}:".format("You got money!"), 
+        description="{} -> {} {}{}".format(msg.author.mention, otherUser.mention, serverCurrencySymbol, amount), 
+        color=embedColor)
+    embed.add_field(name="_You now have {}{}_".format(serverCurrencySymbol, currency), 
+        value="_{} now has {}{}_".format(msg.author.mention, serverCurrencySymbol, int(scoreEntry[5]) - amount))
+    embed.set_thumbnail(url="https://i.imgur.com/BVRyJEr.png")
+    await say(msg, "{}".format(otherUser.mention), embed=embed)
     return
 
 async def displayCurrency(msg, target):
@@ -2121,7 +2132,7 @@ async def displayCurrency(msg, target):
     nick = displayName if nick is None else nick
 
     scores = await readScores(msg.guild.id, userID=target.id)
-    currency = scores[6]
+    currency = scores[5]
     serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
     embed = discord.Embed(title="{}:".format("You have" if target == msg.author else nick + " has"), 
         description="_{}{}_".format(serverCurrencySymbol, currency), 
@@ -2133,15 +2144,15 @@ async def displayCurrency(msg, target):
 async def displayEveryonesCurrency(msg):
     scores = await readScores(msg.guild.id)
     try:
-        scores.sort(key=lambda score:int(score[6]), reverse=True)
+        scores.sort(key=lambda score:int(score[5]), reverse=True)
     except:
         pass
     embed = discord.Embed(title="Balance:", description="_ _")
     serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
     for scoreEntry in scores:
         try:
-            user = await client.fetch_user(scoreEntry[1])
-            balance = scoreEntry[6]
+            user = await client.fetch_user(scoreEntry[0])
+            balance = scoreEntry[5]
             if balance != '0':
                 displayName = user.display_name
                 nick = msg.guild.get_member(user.id).nick
@@ -2157,15 +2168,15 @@ async def displayEveryonesCurrency(msg):
 async def displayTopCurrency(msg, amount=3):
     scores = await readScores(msg.guild.id)
     try:
-        scores.sort(key=lambda score:int(score[6]), reverse=True)
+        scores.sort(key=lambda score:int(score[5]), reverse=True)
     except:
         pass
     embed = discord.Embed(title="Balance:", description="_ _")
     serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
     for scoreEntry in scores[:amount]:
         try:
-            user = await client.fetch_user(scoreEntry[1])
-            balance = scoreEntry[6]
+            user = await client.fetch_user(scoreEntry[0])
+            balance = scoreEntry[5]
             if balance != '0':
                 displayName = user.display_name
                 nick = msg.guild.get_member(user.id).nick
@@ -2314,7 +2325,7 @@ async def clearDailyRestrictions():
     for guild in client.guilds:
         scores = await readScores(guild.id)
         for entry in scores:
-            await writeScore(int(entry[0]), int(entry[1]), voted=-999, gilded=-999, ignoreItems=True)
+            await writeScore(int(guildID), int(entry[0]), voted=-999, gilded=-999, ignoreItems=True)
 
 async def onNewDay():
     await setDailyGame()
