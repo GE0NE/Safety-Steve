@@ -170,11 +170,11 @@
         },
         
         {
-            "Command": "give",
-            "Alias": "grant",
+            "Command": "pay",
+            "Alias": "give#grant",
             "Help": "Gives specified user's a specified amount of your currency",
             "Params": "<user mention> <amount to give>",
-            "Examples": "give @Safety-Steve 20"
+            "Examples": "pay @Safety-Steve 20"
         },
         
         {
