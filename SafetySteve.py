@@ -774,7 +774,7 @@ async def on_message(msg: discord.Message):
             if argList and ' '.join(argList).lower() not in helpList:
                 serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
                 existingScore = await readScores(msg.guild.id, msg.author.id)
-                currency = int(existingScore[6])
+                currency = int(existingScore[5])
                 itemSearchString = ' '.join(argList).lower()
                 qty = int(argList[-1]) if argList[-1].isdigit() else 1
                 if argList[-1].isdigit():
@@ -789,7 +789,7 @@ async def on_message(msg: discord.Message):
                         continue
                 if itemWanted:
                     currentMoney = await readScores(msg.guild.id, msg.author.id)
-                    currentMoney = int(currentMoney[6])
+                    currentMoney = int(currentMoney[5])
                     if currentMoney >= int(itemWanted['Cost']) * qty:
                         embed = discord.Embed(title="+%s _Purchased_" % (itemWanted['Icon']), 
                         description="**You've purchased %sx %s**" % (str(qty), itemWanted['Name']), color=0x17dd62)
@@ -831,7 +831,7 @@ async def on_message(msg: discord.Message):
 
         if command == textCommands[25]['Command'] or command in textCommands[25]['Alias'].split('#'):
             existingScore = await readScores(msg.guild.id, msg.author.id)
-            inventory = ast.literal_eval(existingScore[7])
+            inventory = ast.literal_eval(existingScore[6])
             embed = discord.Embed(title="Inventory:", description="_ _")
             for item in inventory:
                 try:
