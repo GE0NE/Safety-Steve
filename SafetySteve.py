@@ -1809,11 +1809,18 @@ async def defineGoogle(msg, message):
 
         values = payload[0]
         word = values.get('word', '')
-        ipa = values.get('phonetic', await getIPA(word))
+        ipa = values.get('phonetics', [])
+        ipaList = ''
 
-        embed.add_field(name="{}".format(word), value="{}".format(ipa), inline=False)
+        for entry in ipa[:3]:
+            ipaList += '%s%s ' % (entry.get('text', ''), ', ' if not ipaList else '')
 
-        for entry in values.get('meanings', []):  
+        ipaList = await getIPA(word) if not ipa else ipaList
+
+
+        embed.add_field(name="{}".format(word), value="{}".format(ipaList), inline=False)
+
+        for entry in values.get('meanings', [])[:4]:  
             partOfSpeech = entry.get('partOfSpeech', 'Unknown')
             definitions = ""
             definitionCount = 1
@@ -2298,7 +2305,7 @@ async def clearDailyRestrictions():
     for guild in client.guilds:
         scores = await readScores(guild.id)
         for entry in scores:
-            await writeScore(int(guildID), int(entry[0]), voted=-999, gilded=-999, ignoreItems=True)
+            await writeScore(int(guild.id), int(entry[0]), voted=-999, gilded=-999, ignoreItems=True)
 
 async def onNewDay():
     await setDailyGame()
