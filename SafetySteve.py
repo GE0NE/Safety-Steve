@@ -958,6 +958,9 @@ async def on_message(msg: discord.Message):
                         return
                     continue
 
+                if author == msg.author:
+                    continue
+
                 if isBotVoteNotificationMessage(targetMessage):
                     maxIteration += 2
                     continue
@@ -1151,7 +1154,7 @@ async def ExecExpression(msg, cmd, args=[None]):
 
         # add a layer of indentation
         cmd = strip_empty_lines("\n".join(f"    {i}" for i in cmd.splitlines()))
-        print(cmd)
+        
         # wrap in async def body
         body = f"async def {fn_name}():\n{cmd}"
 
