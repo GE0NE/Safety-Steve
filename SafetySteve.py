@@ -918,6 +918,8 @@ async def on_message(msg: discord.Message):
             for item in protecItems:
                 if 'PositiveVote' not in item['ProtectsFrom'] and 'NegativeVote' not in item['ProtectsFrom']:
                     continue
+                if 'good' in content and 'PositiveVote' not in item['ProtectsFrom'] or 'bad' in content and 'NegativeVote' not in item['ProtectsFrom']:
+                    continue
                 if await hasItem(server.id, author.id, item['Item']):
                     formattedItemName = item['Name'].replace(' (Active)','')
                     formattedPrefix = ''
@@ -1009,19 +1011,7 @@ async def on_message(msg: discord.Message):
                         for i in range(0, serverVoteLimit - int(invokerScores[3])):
                             protected += await handleProtectionItem(protectionItems, False)
 
-                    #     ###### Item ######
-                    #     for i in range(0, serverVoteLimit - int(invokerScores[3])):
-                    #         ###### Item ######
-                    #         if 'bad' in content:
-                    #             if await hasItem(server.id, author.id, 'ActiveWard'):
-                    #                 await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
-                    #                 protected += 1
-                    #                 continue
-
-                    #         if await hasItem(server.id, author.id, 'ActiveShield'):
-                    #             await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
-                    #             protected += 1
-                        
+                        ###### Item ######
                         if protected:
                             await say(msg, 
                                 protectionMsg.format('an item', '', ' (x{})'.format(protected) if protected > 1 else ''))
@@ -1036,23 +1026,7 @@ async def on_message(msg: discord.Message):
 
                 protected += await handleProtectionItem(protectionItems)
 
-                # ##################
-                # elif await hasItem(server.id, author.id, 'ActiveShield') and not protected:
-                #     await say(msg, protectionMsg.format('a Shield', '', ''))
-                #     await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
-                #     protected = 1
-                # ##################
-
-                # elif 'bad' in content and not protected:
-                #     ###### Item ######
-                #     if await hasItem(server.id, author.id, 'ActiveWard'):
-                #         await say(msg, protectionMsg.format('a Ward', 'negatively ', ''))
-                #         await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
-                #         protected = 1
-                #     ##################
-
                 if not protected >= votesCast:
-                    #await writeScore(server.id, author.id, score=deltaScore * (1 if 'good' in content else -1))
                     await useItem(msg, '%sVote' % ('Positive' if 'good' in content else 'Negative'), target=author, 
                         requiresItem=False, removeItem=False, silent=True, bypassProtection=True, addtionalargs=[deltaScore])
 
@@ -1154,7 +1128,7 @@ async def ExecExpression(msg, cmd, args=[None]):
 
         # add a layer of indentation
         cmd = strip_empty_lines("\n".join(f"    {i}" for i in cmd.splitlines()))
-        
+
         # wrap in async def body
         body = f"async def {fn_name}():\n{cmd}"
 
