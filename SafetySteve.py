@@ -953,7 +953,7 @@ async def on_message(msg: discord.Message):
                 author = targetMessage.author
                 server = targetMessage.guild
 
-                if targetMessage.content in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
+                if targetMessage.content.lower() in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
                     if author == msg.author:
                         await say(msg, alreadyVotedMsg)
                         maxIteration += 2
