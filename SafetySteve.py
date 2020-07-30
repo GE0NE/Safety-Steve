@@ -26,6 +26,7 @@ import git
 import textwrap
 import ast
 import requests
+import difflib
 
 try:
     import discord
@@ -71,6 +72,7 @@ except FileNotFoundError:
             "invoker": ["^","Used as the prefix for commands (str)"],
             "vote_limit": [3,"How many times per day each user may vote using the good/bad bot command (int)"],
             "gild_limit": [1,"How many times per day each user may award a gild using the gild command (int)"],
+            "chain_vote_limit": [5,"How many times votes can be chained with the good/bad bot command (int)"],
             "point_value_in_currency": [10,"How much currency each point can be exchanged for using the exchange commmand (int)"],
             "gilding_value_in_currency": [50,"How much currency each gilding can be exchanged for using the exchange commmand (int)"],
             "currency_symbol": ["¤","The currency symbol (str)"],
@@ -216,6 +218,7 @@ shop = {}
 
 # Init Shop
 for item in items:
+    item = items[item]
     if item['Cost'] > -1:
         shop[item['Item']] = item['Cost']
 
@@ -322,74 +325,9 @@ async def on_message(msg: discord.Message):
                 await throwError(msg, "Command must have parameters that can evaluate to python", custom=True, printError=False)
                 return
 
-            def insert_returns(body):
-                # insert return stmt if the last expression is a expression statement
-                if isinstance(body[-1], ast.Expr):
-                    body[-1] = ast.Return(body[-1].value)
-                    ast.fix_missing_locations(body[-1])
-
-                # for if statements, we insert returns into the body and the orelse
-                if isinstance(body[-1], ast.If):
-                    insert_returns(body[-1].body)
-                    insert_returns(body[-1].orelse)
-
-                # for with blocks, again we insert returns into the body
-                if isinstance(body[-1], ast.With):
-                    insert_returns(body[-1].body)
-
-            def strip_empty_lines(s):
-                lines = s.splitlines()
-                while lines and not lines[0].strip():
-                    lines.pop(0)
-                while lines and not lines[-1].strip():
-                    lines.pop()
-                return '\n'.join(lines)
-
             if await isBotAdmin(msg.author.mention):
                 if len(args.strip()) >= 1:
-                    try:
-                        fn_name = "_eval_expr"
-
-                        cmd = rawMessage[len('eval'):].strip("` ")
-
-                        # add a layer of indentation
-                        cmd = strip_empty_lines("\n".join(f"    {i}" for i in cmd.splitlines()))
-
-                        # wrap in async def body
-                        body = f"async def {fn_name}():\n{cmd}"
-
-                        parsed = ast.parse(body)
-                        body = parsed.body[0].body
-
-                        insert_returns(body)
-
-                        env = {
-                            'client': client,
-                            'discord': discord,
-                            'config': config,
-                            'msg': msg,
-                            'embedColor' : embedColor,
-                            'getVoiceClient' : getVoiceClient,
-                            'isPlaying' : isPlaying,
-                            'say' : say,
-                            'subreddit' : subreddit,
-                            'scoreDecay' : scoreDecay,
-                            'readScores' : readScores,
-                            'writeScore': writeScore,
-                            'react' : react,
-                            'throwError' : throwError,
-                            'getServerConfig' : getServerConfig,
-                            'voiceCommands' : voiceCommands,
-                            'textCommands' : textCommands,
-                            'playSound' : playSound,
-                            '__import__': __import__
-                        }
-                        exec(compile(parsed, filename="<input>", mode="exec"), env)
-
-                        result = (await eval(f"{fn_name}()", env))
-                        await say(msg, result)
-                    except Exception as e:
-                        await throwError(msg, e, sayTraceback=True, tracebackOverride=cmd)
+                    await ExecExpression(msg, rawMessage[len('eval'):].strip("` "))
             else:
                 await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
             return
@@ -780,7 +718,7 @@ async def on_message(msg: discord.Message):
                 if argList[-1].isdigit():
                     itemSearchString = ' '.join(argList[:-1]).lower()
                 itemWanted = None
-                for item in items:
+                for item in items.values():
                     try:
                         if item['Name'].lower() == itemSearchString and item['Item'] in shop:
                             itemWanted = item
@@ -805,12 +743,12 @@ async def on_message(msg: discord.Message):
 
             embed = discord.Embed(title="Shop:", description="_ _", color=0x17dd62)
             for item in shop:
-                try:
+
                     name = item
                     price = shop[item]
                     ico = '❔'
                     serverCurrencySymbol = await getServerConfig(msg.guild.id, ['configs','currency_symbol'])
-                    for i in items:
+                    for i in items.values():
                         if i['Item'] == name:
                             name = i['Name']
                             ico = i['Icon'] 
@@ -820,8 +758,7 @@ async def on_message(msg: discord.Message):
                         embed.add_field(name='_%s%s_ - %s' % (serverCurrencySymbol, str(price), name+ico), value='_%s_' % (desc), inline=False)
                     else:
                         embed.add_field(name=name+ico, value='_%s%s_' % (serverCurrencySymbol, str(price)), inline=True)
-                except:
-                    continue
+
 
             embed.set_footer(text="use %s%s <item> to purchase" % (serverInvoker, 'shop'), 
                     icon_url="https://i.imgur.com/331gN11.png")
@@ -838,7 +775,7 @@ async def on_message(msg: discord.Message):
                     name = item
                     qty = inventory.get(item, 1)
                     ico = '❔'
-                    for i in items:
+                    for i in items.values():
                         if i['Item'] == name:
                             name = i['Name']
                             ico = i['Icon'] 
@@ -860,7 +797,7 @@ async def on_message(msg: discord.Message):
                     itemSearchString = ' '.join(argList[:-1]).lower()
                     itemInternalNameString = ''.join(argList[:-1]).lower()
                 itemWanted = None
-                for item in items:
+                for item in items.values():
                     try:
                         if item['Item'].lower() == itemInternalNameString and item['Item'] in shop:
                             itemWanted = item
@@ -871,56 +808,8 @@ async def on_message(msg: discord.Message):
                     await say(msg, "There is no item by that name! >`%s`"%(itemSearchString))
                     return
                 elif itemWanted['Item'] in shop:
-                    if await hasItem(msg.guild.id, msg.author.id, itemWanted['Item']):
-
-                        target = None
-                        if msg.mentions:
-                            target = msg.mentions[0]
-                            if target == msg.author and itemWanted['Item'] == "LoveBomb":
-                                await say(msg, 'You cannot Love Bomb yourself! Nice try though.')
-                                return
-                        if not itemWanted['AcceptsTarget'] and target:
-                            if target != msg.author:
-                                await say(msg, 'You cannot use that item on someone else!')
-                                return
-
-                        if itemWanted['RequiresTarget'] and not target:
-                            await say(msg, 'You need to specify a user to use this item on!')
-                            return
-
-                        if not target:
-                            target = msg.author
-
-                        if await hasItem(msg.guild.id, target.id, 'ActiveNazar') and target is not msg.author:
-                            await say(msg, "This user was protected by a Nazar which caused the %s to vanish!"%(itemWanted['Name']))
-                            await writeScore(msg.guild.id, target.id, inventory={'ActiveNazar':-1})
-                            return
-
-                        funcMap = {"say":say, "writeScore":writeScore}
-                        localVarsMap = {"msg":msg, "target":target}
-
-                        def isStringFuncCorutine(funcString, globalsVars, localVars):
-                            try:
-                                return inspect.iscoroutinefunction(eval(funcString.split('(', 1)[0], globalsVars, localVars))
-                            except:
-                                return False
-                        for ACE in itemWanted['Exec']:
-                            if isStringFuncCorutine(ACE, funcMap, localVarsMap):
-                                await eval(ACE)
-                            else:
-                                eval(ACE)
-
-                        if itemWanted['Usable'] == False:
-                            return
-                            
-                        qty = -1
-                        await writeScore(msg.guild.id, msg.author.id, inventory={'%s'%(itemWanted['Item']):qty})
-                        embed = discord.Embed(title="-%s _Used_" % (itemWanted['Icon']), 
-                        description="**You used %s on %s**" % (itemWanted['Name'], target.mention), color=0x17dd62)
-                        await say(msg, "", embed=embed)
-
-                    else:
-                        await throwError(msg, "You don't have that item! >`%s`"%(itemWanted['Name']), custom=True, printError=False)
+                    if await useItem(msg, itemWanted['Item']):
+                        return
                 else:
                     await throwError(msg, "That is not a valid item you can use! >`%s`"%(itemWanted['Name']), custom=True, printError=False)
             
@@ -1004,99 +893,174 @@ async def on_message(msg: discord.Message):
 
     elif content in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
         protected = 0
-        votescast = 1
-        deltascore = 1
+        votesCast = 1
+        deltaScore = 1
+        successVoteMsg = "Thank you for voting on {}.\nTheir score is now {}."
+        protectionMsg = "This user was protected by {} and was unable to be {}voted on!{}"
+        oobMsg = "There is no message to vote on or that message is out of my range!"
+        alreadyVotedMsg = "You've already voted on this post!"
+        voteLimitMsg = "You can only vote {} per day!"
+        voteAgeLimitMsg = "You can't vote on posts older than 16 hours!"
+        megaVoteMsg = "-{} You consumed a {} to use all your remaining votes today ({}) on {}!"
+        noItemMsg = "You don't have the item required to perform that action!"
+        botMsgs = [successVoteMsg, protectionMsg, oobMsg, alreadyVotedMsg, voteLimitMsg, voteAgeLimitMsg, megaVoteMsg, noItemMsg]
+
+        def isBotVoteNotificationMessage(tgtMsg):
+            if author == client.user:
+                for searchTerm in botMsgs:
+                    formattedSearch = ''.join([i for i in tgtMsg.content if not i.isdigit()])
+                    match = difflib.SequenceMatcher(None, searchTerm, formattedSearch).ratio()
+                    if match >= 0.75:
+                        return True
+            return False
+
+        async def handleProtectionItem(protecItems, vocalize=True):
+            for item in protecItems:
+                if 'PositiveVote' not in item['ProtectsFrom'] and 'NegativeVote' not in item['ProtectsFrom']:
+                    continue
+                if await hasItem(server.id, author.id, item['Item']):
+                    formattedItemName = item['Name'].replace(' (Active)','')
+                    formattedPrefix = ''
+                    if len(item['ProtectsFrom']) == 1:
+                        formattedPrefix = 'positively ' if item['ProtectsFrom'][0] == 'PositiveVote' else 'negatively '
+                    if vocalize:
+                        await say(msg, protectionMsg.format('a%s %s' % ('n' if formattedItemName[0].lower() in 'aeiou' else '', formattedItemName), 
+                            formattedPrefix, ''))
+                    await writeScore(server.id, author.id, inventory={item['Item']:-1})
+                    return 1
+                continue
+            return 0
+
         try:
             targetMessage = None
             server = msg.guild
             invokerScores = await readScores(server.id, userID=msg.author.id)
 
-            async for targetMessageTemp in msg.channel.history(limit=2):
-                targetMessage = targetMessageTemp
+            iteration = 0
+            maxIteration = await getServerConfig(msg.guild.id, ['configs', 'chain_vote_limit'])
+            historyLimit = 50
 
-            if targetMessage is not None:
+            async for targetMessage in msg.channel.history(limit=historyLimit):
+
+                iteration += 1
+                if iteration == 1:
+                    continue
+                if iteration >= maxIteration:
+                    continue
+
+                author = targetMessage.author
+                server = targetMessage.guild
+
+                if targetMessage.content in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
+                    if author == msg.author:
+                        await say(msg, alreadyVotedMsg)
+                        maxIteration += 2
+                        return
+                    continue
+
+                if isBotVoteNotificationMessage(targetMessage):
+                    maxIteration += 2
+                    continue
+
                 serverVoteLimit = await getServerConfig(msg.guild.id, ['configs', 'vote_limit'])
                 deltaTime = datetime.datetime.now() - targetMessage.created_at
                 minutesSincePost = divmod(deltaTime.total_seconds(), 60)[0]
                 if minutesSincePost > (60*16):
-                    await say(msg, "You can't vote on posts older than 16 hours!")
-                    return
-                author = targetMessage.author
-                server = targetMessage.guild
-                if author == msg.author and 'good' in content:
-                    await say(msg, "You can't vote positively for yourself!")
+                    await say(msg, voteAgeLimitMsg)
+                    maxIteration += 2
                     return
 
                 elif int(invokerScores[3]) >=  serverVoteLimit:
-                    await say(msg, "You can only vote {} per day!".format((str(serverVoteLimit) + ' times') if serverVoteLimit > 1 else 'once'))
+                    await say(msg, voteLimitMsg.format((str(serverVoteLimit) + ' times') if serverVoteLimit > 1 else 'once'))
+                    maxIteration += 2
                     return
 
                 elif content == "medium bot":
-                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, "medium-rare"))
+                    await say(msg, successVoteMsg.format(author.mention, "medium-rare"))
+                    iteration += 1
                     return
 
+                protectionItems = []
+                for item in items.values():
+                    if item['ProtectsFrom']:
+                        protectionItems.append(item)
+                protectionItems = sorted(protectionItems, key=lambda i: i['Priority'], reverse=True)
+
                 ###### Item ######                
-                elif content == "mega bad bot" or content == "mega good bot":
+                if content == "mega bad bot" or content == "mega good bot":
                     itemInternalName = 'MegaVote'
                     itemName = itemInternalName
                     ico = '❔'
                     ###### Item ######
+
                     if await hasItem(msg.guild.id, msg.author.id, itemInternalName):
-                        for item in items:
+                        for item in items.values():
                             if item['Item'] == itemName:
                                 itemName = item['Name']
                                 ico = item['Icon']
                                 break
-                        await say(msg, "-{} You consumed a {} to use all your remaining votes today ({}) on {}!".format(ico, itemName, 
+                        await say(msg, megaVoteMsg.format(ico, itemName, 
                             str(serverVoteLimit - int(invokerScores[3])), author.mention))
-                        ###### Item ######
-                        for i in range(0, serverVoteLimit - int(invokerScores[3])):
-                            ###### Item ######
-                            if 'bad' in content:
-                                if await hasItem(server.id, author.id, 'ActiveWard'):
-                                    await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
-                                    protected += 1
-                                    continue
+                        maxIteration += 1
 
-                            if await hasItem(server.id, author.id, 'ActiveShield'):
-                                await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
-                                protected += 1
+                        for i in range(0, serverVoteLimit - int(invokerScores[3])):
+                            protected += await handleProtectionItem(protectionItems, False)
+
+                    #     ###### Item ######
+                    #     for i in range(0, serverVoteLimit - int(invokerScores[3])):
+                    #         ###### Item ######
+                    #         if 'bad' in content:
+                    #             if await hasItem(server.id, author.id, 'ActiveWard'):
+                    #                 await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
+                    #                 protected += 1
+                    #                 continue
+
+                    #         if await hasItem(server.id, author.id, 'ActiveShield'):
+                    #             await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
+                    #             protected += 1
                         
                         if protected:
                             await say(msg, 
-                                "This user was protected by an item and was unable to be voted on!{}".format(" (x{})".format(protected) if protected > 1 else ""))
+                                protectionMsg.format('an item', '', ' (x{})'.format(protected) if protected > 1 else ''))
                         ##################
-                        deltascore = max(serverVoteLimit - int(invokerScores[3]) - protected, 0)
+                        deltaScore = max(serverVoteLimit - int(invokerScores[3]) - protected, 0)
                         await writeScore(server.id, msg.author.id, inventory={'MegaVote':-1})
-                        votescast = serverVoteLimit - int(invokerScores[3])
+                        votesCast = serverVoteLimit - int(invokerScores[3])
                     else:
-                        await say(msg, "You don't have the item required to perform that action!")
+                        await say(msg, noItemMsg)
+                        maxIteration += 2
                         return
 
-                ##################
-                elif await hasItem(server.id, author.id, 'ActiveShield') and not protected:
-                    await say(msg, "This user was protected by a Shield and was unable to be voted on!")
-                    await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
-                    protected = 1
-                ##################
+                protected += await handleProtectionItem(protectionItems)
 
-                elif 'bad' in content and not protected:
-                    ###### Item ######
-                    if await hasItem(server.id, author.id, 'ActiveWard'):
-                        await say(msg, "This user was protected by a Ward and was unable to be negatively voted on!")
-                        await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
-                        protected = 1
-                ##################
+                # ##################
+                # elif await hasItem(server.id, author.id, 'ActiveShield') and not protected:
+                #     await say(msg, protectionMsg.format('a Shield', '', ''))
+                #     await writeScore(server.id, author.id, inventory={'ActiveShield':-1})
+                #     protected = 1
+                # ##################
 
-                if not protected >= votescast:
-                    await writeScore(server.id, author.id, score=deltascore * (1 if 'good' in content else -1))
+                # elif 'bad' in content and not protected:
+                #     ###### Item ######
+                #     if await hasItem(server.id, author.id, 'ActiveWard'):
+                #         await say(msg, protectionMsg.format('a Ward', 'negatively ', ''))
+                #         await writeScore(server.id, author.id, inventory={'ActiveWard':-1})
+                #         protected = 1
+                #     ##################
 
-                await writeScore(server.id, msg.author.id, voted=votescast)
+                if not protected >= votesCast:
+                    #await writeScore(server.id, author.id, score=deltaScore * (1 if 'good' in content else -1))
+                    await useItem(msg, '%sVote' % ('Positive' if 'good' in content else 'Negative'), target=author, 
+                        requiresItem=False, removeItem=False, silent=True, bypassProtection=True, addtionalargs=[deltaScore])
 
-                if max(votescast - protected, 0) != 0:
+                await writeScore(server.id, msg.author.id, voted=votesCast)
+
+                if max(votesCast - protected, 0) != 0:
                     targetScores = await readScores(server.id, userID=author.id)
-                    await say(msg, "Thank you for voting on {}.\nTheir score is now {}.".format(author.mention, targetScores[1]))
+                    await say(msg, successVoteMsg.format(author.mention, targetScores[1]))
 
+                return
+            await throwError(msg, oobMsg, custom=True, printError=False)
         except Exception as e:
             await throwError(msg, error=e, sayTraceback=True, printTraceback=True)
             return
@@ -1156,6 +1120,75 @@ def isPlaying(guild):
 
 def getVoiceClient(guild):
     return guild.voice_client
+
+def strip_empty_lines(s):
+    lines = s.splitlines()
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    while lines and not lines[-1].strip():
+        lines.pop()
+    return '\n'.join(lines)
+
+async def ExecExpression(msg, cmd, args=[None]):
+
+    def insert_returns(body):
+        # insert return stmt if the last expression is a expression statement
+        if isinstance(body[-1:], ast.Expr):
+            body[-1:] = ast.Return(body[-1:].value)
+            ast.fix_missing_locations(body[-1:])
+
+        # for if statements, we insert returns into the body and the orelse
+        if isinstance(body[-1:], ast.If):
+            insert_returns(body[-1:].body)
+            insert_returns(body[-1:].orelse)
+
+        # for with blocks, again we insert returns into the body
+        if isinstance(body[-1:], ast.With):
+            insert_returns(body[-1:].body)
+
+    try:
+        fn_name = "_eval_expr"
+
+        # add a layer of indentation
+        cmd = strip_empty_lines("\n".join(f"    {i}" for i in cmd.splitlines()))
+        print(cmd)
+        # wrap in async def body
+        body = f"async def {fn_name}():\n{cmd}"
+
+        parsed = ast.parse(body)
+        body = parsed.body[0].body
+
+        insert_returns(body)
+
+        env = {
+            'args' : args,
+            'client' : client,
+            'discord' : discord,
+            'config' : config,
+            'msg': msg,
+            'embedColor' : embedColor,
+            'getVoiceClient' : getVoiceClient,
+            'isPlaying' : isPlaying,
+            'say' : say,
+            'subreddit' : subreddit,
+            'scoreDecay' : scoreDecay,
+            'readScores' : readScores,
+            'writeScore': writeScore,
+            'react' : react,
+            'throwError' : throwError,
+            'getServerConfig' : getServerConfig,
+            'voiceCommands' : voiceCommands,
+            'textCommands' : textCommands,
+            'playSound' : playSound,
+            'hasItem' : hasItem,
+            '__import__': __import__
+        }
+        exec(compile(parsed, filename="<input>", mode="exec"), env)
+
+        result = (await eval(f"{fn_name}()", env))
+        await say(msg, result)
+    except Exception as e:
+        await throwError(msg, e, sayTraceback=True, tracebackOverride=cmd)
 
 async def setServerConfig(guildID, configKey, newValue, type=0, msg=None):
     """Modifies a config value in the guild's server's config file
@@ -1265,7 +1298,8 @@ async def getServerConfig(guildID, configKeys, maxRecursiveAttempts=3, recursive
             json.dump({'guild_id': guildID, 'guild_name': client.get_guild(int(guildID)).name, 
                 'configs': {'guild_admins': [client.get_guild(int(guildID)).owner.mention.replace('@!','@')],
                 'invoker': config['invoker'][0], 'vote_limit': config['vote_limit'][0], 'gild_limit': config['gild_limit'][0], 
-                'point_value_in_currency': config['point_value_in_currency'][0], 'gilding_value_in_currency': config['gilding_value_in_currency'][0],
+                'chain_vote_limit': config['chain_vote_limit'][0], 'point_value_in_currency': config['point_value_in_currency'][0], 
+                'gilding_value_in_currency': config['gilding_value_in_currency'][0],
                 'currency_symbol': config['currency_symbol'][0], 'weekly_score_decay': config['weekly_score_decay'][0], 
                 'bad_word_response': config['bad_word_response'][0], 'bad_words': config['bad_words'][0],
                 'bad_words_exceptions': config['bad_words_exceptions'][0]}}, f, indent = 4)
@@ -1287,6 +1321,80 @@ async def isGuildAdmin(guildID, userMention):
 
 async def isBotAdmin(userMention):
     return userMention.replace('@!','@') in userInfo['security']['admins']
+
+async def useItem(msg, item, target=None, requiresItem=True, removeItem=True, silent=False, bypassProtection=False, addtionalargs=[]):
+    
+    try:
+        item = items[item]
+    except KeyError:
+        await throwError(msg, "There is no item by that name! >`%s`"%(item), custom=True, printError=False)
+        return False
+    
+    if requiresItem and not await hasItem(msg.guild.id, msg.author.id, item['Item']):
+        await throwError(msg, "You don't have that item! >`%s`"%(item['Name']), custom=True, printError=False)
+        return False
+
+    if msg.mentions:
+        target = msg.mentions[0]
+        if target == msg.author and item['Item'] == "LoveBomb":
+            await say(msg, 'You cannot Love Bomb yourself! Nice try though.')
+            return False
+
+    if not item['AcceptsTarget'] and target:
+        if target != msg.author:
+            if not silent:
+                await say(msg, 'You cannot use that item on someone else!')
+            return False
+
+    if item['RequiresTarget'] and not target:
+        if not silent:
+            await say(msg, 'You need to specify a user to use this item on!')
+        return False
+
+    if not target:
+        target = msg.author
+
+    async def handleProtectionItems():
+        protectionItems = []
+        for i in items.values():
+            if i['ProtectsFrom']:
+                protectionItems.append(i)
+        protectionItems = sorted(protectionItems, key=lambda i: i['Priority'], reverse=True)
+
+        if not bypassProtection:
+            for protectItem in protectionItems:
+                if item['Item'] not in protectItem['ProtectsFrom']:
+                    continue
+                if await hasItem(msg.guild.id, target.id, protectItem['Item']):
+                    formattedProtecItemName = protectItem['Name'].replace(' (Active)','')
+                    await writeScore(msg.guild.id, target.id, inventory={protectItem['Item']:-1})
+                    return "This user was protected by a%s %s which caused both items to vanish!" % ('n' if formattedProtecItemName[0].lower() in 'aeiou' else '', 
+                        formattedProtecItemName)
+                continue
+            return None
+
+    protectionMessage = await handleProtectionItems()
+
+    args = [target]
+    args.extend(addtionalargs)
+    ACE = '\n'.join(item['Exec'])
+    
+    if not protectionMessage:
+        await ExecExpression(msg, ACE, args=args)
+
+    if item['Usable'] == False:
+        return False
+        
+    qty = -1
+    if removeItem:
+        await writeScore(msg.guild.id, msg.author.id, inventory={'%s'%(item['Item']):qty})
+    embed = discord.Embed(title="-%s _Used_" % (item['Icon']), 
+        description="**You used %s on %s**" % (item['Name'], target.mention), color=0x17dd62)
+    if not silent:
+        await say(msg, "", embed=embed)
+        if protectionMessage:
+            await say(msg, protectionMessage)
+    return True
 
 async def scp(msg, content):
     response = await respond_to_scp_references(content)
@@ -1938,7 +2046,7 @@ async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, curre
                 for oldScore in oldScores:
                     if oldScore.split(' ')[0] == oldUserObj.split(' ')[0]:
                         if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0' and newCurrency == '0' \
-                            and newInventory):
+                            and newInventory == '{}'):
                             scores.write(userObj + "\n")
                     else:
                         scores.write(oldScore + "\n")
