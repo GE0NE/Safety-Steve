@@ -19,6 +19,7 @@
     "invoker": ["^","Used as the prefix for commands (str)"],
     "vote_limit": [3,"How many times per day each user may vote using the good/bad bot command (int)"],
     "gild_limit": [1,"How many times per day each user may award a gild using the gild command (int)"],
+	"chain_vote_limit": [5,"How many times votes can be chained with the good/bad bot command (int)"],
     
     "point_value_in_currency": [10,"How much currency each point can be exchanged for using the exchange commmand (int)"],
     "gilding_value_in_currency": [50,"How much currency each gilding can be exchanged for using the exchange commmand (int)"],
