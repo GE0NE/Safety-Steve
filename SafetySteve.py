@@ -507,7 +507,11 @@ async def on_message(msg: discord.Message):
                 else:
                     messageEmojis = '👍 👎'
                 emojis = messageEmojis.strip().split(" ")
-                poll = await say(msg, question)
+
+                embed = discord.Embed(title="Poll", description=question, color=embedColor)
+                embed.set_footer(text="Poll by {}".format(msg.author))
+
+                poll = await say(msg, '', embed=embed)
                 try:
                     await msg.delete()
                 except:
