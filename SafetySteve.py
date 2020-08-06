@@ -1433,7 +1433,7 @@ async def linkSubreddit(msg, sub):
         else:
             await react(msg, '😲')
 
-async def subreddit(msg, sub, bypassErrorCheck=False, args=[], filterNSFW=-1, filtertype='hot', pool=50):
+async def subreddit(msg, sub, bypassErrorCheck=False, args=[], filterNSFW=-1, filtertype='hot', pool=50, allowReposts=False, repostPool=50):
     maxPoolSize = 1000
     softMaxPoolSize = 500
 
@@ -1456,6 +1456,9 @@ async def subreddit(msg, sub, bypassErrorCheck=False, args=[], filterNSFW=-1, fi
         if any('type=' in s for s in args):
             matching = [a for a in args if 'type=' in a]
             filtertype=matching[0].partition('=')[2] if matching[0].partition('=')[2] is not '' else filtertype
+        if any(x in args for x in ['reposts', 'allowreposts']):
+            allowReposts = True
+            
     # ----- Args -----
 
     reddit = praw.Reddit(client_id=reddit_id, client_secret=reddit_secret, user_agent=reddit_agent)
@@ -1469,6 +1472,38 @@ async def subreddit(msg, sub, bypassErrorCheck=False, args=[], filterNSFW=-1, fi
     if filtertype not in ['hot', 'new', 'top', 'controversial', 'gilded']:
         filtertype = 'hot'
 
+    def formatGfyCat(url):
+        url = requests.get(url).url
+        webpage = urlopen(url).read()
+        soup = BeautifulSoup(webpage, "html.parser")
+        twitterImage = soup.find("meta", attrs={"name":"twitter:image"}).get("content", url)
+        twitterImage = twitterImage
+        return twitterImage
+
+    def formatImgur(url):
+        url = requests.get(url).url
+        filterUrl = re.search(r'^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?(?:i\.)?([^:\/?\n]+[a-zA-Z0-9/]*)', url, re.IGNORECASE).group(1)
+        webpage = urlopen('https://'+filterUrl).read()
+        soup = BeautifulSoup(webpage, "html.parser")
+        try:
+            ogImage = soup.find("meta", attrs={"name":"twitter:player"}).get("content", url)
+        except AttributeError:
+            ogImage = soup.find("meta", attrs={"property":"og:image"}).get("content", url)
+        return ogImage.split('?', 1)[0].replace('.gifv','.gif')
+
+    def getDomainName(url):
+        if not url:
+            return None
+        newUrl = re.search(r'^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)', url, re.IGNORECASE).group(1)
+        return newUrl if newUrl else url
+
+    async def filterReposts(submissions):
+        messageHistory = await msg.channel.history(limit=repostPool).flatten()
+        embedHistory = [targetMessage.embeds[0].url for targetMessage in messageHistory if targetMessage.embeds and 
+            getDomainName(targetMessage.embeds[0].url) == 'reddit.com' and targetMessage.embeds[0].url is not discord.Embed.Empty]
+        filtered = [submission for submission in submissions if "https://reddit.com{}".format(submission.permalink) not in embedHistory]
+        return filtered
+
     try:
         await msg.channel.trigger_typing()
         sub = str(sub)
@@ -1479,22 +1514,35 @@ async def subreddit(msg, sub, bypassErrorCheck=False, args=[], filterNSFW=-1, fi
         filt = getattr(reddit.subreddit(sub), filtertype)
         submissions = filt(limit=pool)
         for submission in submissions:
+            domainName = getDomainName(submission.url)
             extensions = ["png","jpg","jpeg","gif"]
-            if any([ext in submission.url[-len(ext):] for ext in extensions]):
+            whitelistedLinks = ["gfycat.com"]
+            whitelistNSFWLinks = ["redgifs.com","gifdeliverynetwork.com"]
+            if not filterNSFW:
+                whitelistedLinks.extend(whitelistNSFWLinks)
+            if any([ext in submission.url[-len(ext):] for ext in extensions]) or any([domain in domainName[:len(domain)] for domain in whitelistedLinks]):
                 submissionList.append(submission)
         if filterNSFW != -1:
             submissionList = list(filter(lambda x: x.over_18 != filterNSFW, submissionList))
+        if not allowReposts:
+            submissionList = await filterReposts(submissionList)
+
         if len(submissionList) > 0:
             submission = submissionList[random.randint(0, len(submissionList)-1)]
+            submissionUrl = submission.url
+            if getDomainName(submissionUrl) in ['gfycat.com','redgifs.com']:
+                submissionUrl = formatGfyCat(submissionUrl)
+            if getDomainName(submissionUrl) in ['imgur.com','i.imgur.com']:
+                submissionUrl = formatImgur(submissionUrl)
             embed = discord.Embed(title=submission.title, 
                 url="https://reddit.com{}".format(submission.permalink), color=embedColor)
-            embed.set_image(url=submission.url)
+            embed.set_image(url=submissionUrl)
             embed.set_footer(text=" via reddit.com/r/{}".format(str(submission.subreddit)), 
                 icon_url="http://www.google.com/s2/favicons?domain=www.reddit.com")
             await say(msg, "Here's a {} post from r/{}".format(filtertype, str(submission.subreddit)), embed)
             return
         else:
-            await throwError(msg, "There's nothing I can post in that subreddit!", custom=True, printError=False)
+            await throwError(msg, "There's nothing left I can post in that subreddit!", custom=True, printError=False)
     except:
         await throwError(msg, "reddit.com/r/{} couldn\'t be accessed.".format(sub), custom=True, printError=False)
 
