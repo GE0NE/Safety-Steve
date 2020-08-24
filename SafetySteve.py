@@ -1888,7 +1888,7 @@ async def defineUrban(msg, message=None, term='', num=1, edit=None):
                 number = str(int(number) + 1)
                 if num < len(result["list"]):
                     embed.set_footer(text="{} results were found. To see a different result, use {}{} {} -p {}.".format( 
-                        len(result["list"]), serverInvoker, textCommands[11]['Command'], term, number))
+                        len(result["list"]), serverInvoker, textCommands[12]['Command'], term, number))
                 else:
                     embed.set_footer(text="{} results were found.".format(len(result["list"])))
                 definition = edit
