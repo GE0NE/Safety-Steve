@@ -2440,9 +2440,12 @@ async def mal(msg, name, mediaType="anime", displayFormat="tv"):
 
 async def clearDailyRestrictions():
     for guild in client.guilds:
-        scores = await readScores(guild.id)
-        for entry in scores:
-            await writeScore(int(guild.id), int(entry[0]), voted=-999, gilded=-999, ignoreItems=True)
+        try:
+            scores = await readScores(guild.id)
+            for entry in scores:
+                await writeScore(int(guild.id), int(entry[0]), voted=-999, gilded=-999, ignoreItems=True)
+        except:
+            pass
 
 async def onNewDay():
     await setDailyGame()
