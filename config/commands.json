@@ -92,7 +92,7 @@
         {
             "Command": "poll",
             "Alias": "vote",
-            "Help": "Creates a poll for voting using the provided enojis as reactions (Defaults to :thumbsup and :thumbsdown:).",
+            "Help": "Creates a poll for voting using the provided enojis as reactions (Defaults to :thumbsup: and :thumbsdown:).",
             "Params": "<question> [[space-seperated emojis]]",
             "Examples": "poll Horses or Snakes? [:horse: :snake:]#poll Was the movie good?"
         },
