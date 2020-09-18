@@ -327,7 +327,7 @@ async def on_message(msg: discord.Message):
 
             if await isBotAdmin(msg.author.mention):
                 if len(args.strip()) >= 1:
-                    await ExecExpression(msg, rawMessage[len('eval'):].strip("` "))
+                    await ExecExpression(msg, rawMessage[len('eval'):].strip("\t\r\n` "))
             else:
                 await throwError(msg, "You don't have permission to use that command!", custom=True, printError=False)
             return
