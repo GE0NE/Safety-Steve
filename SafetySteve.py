@@ -733,7 +733,7 @@ async def on_message(msg: discord.Message):
                     currentMoney = await readScores(msg.guild.id, msg.author.id)
                     currentMoney = int(currentMoney[5])
                     if currentMoney >= int(itemWanted['Cost']) * qty:
-                        embed = discord.Embed(title="+%s _Purchased_" % (itemWanted['Icon']), 
+                        embed = discord.Embed(title="+ %s _Purchased_" % (itemWanted['Icon']), 
                         description="**You've purchased %sx %s**" % (str(qty), itemWanted['Name']), color=0x17dd62)
                         await writeScore(msg.guild.id, msg.author.id, currency=-qty * int(itemWanted['Cost']), inventory={'%s'%(itemWanted['Item']):qty})
                         await say(msg, "", embed=embed)
@@ -759,9 +759,9 @@ async def on_message(msg: discord.Message):
                             desc = i['Description']
                             break
                     if ' '.join(argList).lower() in helpList:
-                        embed.add_field(name='_%s%s_ - %s' % (serverCurrencySymbol, str(price), name+ico), value='_%s_' % (desc), inline=False)
+                        embed.add_field(name='_%s%s_ - %s %s' % (serverCurrencySymbol, str(price), name, ico), value='_%s_' % (desc), inline=False)
                     else:
-                        embed.add_field(name=name+ico, value='_%s%s_' % (serverCurrencySymbol, str(price)), inline=True)
+                        embed.add_field(name='%s %s' % (name, ico), value='_%s%s_' % (serverCurrencySymbol, str(price)), inline=True)
 
 
             embed.set_footer(text="use %s%s <item> to purchase" % (serverInvoker, 'shop'), 
@@ -784,7 +784,7 @@ async def on_message(msg: discord.Message):
                             name = i['Name']
                             ico = i['Icon'] 
                             break
-                    embed.add_field(name=str(qty)+'x '+name+ico, value='\u200b', inline=True)
+                    embed.add_field(name='%sx %s %s' % (qty, name, ico), value='\u200b', inline=True)
                 except:
                     continue
             await say(msg, "", embed=embed)

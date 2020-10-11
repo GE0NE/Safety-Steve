@@ -31,6 +31,21 @@
 			"ProtectsFrom": [],
             "Exec": ["await writeScore(msg.guild.id, args[0].id, score=-args[1])"]
         },
+        "MegaVote": {
+            "Item": "MegaVote",
+            "Name": "Mega Vote",
+            "Icon": "<:SSmegavote:598739688509145098>",
+            "Description": "Uses all your remaining votes on a single message",
+            "Id": 4,
+            "Cost": 20,
+			"Priority": 0,
+            "Type": "Active",
+            "RequiresTarget":false,
+            "AcceptsTarget":false,
+            "Usable": false,
+			"ProtectsFrom": [],
+            "Exec": ["await say(msg, 'Use `mega good bot` or `mega bad bot` to use this item.')"]
+        },
         "Shield": {
             "Item": "Shield",
             "Name": "Shield",
@@ -91,20 +106,20 @@
 			"ProtectsFrom": ["NegativeVote"],
             "Exec": [""]
         },
-        "MegaVote": {
-            "Item": "MegaVote",
-            "Name": "Mega Vote",
-            "Icon": "<:SSmegavote:598739688509145098>",
-            "Description": "Uses all your remaining votes on a single message",
-            "Id": 4,
-            "Cost": 20,
+		"ExtraVote": {
+            "Item": "ExtraVote",
+            "Name": "Extra Vote",
+            "Icon": "<:SSextravote:764688075523227649>",
+            "Description": "Restores one of the target's expended votes. Has no effect if they haven't voted",
+            "Id": 10,
+            "Cost": 50,
 			"Priority": 0,
             "Type": "Active",
             "RequiresTarget":false,
-            "AcceptsTarget":false,
-            "Usable": false,
+            "AcceptsTarget":true,
+            "Usable": true,
 			"ProtectsFrom": [],
-            "Exec": ["await say(msg, 'Use `mega good bot` or `mega bad bot` to use this item.')"]
+            "Exec": ["await writeScore(msg.guild.id, args[0].id, voted=-1)"]
         },
         "LoveBomb": {
             "Item": "LoveBomb",
