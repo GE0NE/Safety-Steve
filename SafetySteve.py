@@ -233,8 +233,11 @@ fileExt = config['fileformat']
 bubbleFont = fonts['bubble_letters']
 bubbleFontMask = fonts['bubble_mask']
 
+# Define intents
+intents = discord.Intents.all()
+
 # The client
-client = discord.Client(description=desc, max_messages=100)
+client = discord.Client(description=desc, max_messages=100, intents=intents)
 
 async def throwError(msg, error=None, vocalize=True, custom=False, sayTraceback=False, 
     printTraceback=False, tracebackOverride='', printError=True, fatal=False):
@@ -552,6 +555,8 @@ async def on_message(msg: discord.Message):
                     try:
                         user = client.get_user(int(scoreEntry[0]))
                         score = scoreEntry[1]
+                        if not user:
+                            await writeScore(msg.guild.id, int(scoreEntry[0]), removeEntry=True)
                         if score != '0':
                             displayName = user.display_name
                             nick = msg.guild.get_member(user.id).nick
@@ -2021,15 +2026,15 @@ async def mock(msg, *, text=""):
         else:
             await say(msg, result)
 
-async def hasItem(guildID, user, item, qty=1):
-    existingScore = await readScores(guildID, user)
+async def hasItem(guildID, userID, item, qty=1):
+    existingScore = await readScores(guildID, userID)
     inventory = ast.literal_eval(existingScore[6])
     return True if item in inventory and inventory[item] >= qty else False
 
-async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, currency=0, inventory={}, ignoreItems=False):
+async def writeScore(guildID, userID, score=0, gilding=0, voted=0, gilded=0, currency=0, inventory={}, ignoreItems=False, removeEntry=False):
     if not ignoreItems:
     ###### Item ######
-        if await hasItem(guildID, user, 'ActiveEvilEye'):
+        if await hasItem(guildID, userID, 'ActiveEvilEye'):
             score *= 2
     ##################
 
@@ -2047,11 +2052,11 @@ async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, curre
         with open("res/data/server_data/%s.dat" % (guildID), 'w', encoding='utf8') as f:
             pass
 
-    userObj = "USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(user, str(score), str(gilding), 
+    userObj = "USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(userID, str(score), str(gilding), 
         str(voted), str(gilded), str(currency), str(inventory).replace(' ',''))
     existingScores = await readScores(guildID)
     for existingScore in existingScores:
-        if int(existingScore[0]) == user:
+        if int(existingScore[0]) == userID:
             oldUserObj = userObj
             newScore = str(int(existingScore[1]) + score)
             newGilding = str(int(existingScore[2]) + gilding) if (int(existingScore[2]) + gilding) > 0 else '0'
@@ -2067,7 +2072,7 @@ async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, curre
                 if newInventory[list(inventory.keys())[0]] <= 0:
                     del newInventory[list(inventory.keys())[0]]
             newInventory = str(newInventory).replace(' ','')
-            userObj = "USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(user, newScore, newGilding,
+            userObj = "USER={} SCORE={} GILDING={} VOTED={} GILDED={} CURRENCY={} INVENTORY={}".format(userID, newScore, newGilding,
                 newVoted, newGilded, newCurrency, newInventory)
             oldScores = await getScores(guildID)
             oldScores = oldScores.split("\n")[:-1]
@@ -2075,7 +2080,7 @@ async def writeScore(guildID, user, score=0, gilding=0, voted=0, gilded=0, curre
                 for oldScore in oldScores:
                     if oldScore.split(' ')[0] == oldUserObj.split(' ')[0]:
                         if not (newScore == '0' and newGilding == '0' and newVoted == '0' and newGilded == '0' and newCurrency == '0' \
-                            and newInventory == '{}'):
+                            and newInventory == '{}') and not removeEntry:
                             scores.write(userObj + "\n")
                     else:
                         scores.write(oldScore + "\n")
