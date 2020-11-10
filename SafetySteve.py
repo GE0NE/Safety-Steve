@@ -965,11 +965,11 @@ async def on_message(msg: discord.Message):
                 if targetMessage.content.lower() in ['good bot', 'bad bot', 'medium bot', 'mega bad bot', 'mega good bot']:
                     if author == msg.author:
                         await say(msg, alreadyVotedMsg)
-                        maxIteration += 2
                         return
                     continue
 
                 if author == msg.author:
+                    maxIteration += 1
                     continue
 
                 if isBotVoteNotificationMessage(targetMessage):
@@ -981,7 +981,6 @@ async def on_message(msg: discord.Message):
                 minutesSincePost = divmod(deltaTime.total_seconds(), 60)[0]
                 if minutesSincePost > (60*16):
                     await say(msg, voteAgeLimitMsg)
-                    maxIteration += 2
                     return
 
                 elif int(invokerScores[3]) >=  serverVoteLimit:
