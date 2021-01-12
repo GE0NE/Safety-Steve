@@ -1037,6 +1037,14 @@
             "SoundFile": "gnomed/gnomed1#gnomed/gnomed2#gnomed/gnomed3#gnomed/gnomed4#gnomed/gnomed5",
             "Help": "...Ho!",
             "Params": ""
+        },
+
+        {
+            "Command": "bakamitai",
+            "Alias": "damedane#yakuzaman",
+            "SoundFile": "bakamitai",
+            "Help": "Dame da ne, dame yo dame na no yo",
+            "Params": ""
         }
     ]
 }
