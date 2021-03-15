@@ -930,7 +930,7 @@ async def on_message(msg: discord.Message):
             if paragraph_limit > 0:
                 ai_message = '\n\n'.join(ai_message.split('\n\n')[:paragraph_limit])
 
-            ai_message = ai_message + "...\n`[Text provided by deepai.org]`"
+            ai_message = ai_message + "...\n`[Generated using deepai.org]`"
 
             if message.isspace() or message == '':
                 await throwError(msg, "Input text can't be empty, a reaction, or embed.", custom=True, printError=False)
