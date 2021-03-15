@@ -221,7 +221,7 @@
             "Command": "zalgo",
             "Alias": "z#zt#zalgotext#hecomes",
             "Help": "Repeats text as spooky Z̸̳͓̫̻̩̾̀̈́̎̔̋̈́͗̄͐̋̚a̸̛͕̥̱̯͔̿͝ļ̸̡͔̗̖̪͙͉̝̣̫̻͗͜ͅg̵̢̢̥̠̘̠̘̣̞͑̈́̾̑̅͂͘͘͝ȍ̸̯͈͇̟͍̪̅͊͐̈́̐̒̏̒̈́̇͆̚͜ text. Uses previous comment if no text.",
-            "Params": "[insanity level from 1-10] [text (previous comment if none)]",
+            "Params": "[insanity level from 1-10] [string (previous comment if none)]",
             "Examples": "zalgo Hello world!"
         },
 
@@ -229,8 +229,16 @@
             "Command": "clap",
             "Alias": "c#clapify#emphasize",
             "Help": "Lets users emphasize WITH 👏 CLAPS 👏 BETWEEN 👏 WORDS",
-            "Params": "[text]",
+            "Params": "[string]",
             "Examples": "clap People who do this are annoying"
+        },
+
+        {
+            "Command": "finishthis",
+            "Alias": "openai#gpt2",
+            "Help": "Uses OpenAI's GPT-2 to generate text based on the input with a similar style",
+            "Params": "['limit=number'|'words=number'] <string (previous comment if none)>",
+            "Examples": "finishthis Hello, I am writting to you because#gpt2 words=100 War, what is it good for?"
         }
     ],
     

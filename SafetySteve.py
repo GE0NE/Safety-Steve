@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*- 
-import os                                                                                                       # import all sorts of shit
+import os
 import platform
-import sys                                                                                                      # like the OS and the System
-import datetime                                                                                                 # and time itself
+import sys
+import datetime
 from datetime import date, time
 import time
-import json                                                                                                     # some dude named jason
-import asyncio                                                                                                  # a kitchen sinkio
-import re                                                                                                       # re:re:re:re:re: meeting time
+import json
+import asyncio
+import re
 import inspect
 import praw
 from prawcore import NotFound
@@ -92,7 +92,7 @@ try:
 except FileNotFoundError:
     with open('config/user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
-        json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": ""},
+        json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": "","deep_ai_key":""},
             "channel_ids":{"lobby": ""},"security":{"allowremoteshutdown": False,"admins":[]}}, f, indent = 4, ensure_ascii = False)
         sys.exit("user info file created. "
             "Please fill out the user-info.json file and restart the bot.");
@@ -151,6 +151,7 @@ userID = generalInfo['user_id']
 mention = generalInfo['mention']
 discordToken = generalInfo['discord_token']
 name = config['name']
+deepAIKey = generalInfo['deep_ai_key']
 
 # Commands
 textCommands = commandsFile['text_commands']
@@ -867,6 +868,62 @@ async def on_message(msg: discord.Message):
             else:
                 await say(msg, clappy_message)
 
+        if command == textCommands[29]['Command'] or command in textCommands[29]['Alias'].split('#'):
+            
+            char_limit = 1960
+            word_limit = 0
+
+            # Get rid of original command text
+            message = message[len(command):]
+
+            for i, index in enumerate(argList):
+                if 'limit=' in index:
+                    try:
+                        char_limit = int(argList[i].replace('limit=', '').strip())
+                        message = message.replace('limit=%d'%(char_limit), '', 1).strip()
+                        break
+                    except:
+                        break
+                if 'words=' in index:
+                    try:
+                        word_limit = int(argList[i].replace('words=', '').strip())
+                        print('words=%d'%(word_limit))
+                        message = message.replace('words=%d'%(word_limit), '', 1).strip()
+                        break
+                    except:
+                        break
+
+            if char_limit > 1960:
+                char_limit = 1960
+            if word_limit > 500:
+                word_limit = 500
+
+
+            if message.isspace() or message == '':
+                async for m in msg.channel.history(limit=2):
+                    message = m.content
+
+            ai_message = await gpt2(msg, message)
+            if ai_message == '':
+                return
+
+            # truncate over chat_limit chars
+            if char_limit > 0:
+                ai_message = (ai_message[:char_limit] if len(ai_message) > char_limit else ai_message)
+
+            # truncate if over word_limit words
+            if word_limit > 0:
+                print(word_limit)
+                ai_message = ' '.join(ai_message.split(' ')[:word_limit])
+                print(ai_message)
+
+            ai_message = ai_message + "...\n`[Text provided by deepai.org]`"
+
+            if message.isspace() or message == '':
+                await throwError(msg, "Input text can't be empty, a reaction, or embed.", custom=True, printError=False)
+            else:
+                await say(msg, ai_message)
+
         # now a redundant check as r/zerotwo is now treated as NSFW in the subreddit command
         # commenting out the check, but leaving the command as a template for future NSFW commands
         if command == nsfwCommands[0]['Command'] or command in nsfwCommands[0]['Alias'].split('#'):
@@ -1380,6 +1437,27 @@ async def useItem(msg, item, target=None, requiresItem=True, removeItem=True, si
         if protectionMessage:
             await say(msg, protectionMessage)
     return True
+
+async def gpt2(msg, query):
+    try:
+        await msg.channel.trigger_typing()
+        r = requests.post("https://api.deepai.org/api/text-generator", data={'text': query}, headers={'api-key': deepAIKey})
+        payload = r.json()
+        if 'output' in payload:
+            return payload['output']
+        elif 'status' in payload or 'err' in payload:
+            err = payload['err'] if 'error' in payload else payload['status']
+            await throwError(msg, "There was an issue with the request: `%s`"%(err), custom=True, printError=False)
+            return ''
+        else:
+            await throwError(msg, "There was an unknown issue with the request", custom=True, printError=False)
+            return ''
+    except:
+        await throwError(msg, "There was an issue with the website's connection", custom=True, printError=False)
+        return ''
+
+
+    
 
 async def scp(msg, content):
     response = await respond_to_scp_references(content)
