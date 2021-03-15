@@ -875,7 +875,7 @@ async def on_message(msg: discord.Message):
             paragraph_limit = 0
 
             # Get rid of original command text
-            message = message[len(command):]
+            message = rawMessage[len(command):]
 
             for i, index in enumerate(argList):
                 if 'limit=' in index:
@@ -912,13 +912,15 @@ async def on_message(msg: discord.Message):
                 async for m in msg.channel.history(limit=2):
                     message = m.content
 
+            message = re.sub(r'<(\:[a-zA-Z0-9\-\_\+\~]{1,16}\:)\d{5,32}>', r'\1', message)
+
             ai_message = await gpt2(msg, message)
             if ai_message == '':
                 return
 
             # truncate over chat_limit chars
             if char_limit > 0:
-                ai_message = (ai_message[:char_limit] if len(ai_message) > char_limit else ai_message)
+                ai_message = ai_message[:char_limit] if len(ai_message) > char_limit else ai_message
 
             # truncate if over word_limit words
             if word_limit > 0:
