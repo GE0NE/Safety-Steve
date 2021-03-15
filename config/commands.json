@@ -237,7 +237,7 @@
             "Command": "finishthis",
             "Alias": "openai#gpt2",
             "Help": "Uses OpenAI's GPT-2 to generate text based on the input with a similar style",
-            "Params": "['limit=number'|'words=number'] <string (previous comment if none)>",
+            "Params": "['limit=number'|'words=number'|'sections=number'] <string (previous comment if none)>",
             "Examples": "finishthis Hello, I am writting to you because#gpt2 words=100 War, what is it good for?"
         }
     ],

@@ -872,6 +872,7 @@ async def on_message(msg: discord.Message):
             
             char_limit = 1960
             word_limit = 0
+            paragraph_limit = 0
 
             # Get rid of original command text
             message = message[len(command):]
@@ -887,8 +888,14 @@ async def on_message(msg: discord.Message):
                 if 'words=' in index:
                     try:
                         word_limit = int(argList[i].replace('words=', '').strip())
-                        print('words=%d'%(word_limit))
                         message = message.replace('words=%d'%(word_limit), '', 1).strip()
+                        break
+                    except:
+                        break
+                if 'sections=' in index:
+                    try:
+                        paragraph_limit = int(argList[i].replace('sections=', '').strip())
+                        message = message.replace('sections=%d'%(paragraph_limit), '', 1).strip()
                         break
                     except:
                         break
@@ -897,6 +904,8 @@ async def on_message(msg: discord.Message):
                 char_limit = 1960
             if word_limit > 500:
                 word_limit = 500
+            if paragraph_limit > 10:
+                paragraph_limit = 10
 
 
             if message.isspace() or message == '':
@@ -913,9 +922,11 @@ async def on_message(msg: discord.Message):
 
             # truncate if over word_limit words
             if word_limit > 0:
-                print(word_limit)
                 ai_message = ' '.join(ai_message.split(' ')[:word_limit])
-                print(ai_message)
+
+            # truncate if over paragraph_limit line breaks
+            if paragraph_limit > 0:
+                ai_message = '\n\n'.join(ai_message.split('\n\n')[:paragraph_limit])
 
             ai_message = ai_message + "...\n`[Text provided by deepai.org]`"
 
