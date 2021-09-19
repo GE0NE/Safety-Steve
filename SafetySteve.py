@@ -1342,7 +1342,7 @@ async def getServerConfig(guildID, configKeys, maxRecursiveAttempts=3, recursive
         with open('config/server_configs/%s.json' % (guildID), encoding='utf8') as f:
             serverConfigsFile = json.load(f)
             # create the directory if it doesn't exist
-    except FileNotFoundError:
+    except:
         if not os.path.exists(os.path.dirname('config/server_configs/')):
             try:
                 os.makedirs(os.path.dirname('config/server_configs/'))
