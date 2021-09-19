@@ -32,7 +32,7 @@ try:
     import discord
 except ImportError:
     from pip._internal import main as pip
-    pip(['install', '-U', 'git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]'])
+    pip(['install', '-U', 'discord.py[voice]'])
     import discord
 from discord import opus
 from discord.utils import get
@@ -2551,13 +2551,13 @@ async def tickClock():
     now = datetime.datetime.now()
     realDate = "%d-%d-%d" % (now.day, now.month, now.year)
 
-    with open("res/data/clock.dat","w") as clock:
+    with open("res/data/clock.dat","w+") as clock:
         clock.write(realDate)
         clock.close()
 
 async def getClock():
     date = "0-0-0"
-    with open("res/data/clock.dat","r") as clock:
+    with open("res/data/clock.dat","w+") as clock:
         date = clock.read()
         clock.close()
     return date
