@@ -785,12 +785,23 @@ async def on_message(msg: discord.Message):
                     name = item
                     qty = inventory.get(item, 1)
                     ico = '❔'
+                    icoString = '\u200b'
                     for i in items.values():
                         if i['Item'] == name:
                             name = i['Name']
                             ico = i['Icon'] 
                             break
-                    embed.add_field(name='%sx %s %s' % (qty, name, ico), value='\u200b', inline=True)
+                    try:
+                        for i in range(int(qty)):
+                            if i < 4:
+                                icoString += '%s ' % (ico)
+                            else:
+                                icoString += '+%s' % (int(qty) - i)
+                                break
+                    except:
+                        icoString = ico
+                        continue
+                    embed.add_field(name='%sx %s' % (qty, name), value=icoString, inline=True)
                 except:
                     continue
             await say(msg, "", embed=embed)
@@ -1545,12 +1556,12 @@ async def subreddit(msg, sub, bypassErrorCheck=False, args=[], filterNSFW=-1, fi
         if any('pool=' in s for s in args):
             matching = [a for a in args if 'pool=' in a]
             try:
-                pool=int(matching[0].partition('=')[2]) if matching[0].partition('=')[2] is not '' else pool
+                pool=int(matching[0].partition('=')[2]) if matching[0].partition('=')[2] != '' else pool
             except TypeError:
                 pool = pool
         if any('type=' in s for s in args):
             matching = [a for a in args if 'type=' in a]
-            filtertype=matching[0].partition('=')[2] if matching[0].partition('=')[2] is not '' else filtertype
+            filtertype=matching[0].partition('=')[2] if matching[0].partition('=')[2] != '' else filtertype
         if any(x in args for x in ['reposts', 'allowreposts']):
             allowReposts = True
             
