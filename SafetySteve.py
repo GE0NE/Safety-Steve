@@ -2568,7 +2568,7 @@ async def tickClock():
 
 async def getClock():
     date = "0-0-0"
-    with open("res/data/clock.dat","w+") as clock:
+    with open("res/data/clock.dat","r") as clock:
         date = clock.read()
         clock.close()
     return date
@@ -2588,7 +2588,6 @@ async def status_task(loop):
         
         if recordDate != realDate:
             await tickClock()
-            await onNewDay()
 
         if not loop:
             return
