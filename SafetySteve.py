@@ -2588,6 +2588,7 @@ async def status_task(loop):
         
         if recordDate != realDate:
             await tickClock()
+            await onNewDay()
 
         if not loop:
             return
