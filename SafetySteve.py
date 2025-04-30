@@ -1496,8 +1496,6 @@ async def openrouter(msg, query, role):
             if message['refusal'] is not None:
                 await throwError(msg, "The model refused the output", custom=True, printError=False)
                 return
-            if not message['content'].lower().startswith(query.lower()):
-                message['content'] = query + message['content']
             return message['content']
         elif 'status' in payload or 'error' in payload:
             err = payload['error'] if 'error' in payload else payload['status']
