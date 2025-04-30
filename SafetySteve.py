@@ -886,7 +886,7 @@ async def on_message(msg: discord.Message):
             char_limit = 1960
             word_limit = 0
             paragraph_limit = 0
-            role = "You are a text completion tool; you simply predict the user's next words to finish their sentence or paragraph as if it is incomplete. You are not an assistant and have no personality or identity of your own, but you are creative. Your reply is the completed text and nothing more."
+            role = "You are a text completion tool; you simply predict the user's next words to finish their sentence or paragraph as if it is incomplete. You are not an assistant and have no personality or identity of your own, but you are creative. Your reply is the full completed text and nothing more."
 
             # Get rid of original command text
             message = rawMessage[len(command):]
@@ -933,6 +933,8 @@ async def on_message(msg: discord.Message):
             if ai_message == '':
                 return
 
+            full_ai_message = ai_message
+
             # truncate over chat_limit chars
             if char_limit > 0:
                 ai_message = ai_message[:char_limit] if len(ai_message) > char_limit else ai_message
@@ -945,7 +947,10 @@ async def on_message(msg: discord.Message):
             if paragraph_limit > 0:
                 ai_message = '\n\n'.join(ai_message.split('\n\n')[:paragraph_limit])
 
-            ai_message = ai_message + "...\n`[Generated using openrouter.ai]`"
+            if len(ai_message) != len(full_ai_message):
+                ai_message = ai_message + "..."
+
+            ai_message = ai_message + "\n`[Generated using openrouter.ai]`"
 
             if message.isspace() or message == '':
                 await throwError(msg, "Input text can't be empty, a reaction, or embed.", custom=True, printError=False)
