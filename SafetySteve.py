@@ -92,7 +92,7 @@ try:
 except FileNotFoundError:
     with open('config/user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
-        json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": "","deep_ai_key":""},
+        json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": "","deep_ai_key":"","open_router_model":"deepseek/deepseek-r1:free,"open_router_key":""},
             "channel_ids":{"lobby": ""},"security":{"allowremoteshutdown": False,"admins":[]}}, f, indent = 4, ensure_ascii = False)
         sys.exit("user info file created. "
             "Please fill out the user-info.json file and restart the bot.");
@@ -152,6 +152,8 @@ mention = generalInfo['mention']
 discordToken = generalInfo['discord_token']
 name = config['name']
 deepAIKey = generalInfo['deep_ai_key']
+openRouterModel = generalInfo['open_router_model']
+openRouterKey = generalInfo['open_router_key']
 
 # Commands
 textCommands = commandsFile['text_commands']
@@ -925,7 +927,8 @@ async def on_message(msg: discord.Message):
 
             message = re.sub(r'<(\:[a-zA-Z0-9\-\_\+\~]{1,16}\:)\d{5,32}>', r'\1', message)
 
-            ai_message = await gpt2(msg, message)
+            #ai_message = await gpt2(msg, message) - Deprecated
+            ai_message = await openrouter(msg, message)
             if ai_message == '':
                 return
 
@@ -1480,8 +1483,31 @@ async def gpt2(msg, query):
         await throwError(msg, "There was an issue with the website's connection", custom=True, printError=False)
         return ''
 
-
-    
+async def openrouter(msg, query):
+    try:
+        await msg.channel.trigger_typing()
+        r = requests.post("https://openrouter.ai/api/v1/chat/completions", 
+            data=json.dumps({"model": openRouterModel, "messages": [{"role": "system", "content": role}, {"role": "user", "content": query}], "stream": False}), 
+            headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + openRouterKey})
+        payload = r.json()
+        if 'choices' in payload:
+            message = payload['choices'][0]['message']
+            if message['refusal'] is not None:
+                await throwError(msg, "The model refused the output", custom=True, printError=False)
+                return
+            if not message['content'].lower().startswith(query.lower()):
+                message['content'] = query + message['content']
+            return message['content']
+        elif 'status' in payload or 'error' in payload:
+            err = payload['error'] if 'error' in payload else payload['status']
+            await throwError(msg, "There was an issue with the request: `%s`"%(err['message'] if 'message' in err else err), custom=True, printError=False)
+            return ''
+        else:
+            await throwError(msg, "There was an unknown issue with the request", custom=True, printError=False)
+            return ''
+    except:
+        await throwError(msg, "There was an issue with the website's connection", custom=True, printError=False)
+        return ''
 
 async def scp(msg, content):
     response = await respond_to_scp_references(content)
