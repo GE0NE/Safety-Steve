@@ -92,7 +92,7 @@ try:
 except FileNotFoundError:
     with open('config/user-info.json', 'w', encoding='utf8') as f:
         userInfo = {}
-        json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": "","deep_ai_key":"","open_router_model":"deepseek/deepseek-r1:free,"open_router_key":""},
+        json.dump({"general_info":{"discord_token": "","user_id": "","mention": "","client_id": "","client_secret": "","deep_ai_key":"","open_router_model":"deepseek/deepseek-r1:free","open_router_key":""},
             "channel_ids":{"lobby": ""},"security":{"allowremoteshutdown": False,"admins":[]}}, f, indent = 4, ensure_ascii = False)
         sys.exit("user info file created. "
             "Please fill out the user-info.json file and restart the bot.");
