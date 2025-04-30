@@ -886,6 +886,7 @@ async def on_message(msg: discord.Message):
             char_limit = 1960
             word_limit = 0
             paragraph_limit = 0
+            role = "You are a text completion tool; you simply predict the user's next words to finish their sentence or paragraph as if it is incomplete. You are not an assistant and have no personality or identity of your own, but you are creative. Your reply is the completed text and nothing more."
 
             # Get rid of original command text
             message = rawMessage[len(command):]
@@ -928,7 +929,7 @@ async def on_message(msg: discord.Message):
             message = re.sub(r'<(\:[a-zA-Z0-9\-\_\+\~]{1,16}\:)\d{5,32}>', r'\1', message)
 
             #ai_message = await gpt2(msg, message) - Deprecated
-            ai_message = await openrouter(msg, message)
+            ai_message = await openrouter(msg, message, role)
             if ai_message == '':
                 return
 
@@ -1483,7 +1484,7 @@ async def gpt2(msg, query):
         await throwError(msg, "There was an issue with the website's connection", custom=True, printError=False)
         return ''
 
-async def openrouter(msg, query):
+async def openrouter(msg, query, role):
     try:
         await msg.channel.trigger_typing()
         r = requests.post("https://openrouter.ai/api/v1/chat/completions", 
